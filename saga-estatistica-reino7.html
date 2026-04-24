@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 7: Teste de Equivalência (TOST)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+/* ── VISUAL: Balança de Bifrost ── */
+.bifrost-scale{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0;flex-wrap:wrap}
+.scale-bound{background:var(--bg-card);border:2px dashed var(--thor-red);border-radius:10px;padding:10px 16px;text-align:center;min-width:80px;font-family:'Courier New',monospace;font-size:1em;color:var(--thor-red)}
+.scale-center{background:var(--bg-card);border:2px solid var(--success);border-radius:10px;padding:10px 20px;text-align:center;min-width:120px}
+.scale-center .s-label{font-family:'Bangers',cursive;color:var(--success);font-size:1em;margin-bottom:4px}
+.scale-center .s-val{font-family:'Courier New',monospace;color:var(--odin-blue);font-size:1.1em}
+.equiv-zone{display:flex;align-items:center;justify-content:center;gap:0;margin:16px 0;flex-wrap:nowrap;overflow-x:auto}
+.ez-segment{padding:12px 6px;text-align:center;font-family:'Courier New',monospace;font-size:.85em;min-width:60px}
+.ez-out{background:#2d1116;color:var(--thor-red);border:1px solid var(--thor-red)}
+.ez-in{background:#0d2818;color:var(--success);border:1px solid var(--success)}
+.ez-bound{background:var(--bg-panel);color:var(--gold);border:1px dashed var(--gold);font-family:'Bangers',cursive;font-size:1em;padding:12px 4px}
+.ci-visual{display:flex;align-items:center;justify-content:center;margin:16px auto;max-width:500px;position:relative;height:60px}
+.ci-line{position:absolute;height:4px;background:var(--odin-blue);border-radius:2px}
+.ci-dot{position:absolute;width:10px;height:10px;background:var(--gold);border-radius:50%;transform:translate(-50%,-50%);top:50%}
+.ci-bound-line{position:absolute;width:2px;height:40px;top:10px}
+.ci-bound-label{position:absolute;font-family:'Courier New',monospace;font-size:.8em;top:0}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}.equiv-zone{flex-wrap:wrap}.ez-segment{min-width:50px;font-size:.75em}}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 7
+// TESTE DE EQUIVALÊNCIA (TOST) & SESOI
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho 🧙‍♂️',thor:'ThorMento ⚡',muninn:'Muninn 🐦‍⬛',huginn:'Huginn 🐦',narrator:'📜 Narrador'};
+  return `<div class="dialogue-box ${cls[c]||'narrator'}"><div class="char-name ${cls[c]||'narrator'}">${nm[c]||c}</div><div class="dialogue-text">${t}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return `<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 7</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Reino da Equivalência</h2>
+    <p class="subtitle">Na Ponte de Bifrost, provar que dois mundos são iguais exige mais do que simplesmente não encontrar diferença.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">🛡️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: A Ponte de Bifrost ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','Deixando a Arena de Valhalla, o jovem pesquisador avista a resplandecente <em>Ponte de Bifrost</em> — o arco-íris que conecta Asgard a Midgard. A ponte é guardada por Heimdall, que só permite passagem a quem provar que os dois lados estão em <em>perfeito equilíbrio</em>.')}
+      ${dialogue('odin','Bem-vindo ao <em>Reino da Equivalência</em>! Até agora, todos os nossos testes buscavam <em>diferenças</em>. Aqui, a pergunta se inverte: como provar que dois tratamentos, dois grupos ou dois momentos são <em>essencialmente iguais</em>?')}
+      ${dialogue('thor','Fácil! Se o teste t deu p > 0,05, não tem diferença. Pronto, são iguais!')}
+      ${dialogue('odin','Esse é o erro mais perigoso da estatística, ThorMento. <em>Ausência de evidência não é evidência de ausência.</em> Um p > 0,05 não prova igualdade — pode significar apenas que não tivemos poder suficiente para detectar a diferença.')}
+      <button class="continue-btn" onclick="nextScene()">Cruzar a Ponte →</button>
+    </div>`});
+
+  // ━━ CENA 2: O Problema da "Não-Diferença" ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('odin','Imagine: você testa um medicamento genérico contra o original. O teste t dá p = 0,42. Você conclui que são iguais?')}
+      ${dialogue('thor','Claro! p > 0,05, não rejeita H₀...')}
+      ${dialogue('muninn','Errado, ThorMento. <em>Não rejeitar H₀</em> no teste t clássico (NHST) significa apenas "não encontramos diferença significativa". Talvez a amostra fosse pequena demais. Talvez a diferença exista mas não detectamos.')}
+      ${dialogue('odin','Para <em>provar</em> equivalência, precisamos de um teste projetado exatamente para isso: o <em>TOST — Two One-Sided Tests</em>, proposto por Schuirmann (1987).')}
+      ${dialogue('odin','A lógica é brilhante: em vez de testar se os grupos são <em>diferentes</em>, testamos se a diferença está <em>dentro de limites aceitáveis</em> — os chamados <em>limites de equivalência</em>.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: DESAFIO 1 — Por que não o teste t clássico? ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('O NHST testa se há <em>diferença</em> (H₀: μ₁ = μ₂). "Não rejeitar H₀" não é o mesmo que "confirmar H₀". Para <em>confirmar</em> equivalência, precisamos inverter a lógica: H₀ passa a ser "os grupos NÃO são equivalentes".'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: A Falácia da Não-Diferença</div>
+        <div class="challenge-question">Um pesquisador compara dois medicamentos com teste t e obtém p = 0,35. Ele conclui que os medicamentos são equivalentes. Por que essa conclusão é <em>incorreta</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">A conclusão está correta — p > 0,05 prova igualdade</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Porque "não rejeitar H₀ de diferença" não prova equivalência — ausência de evidência não é evidência de ausência. Pode ser falta de poder estatístico</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">Porque p = 0,35 é muito alto, deveria ser pelo menos p > 0,95</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Porque o teste t só funciona com amostras grandes</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 4: SESOI ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Antes de rodar o TOST, precisamos definir algo fundamental: o <em>SESOI — Smallest Effect Size of Interest</em> (menor tamanho de efeito de interesse prático).')}
+      ${dialogue('muninn','O SESOI é o <em>limite</em> abaixo do qual a diferença é considerada irrelevante na prática. É você, pesquisador, quem define — com base na teoria, na prática clínica ou no contexto do negócio.')}
+      ${dialogue('odin','Por exemplo: se a diferença de força entre dois clãs for menor que <em>±3 pontos</em>, consideramos que eles são equivalentes na prática. Esse ±3 é o nosso <em>Δ (delta)</em>, os limites de equivalência.')}
+      <div class="equiv-zone">
+        <div class="ez-segment ez-out">Não equiv.<br>< −Δ</div>
+        <div class="ez-segment ez-bound">−Δ</div>
+        <div class="ez-segment ez-in">Zona de<br>Equivalência</div>
+        <div class="ez-segment ez-bound">+Δ</div>
+        <div class="ez-segment ez-out">Não equiv.<br>> +Δ</div>
+      </div>
+      ${dialogue('odin','Se a <em>verdadeira diferença</em> cai dentro de [−Δ, +Δ], declaramos equivalência. O TOST testa exatamente isso.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 5: DESAFIO 2 — O que é o SESOI? ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('SESOI = <em>Smallest Effect Size Of Interest</em>. É o menor efeito que teria relevância <em>prática</em>. É definido ANTES de coletar dados, com base em teoria, prática ou benchmarks da área.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: Definindo o SESOI</div>
+        <div class="challenge-question">Qual das opções descreve <em>corretamente</em> o SESOI (Smallest Effect Size of Interest)?</div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">É o tamanho de efeito encontrado na amostra</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">É o menor tamanho de efeito considerado relevante na prática — define os limites de equivalência (±Δ) e deve ser definido a priori com base em teoria ou relevância aplicada</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">É o menor p-valor aceitável para concluir equivalência</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">É calculado automaticamente pelo software estatístico</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: A Lógica do TOST ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Agora vem a elegância do TOST. São <em>dois testes t unilaterais</em> simultâneos:')}
+      ${dialogue('odin','<em>Teste 1 (upper)</em>: H₀₁: μ₁ − μ₂ ≥ +Δ (a diferença é grande demais pelo lado positivo)<br><em>Teste 2 (lower)</em>: H₀₂: μ₁ − μ₂ ≤ −Δ (a diferença é grande demais pelo lado negativo)')}
+      ${dialogue('muninn','Se rejeitarmos <em>ambas</em> as H₀ (ambos os p < α), concluímos que a diferença está <em>dentro</em> de [−Δ, +Δ] → <em>equivalência</em>!')}
+      ${dialogue('odin','Perceba: no TOST, a H₀ é a <em>não-equivalência</em>. A lógica é invertida em relação ao NHST clássico. Rejeitamos H₀ para concluir que os grupos SÃO equivalentes.')}
+      ${dialogue('thor','Espera... então rejeitar H₀ aqui é BOM? Que confusão!')}
+      ${dialogue('odin','É a beleza da inversão, ThorMento. No NHST, rejeitar H₀ = "há diferença". No TOST, rejeitar H₀ = "há equivalência". A rejeição sempre é a conclusão que você precisa de <em>evidência ativa</em> para sustentar.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 7: DESAFIO 3 — H₀ do TOST ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('No TOST, a H₀ diz que os grupos <em>NÃO</em> são equivalentes (a diferença é ≥ Δ em magnitude). Rejeitamos H₀ para concluir equivalência — a lógica é <em>invertida</em> em relação ao teste t clássico.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: A Hipótese Invertida</div>
+        <div class="challenge-question">No procedimento TOST, qual é a <em>H₀ (hipótese nula)</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">H₀: os grupos são equivalentes (diferença = 0)</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">H₀: os grupos NÃO são equivalentes — a diferença é pelo menos ±Δ em magnitude (|μ₁ − μ₂| ≥ Δ)</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">H₀: as médias são iguais (μ₁ = μ₂)</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">Não existe H₀ no TOST — ele usa apenas intervalos de confiança</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 8: A abordagem do IC — 90% CI ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('muninn','Existe uma forma equivalente e visual de verificar a equivalência: o <em>intervalo de confiança</em>.')}
+      ${dialogue('odin','Se o <em>IC de 90%</em> (atenção: 90%, não 95%!) da diferença entre as médias cair <em>inteiramente dentro</em> dos limites [−Δ, +Δ], concluímos equivalência ao nível α = 0,05.')}
+      ${dialogue('thor','Por que 90% e não 95%?')}
+      ${dialogue('odin','Porque o TOST usa dois testes unilaterais com α = 0,05 cada. O IC correspondente a dois testes unilaterais de α = 0,05 é o <em>IC de (1 − 2α) = 90%</em>. É a tradução exata da lógica dos dois testes.')}
+      ${dialogue('muninn','Na prática: calcule o IC 90% da diferença. Se ambas as pontas do IC estiverem dentro de [−Δ, +Δ] → equivalência.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 9: DESAFIO 4 — IC e Equivalência ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Verifique se <em>TODO</em> o IC 90% cabe dentro de [−Δ, +Δ]. Se qualquer ponta do IC ultrapassar os limites, não há evidência de equivalência. Aqui: IC 90% = [−1,8 ; 3,2] e Δ = ±4.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: A Balança de Bifrost</div>
+        <div class="challenge-question">Comparando dois métodos de treinamento, obtivemos:</div>
+        <div class="data-display">
+          Diferença das médias = 0,7<br>
+          IC 90% da diferença: [−1,8 ; 3,2]<br>
+          SESOI definido: Δ = ±4 pontos
+        </div>
+        <div class="equiv-zone">
+          <div class="ez-segment ez-out">< −4</div>
+          <div class="ez-segment ez-bound">−4</div>
+          <div class="ez-segment ez-in">⬤ [−1,8 ... 3,2] ⬤</div>
+          <div class="ez-segment ez-bound">+4</div>
+          <div class="ez-segment ez-out">> +4</div>
+        </div>
+        <div class="challenge-question">O IC 90% [−1,8 ; 3,2] está inteiramente dentro de [−4 ; +4]. Qual a conclusão?</div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">Não se pode concluir nada sem o p-valor do TOST</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">Os dois métodos são equivalentes — o IC 90% cai inteiramente dentro dos limites de equivalência [−Δ, +Δ], logo rejeitamos H₀ do TOST</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">Os métodos são diferentes porque a diferença é 0,7 (não exatamente zero)</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">Precisamos usar um IC de 95%, não 90%</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 10: Pareado vs Independente no TOST ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Assim como o teste t, o TOST tem versões <em>independente</em> e <em>pareada</em>.')}
+      ${dialogue('odin','<em>TOST independente</em>: dois grupos distintos — ex.: medicamento genérico vs original em pacientes diferentes.')}
+      ${dialogue('odin','<em>TOST pareado</em>: mesmos indivíduos em duas condições — ex.: medir precisão do mesmo guerreiro com arma A e arma B.')}
+      ${dialogue('muninn','A lógica é idêntica: defina o SESOI (Δ), rode os dois testes unilaterais sobre a diferença (entre grupos ou intra-sujeito), e verifique se ambos rejeitam H₀.')}
+      ${dialogue('odin','A vantagem do pareado segue a mesma do teste t clássico: ao comparar cada sujeito consigo mesmo, eliminamos a variabilidade entre indivíduos e ganhamos <em>mais poder</em> para detectar equivalência.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 11: DESAFIO 5 — Pareado ou Independente? ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Pergunte: são os <em>mesmos</em> guerreiros usando as duas armas, ou dois <em>grupos diferentes</em>? Mesmos indivíduos em duas condições → pareado.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: Pareado ou Independente?</div>
+        <div class="challenge-question">Um ferreiro de Asgard criou uma nova espada e quer provar que ela é <em>equivalente</em> à espada tradicional. Ele pede que <em>15 guerreiros</em> usem ambas as espadas (ordem contrabalançada) e mede a precisão de cada um com cada espada. Qual TOST usar?</div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">TOST independente — são duas espadas diferentes</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">TOST pareado — os mesmos 15 guerreiros usam ambas as espadas, cada guerreiro é comparado consigo mesmo</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">Teste t clássico pareado — basta o p > 0,05</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">Não é possível testar equivalência com n = 15</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 12: DESAFIO 6 — Interpretar saída TOST ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('No TOST, ambos os testes unilaterais devem ser significativos (p < 0,05) para concluir equivalência. Aqui: p₁ = 0,003 e p₂ = 0,011, ambos < 0,05. O IC 90% [−1,2 ; 2,8] está dentro de [−5 ; +5].'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: Leitura das Runas do TOST</div>
+        <div class="challenge-question">Saída do TOST independente (Poção A vs Poção B, Δ = ±5):</div>
+        <div class="data-display">
+          Diferença das médias = 0,8<br>
+          Teste upper: t(58) = −2,82, p₁ = 0,003<br>
+          Teste lower: t(58) = 2,35, p₂ = 0,011<br>
+          IC 90%: [−1,2 ; 2,8]<br>
+          Limites de equivalência: [−5 ; +5]
+        </div>
+        <div class="challenge-question">Qual a conclusão?</div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">Os grupos são diferentes porque a diferença não é exatamente zero</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">Equivalência confirmada — ambos os testes unilaterais são significativos (p₁ e p₂ < 0,05) e o IC 90% [−1,2 ; 2,8] está inteiramente dentro de [−5 ; +5]</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">Não se pode concluir — precisamos de um teste t clássico também</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">Apenas um dos testes é significativo, então não há equivalência</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 13: Os 4 quadrantes NHST × TOST ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Uma das maiores contribuições do TOST é que ele pode ser combinado com o NHST. Quando rodamos <em>ambos</em>, surgem <em>quatro cenários possíveis</em>:')}
+      ${dialogue('odin','<em>1. NHST sig. + TOST não-sig.</em> → Diferença estatisticamente significativa e não equivalente. Efeito real e relevante.<br><em>2. NHST não-sig. + TOST sig.</em> → Sem diferença significativa e equivalência confirmada. Efeitos triviais.<br><em>3. NHST sig. + TOST sig.</em> → Diferença significativa MAS equivalente. A diferença existe mas é tão pequena que cai dentro do SESOI. Estatisticamente significativo, praticamente irrelevante!<br><em>4. NHST não-sig. + TOST não-sig.</em> → Inconclusivo. Não encontrou diferença, mas também não provou equivalência. Precisa de mais dados.')}
+      ${dialogue('muninn','O cenário 3 é o mais revelador: mostra que <em>significância estatística ≠ relevância prática</em>. Um efeito pode ser "real" mas tão pequeno que não importa.')}
+      ${dialogue('thor','Então meus guerreiros podem ser "significativamente" mais fortes... mas por tão pouco que na prática é irrelevante?')}
+      ${dialogue('odin','Exatamente, ThorMento. É a humildade que a estatística exige.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 14: DESAFIO 7 — Os 4 quadrantes ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('NHST significativo = detectou diferença. TOST significativo = provou equivalência. Se AMBOS são significativos: existe diferença, mas ela é tão pequena que cai dentro do SESOI. <em>Estatisticamente significativo, praticamente irrelevante.</em>'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: O Paradoxo dos Quadrantes</div>
+        <div class="challenge-question">Um estudo com n = 500 por grupo encontra:</div>
+        <div class="data-display">
+          NHST: t(998) = 2,10, p = 0,036 → significativo<br>
+          TOST (Δ = ±5): p₁ = 0,001, p₂ = 0,002 → equivalência confirmada<br>
+          Diferença observada = 0,9 pontos, d = 0,13
+        </div>
+        <div class="challenge-question">Ambos são significativos! O que isso significa?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">Contradição — os resultados são inválidos</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">A diferença é real (p = 0,036) mas trivial (d = 0,13, dentro do SESOI ±5) — estatisticamente significativa porém praticamente irrelevante. É o poder da amostra grande detectando efeitos minúsculos</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">Os grupos são diferentes E equivalentes ao mesmo tempo — impossível, há erro no estudo</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">Devemos considerar apenas o NHST e ignorar o TOST</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: Poder e tamanho amostral no TOST
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: Poder no TOST</div>
+          <div class="challenge-question">Para testar <em>equivalência</em> com um SESOI estreito (Δ pequeno), o que acontece com o tamanho amostral necessário comparado a um teste de <em>diferença</em> clássico?</div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">Precisa de amostra menor — provar igualdade é mais fácil</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">Precisa de amostra consideravelmente maior — quanto menor o Δ, mais participantes são necessários para ter poder suficiente para demonstrar que a diferença está dentro de limites estreitos</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">O tamanho amostral é o mesmo — depende apenas do α</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">Não é possível calcular poder para o TOST</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+
+    // DESAFIO 9: Testes de não-inferioridade/superioridade
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: Além da Equivalência</div>
+          <div class="challenge-question">Uma farmacêutica quer demonstrar que seu novo medicamento não é <em>pior</em> que o original, mas aceita que possa ser <em>melhor</em>. Ela não precisa provar igualdade total — apenas que não é inferior. Qual procedimento?</div>
+          <div class="options-grid" id="q9-opts">
+            <button class="option-btn" onclick="checkQ(9,this,'a')">TOST bilateral — é o mesmo procedimento</button>
+            <button class="option-btn" onclick="checkQ(9,this,'b')">Teste de não-inferioridade (one-sided) — usa apenas o limite inferior de equivalência (−Δ). É um único teste unilateral: H₀: μ_novo − μ_original ≤ −Δ. Se rejeitado, o novo não é inferior ao original</button>
+            <button class="option-btn" onclick="checkQ(9,this,'c')">Teste t clássico unilateral</button>
+            <button class="option-btn" onclick="checkQ(9,this,'d')">Nenhum teste estatístico pode responder isso</button>
+          </div>
+          <div id="q9-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','A Ponte de Bifrost brilha em equilíbrio perfeito. O jovem pesquisador aprendeu que provar igualdade exige mais rigor do que provar diferença.')}
+      ${dialogue('odin','Você conquistou o <em>Reino da Equivalência</em>! Agora compreende que ausência de evidência nunca foi evidência de ausência. O TOST é a ferramenta que fecha essa lacuna — com rigor, com SESOI definido a priori e com a humildade de reconhecer que nem toda diferença significativa importa na prática.')}
+      ${dialogue('thor','Admito... aprendi que "não encontrar diferença" e "provar equivalência" são coisas bem diferentes.')}
+      ${dialogue('muninn','Evolução notável, ThorMento. Lembre-se: o TOST complementa o NHST. Juntos, formam os quatro quadrantes que todo pesquisador deveria reportar.')}
+      ${dialogue('odin','A Saga continua! Nos próximos Reinos, enfrentaremos ANOVA, correlação, regressão e muito mais. Avante, jovem pesquisador!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚖️</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+const ANSWERS={1:'b',2:'b',3:'b',4:'b',5:'b',6:'b',7:'b',8:'b',9:'b'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! O teste t clássico testa H₀: μ₁ = μ₂. "Não rejeitar" essa H₀ (p > 0,05) <em>não prova</em> que são iguais — pode ser falta de poder. É o erro clássico de interpretar "não significativo" como "igual". Para provar equivalência, precisamos do <em>TOST</em>.',
+    wrong:'❌ Um p > 0,05 no teste t clássico significa apenas "não encontramos evidência de diferença" — NÃO significa "são iguais". <em>Ausência de evidência ≠ evidência de ausência.</em> Para provar equivalência, use o TOST.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Exato! O <em>SESOI</em> é definido a priori pelo pesquisador e representa a menor diferença que seria <em>praticamente relevante</em>. Ele estabelece os limites de equivalência (±Δ). Pode ser baseado em benchmarks (ex.: d = 0,20), relevância clínica ou consenso da área.',
+    wrong:'❌ O SESOI não é calculado pela amostra nem pelo software. É o <em>menor efeito de interesse prático</em>, definido <em>antes</em> da coleta com base em teoria, prática clínica ou benchmarks. Ele define os limites ±Δ do TOST.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Correto! No TOST, a H₀ é a <em>não-equivalência</em>: a diferença está fora dos limites ±Δ. Rejeitamos H₀ para concluir <em>equivalência</em>. A lógica é invertida em relação ao NHST, onde H₀ é "sem diferença".',
+    wrong:'❌ Cuidado com a inversão! No TOST, H₀ diz que os grupos <em>NÃO são equivalentes</em> (|μ₁ − μ₂| ≥ Δ). Rejeitamos H₀ para concluir equivalência. É o contrário do NHST clássico.',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Perfeito! O IC 90% [−1,8 ; 3,2] está <em>inteiramente</em> dentro dos limites [−4 ; +4]. Isso é equivalente a rejeitar ambos os testes unilaterais do TOST. Conclusão: equivalência ao nível α = 0,05. A diferença de 0,7 não precisa ser zero — apenas precisa ser irrelevante dentro do SESOI.',
+    wrong:'❌ O IC 90% [−1,8 ; 3,2] cabe integralmente dentro de [−4 ; +4] → <em>equivalência confirmada</em>. No TOST, usamos IC de 90% (não 95%) e a diferença não precisa ser zero — apenas precisa estar dentro dos limites de equivalência.',
+    charC:'odin',charW:'thor'
+  },
+  5:{
+    correct:'✅ Correto! Os <em>mesmos 15 guerreiros</em> usando ambas as espadas = design pareado (within-subjects). Logo, usamos o <em>TOST pareado</em>, que analisa as diferenças intra-sujeito. O contrabalançamento controla efeitos de ordem.',
+    wrong:'❌ São os <em>mesmos guerreiros</em> em duas condições → <em>TOST pareado</em>. E não basta um teste t com p > 0,05 — isso não prova equivalência. Precisamos do TOST com SESOI definido.',
+    charC:'muninn',charW:'thor'
+  },
+  6:{
+    correct:'✅ Excelente leitura! Ambos os testes unilaterais são significativos (p₁ = 0,003 < 0,05 e p₂ = 0,011 < 0,05), e o IC 90% [−1,2 ; 2,8] está dentro de [−5 ; +5]. Dupla confirmação: <em>equivalência</em>. A diferença de 0,8 existe mas é irrelevante dentro do SESOI.',
+    wrong:'❌ Para concluir equivalência no TOST, <em>ambos</em> os testes unilaterais devem ser significativos (p < α). Aqui: p₁ = 0,003 e p₂ = 0,011, ambos < 0,05. E o IC 90% confirma: [−1,2 ; 2,8] está dentro de [−5 ; +5].',
+    charC:'odin',charW:'thor'
+  },
+  7:{
+    correct:'✅ Brilhante! Não é contradição — é o <em>cenário 3 dos quadrantes</em>. Com n = 500, o poder é enorme e detecta até diferenças minúsculas (d = 0,13). A diferença é "real" estatisticamente, mas trivial na prática (0,9 pontos dentro do SESOI ±5). É a prova viva de que <em>significância estatística ≠ relevância prática</em>.',
+    wrong:'❌ Não é contradição! Com amostras grandes, o NHST detecta diferenças <em>triviais</em>. Aqui, d = 0,13 é minúsculo e a diferença (0,9) cai dentro do SESOI (±5). O TOST confirma: <em>praticamente irrelevante</em>. É o cenário "significativo mas equivalente" — o mais revelador dos 4 quadrantes.',
+    charC:'muninn',charW:'thor'
+  },
+  8:{
+    correct:'✅ Correto! Provar equivalência com Δ estreito exige amostras <em>grandes</em>. Quanto menor o SESOI, mais precisa deve ser a estimativa — e precisão requer mais dados. Estudos de equivalência/bioequivalência frequentemente precisam de 2 a 4 vezes mais participantes que estudos de diferença.',
+    wrong:'❌ Provar equivalência com SESOI estreito exige amostras <em>maiores</em> que testes de diferença. Quanto menor o Δ, mais participantes são necessários. É contraintuitivo: "provar igualdade" é mais difícil que "encontrar diferença".',
+    charC:'odin',charW:'thor'
+  },
+  9:{
+    correct:'✅ Perfeito! O <em>teste de não-inferioridade</em> é uma versão unilateral do TOST. Usa apenas o limite inferior (−Δ). H₀: o novo tratamento é inferior por pelo menos Δ. Se rejeitamos, concluímos que o novo <em>não é inferior</em> ao original. É muito usado em ensaios clínicos quando o novo tratamento tem outras vantagens (custo, conveniência).',
+    wrong:'❌ Quando queremos provar que algo "não é pior" (sem exigir igualdade total), usamos o <em>teste de não-inferioridade</em> — um único teste unilateral com limite −Δ. É parente do TOST, mas assimétrico. Muito usado em farmacêutica quando o genérico não precisa ser idêntico, apenas "não pior".',
+    charC:'muninn',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  const opts=document.querySelectorAll(`#q${q}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }else{
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='🏆 Guardião de Bifrost';rc='#f0c040';}
+  else if(pct>=70){rank='⚖️ Mestre do Equilíbrio';rc='#58a6ff';}
+  else if(pct>=50){rank='🛡️ Aprendiz da Balança';rc='#8b949e';}
+  else{rank='⛓️ Perdido na Ponte';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 7 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'🛡️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70
+      ?'A Ponte de Bifrost está em equilíbrio! Você dominou o teste de equivalência — uma habilidade rara e poderosa. Poucos pesquisadores vão além do NHST. Avante!'
+      :'A ponte balança perigosamente... Volte e estude os fundamentos do TOST. Lembre-se: provar igualdade é mais difícil que encontrar diferença!'
+    )}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">🔄 Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>

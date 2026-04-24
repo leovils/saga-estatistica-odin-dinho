@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 1: Pesquisa Quantitativa</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+/* ── VISUAL: Pergaminho ── */
+.scroll-box{background:linear-gradient(135deg,#1c2333,#161b22);border:2px solid var(--gold);border-radius:12px;padding:18px 22px;margin:14px 0;position:relative}
+.scroll-box::before{content:'📜';position:absolute;top:-12px;left:16px;font-size:1.3em;background:var(--bg-dark);padding:0 6px}
+.scroll-box .scroll-title{font-family:'Bangers',cursive;color:var(--gold);font-size:1.1em;margin-bottom:8px}
+.scroll-box .scroll-content{font-size:.95em;line-height:1.5;color:var(--text-dim)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 1
+// PESQUISA QUANTITATIVA
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho 🧙‍♂️',thor:'ThorMento ⚡',muninn:'Muninn 🐦‍⬛',huginn:'Huginn 🐦',narrator:'📜 Narrador'};
+  return `<div class="dialogue-box ${cls[c]||'narrator'}"><div class="char-name ${cls[c]||'narrator'}">${nm[c]||c}</div><div class="dialogue-text">${t}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return `<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 1</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Reino da Pesquisa Quantitativa</h2>
+    <p class="subtitle">Nos Portões de Midgard, todo pesquisador deve provar que entende os fundamentos antes de avançar.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">🛡️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: Portões de Midgard ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','Nos Portões de Midgard, onde o conhecimento de todos os nove mundos converge, um jovem pesquisador se apresenta. Ele busca dominar a arte da <em>pesquisa quantitativa</em> — a linguagem dos números que revela verdades ocultas no caos do mundo.')}
+      ${dialogue('odin','Bem-vindo, jovem! Eu sou <em>Odin Dinho</em>, guardião do conhecimento estatístico. Antes de explorar os reinos avançados, precisamos garantir que seus fundamentos são sólidos.')}
+      ${dialogue('thor','Pra que perder tempo com fundamentos? Roda logo um teste t e pronto!')}
+      ${dialogue('odin','Essa pressa é exatamente o que transforma pesquisadores em produtores de lixo estatístico, ThorMento. Fundamentos primeiro.')}
+      <button class="continue-btn" onclick="nextScene()">Cruzar os Portões →</button>
+    </div>`});
+
+  // ━━ CENA 2: Tipos de pesquisa ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('odin','A pesquisa quantitativa trabalha com <em>números, medições e contagens</em>. Seu objetivo é quantificar fenômenos e testar hipóteses com rigor.')}
+      ${dialogue('muninn','Diferente da pesquisa <em>qualitativa</em> (que busca compreender significados, percepções e experiências em profundidade), a quantitativa busca <em>generalizar</em> resultados para uma população a partir de uma amostra.')}
+      ${dialogue('odin','Os pilares são: <em>variáveis mensuráveis</em>, <em>coleta estruturada</em> (questionários, experimentos), <em>análise estatística</em> e <em>replicabilidade</em>.')}
+      ${dialogue('huginn','E não esqueça: existem também os <em>métodos mistos</em> (mixed methods), que combinam abordagens quantitativas e qualitativas num mesmo estudo!')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: DESAFIO 1 — Quanti vs Quali ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Quantitativa = <em>números</em>, generalização, testes estatísticos. Qualitativa = <em>significados</em>, profundidade, interpretação. Pergunte: o objetivo é medir e generalizar ou compreender em profundidade?'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: Quantitativa ou Qualitativa?</div>
+        <div class="challenge-question">Um pesquisador aplica um questionário com escala Likert (1-5) para 400 consumidores e analisa os dados com estatística inferencial. Que tipo de pesquisa é essa?</div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">Qualitativa — porque usa questionário</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Quantitativa — coleta numérica estruturada, amostra grande e análise estatística para generalizar resultados</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">Mista — porque questionário pode ser qualitativo</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Exploratória — porque está explorando opiniões</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 4: Variáveis ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','No coração da pesquisa quantitativa estão as <em>variáveis</em>. Uma variável é qualquer característica que pode assumir diferentes valores.')}
+      ${dialogue('odin','<em>Variável independente (VI)</em>: a causa presumida, o que o pesquisador manipula ou observa como preditor.<br><em>Variável dependente (VD)</em>: o efeito, o que é medido como resultado.<br><em>Variável de controle</em>: mantida constante para isolar o efeito da VI sobre a VD.')}
+      ${dialogue('muninn','Exemplo: se queremos saber se o <em>tipo de treinamento</em> (VI) afeta a <em>força do guerreiro</em> (VD), controlamos a <em>alimentação</em> (controle) para que não interfira.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 5: DESAFIO 2 — Variáveis ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('A variável <em>independente</em> é a causa (o que muda), a <em>dependente</em> é o efeito (o que medimos). Pergunte: "O que causa o quê?"'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: Identifique as Variáveis</div>
+        <div class="challenge-question">Um estudo investiga se a <em>quantidade de horas de treino</em> afeta a <em>precisão com o arco</em> de guerreiros vikings. Qual é a VI e qual é a VD?</div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">VI = precisão com o arco; VD = horas de treino</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">VI = horas de treino (causa); VD = precisão com o arco (efeito medido)</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">Ambas são dependentes</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">Não há variáveis — é uma pesquisa descritiva</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: Escalas de medida ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','As variáveis são medidas em diferentes <em>escalas</em>, e a escala determina quais análises estatísticas são permitidas.')}
+      ${dialogue('odin','<em>Nominal</em>: categorias sem ordem (sexo, cor dos olhos, clã).<br><em>Ordinal</em>: categorias com ordem, mas intervalos desiguais (ranking, grau de satisfação).<br><em>Intervalar</em>: intervalos iguais, mas sem zero absoluto (temperatura em °C, QI).<br><em>Razão</em>: intervalos iguais com zero absoluto (peso, altura, renda).')}
+      ${dialogue('muninn','A regra de ouro: quanto mais alta a escala, <em>mais operações</em> são permitidas. Numa escala nominal, só podemos contar frequências. Numa escala de razão, podemos calcular média, DP e fazer qualquer análise.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 7: DESAFIO 3 — Escalas de medida ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Classificação em posições (1º, 2º, 3º) = <em>ordinal</em>. Há ordem, mas a distância entre posições não é necessariamente igual.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: Que Escala É Essa?</div>
+        <div class="challenge-question">No torneio de Asgard, guerreiros são classificados como 1º, 2º, 3º lugar. Que escala de medida é essa?</div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">Nominal — são apenas rótulos</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">Ordinal — há ordem entre as posições, mas a diferença entre 1º e 2º não é necessariamente igual à diferença entre 2º e 3º</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">Intervalar — os números têm intervalos iguais</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">Razão — porque começa do 1</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 8: DESAFIO 4 — Escala de razão ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Escala de <em>razão</em> tem zero absoluto (= ausência da propriedade). Peso = 0 kg significa "sem peso". Temperatura em °C não é razão porque 0°C não é "sem temperatura".'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: O Zero Absoluto</div>
+        <div class="challenge-question">Qual das variáveis abaixo é medida em escala de <em>razão</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">Temperatura em graus Celsius</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">Peso dos guerreiros em quilogramas — tem zero absoluto (0 kg = sem peso), intervalos iguais e permite todas as operações matemáticas</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">Grau de satisfação (1 a 5)</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">Código postal</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 9: Hipóteses ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Toda pesquisa quantitativa séria parte de <em>hipóteses</em> — afirmações testáveis sobre a relação entre variáveis.')}
+      ${dialogue('odin','A <em>hipótese</em> é uma previsão específica derivada da teoria. Exemplo: "Guerreiros que treinam mais de 10 horas semanais têm precisão com arco significativamente maior do que os que treinam menos de 5 horas."')}
+      ${dialogue('muninn','Uma boa hipótese é: <em>testável</em> (pode ser verificada com dados), <em>falsificável</em> (pode ser refutada), <em>específica</em> (indica direção e variáveis) e <em>baseada em teoria</em>.')}
+      ${dialogue('thor','Minha hipótese: meus guerreiros são os melhores! Pronto!')}
+      ${dialogue('odin','Isso não é uma hipótese, ThorMento. Não é específica, não é mensurável e não é falsificável. É apenas ego.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 10: DESAFIO 5 — Hipóteses ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Uma hipótese boa é <em>testável, falsificável, específica e baseada em teoria</em>. Deve indicar variáveis e direção esperada do efeito.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: A Boa Hipótese</div>
+        <div class="challenge-question">Qual das opções é uma <em>hipótese científica adequada</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">Os guerreiros viking são fortes</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">Guerreiros submetidos a treinamento de resistência (VI) apresentarão aumento significativo na força de preensão (VD) comparados ao grupo controle, após 8 semanas</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">A estatística é importante para a ciência</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">Todos os guerreiros melhoram com treino</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 11: Validade e Confiabilidade ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Dois conceitos inseparáveis na pesquisa quantitativa: <em>validade</em> e <em>confiabilidade</em>.')}
+      ${dialogue('odin','<em>Validade</em>: o instrumento mede o que se propõe a medir? Uma balança mede peso — é válida para peso. Mas não mede inteligência.<br><em>Confiabilidade</em>: o instrumento produz resultados consistentes? Se medir o mesmo guerreiro três vezes, dá resultados semelhantes?')}
+      ${dialogue('muninn','Atenção: um instrumento pode ser <em>confiável sem ser válido</em>. Uma balança quebrada que sempre marca 5 kg a mais é confiável (consistente) mas não é válida (está errada). Porém, um instrumento <em>não pode ser válido sem ser confiável</em>.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 12: DESAFIO 6 — Validade vs Confiabilidade ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('<em>Confiável sem ser válido</em> = resultados consistentes, porém errados (viés sistemático). É como um arqueiro que acerta sempre o mesmo ponto... mas longe do alvo.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: O Alvo do Arqueiro</div>
+        <div class="challenge-question">Uma balança de Asgard sempre marca <em>3 kg a mais</em> do que o peso real. Ao pesar o mesmo guerreiro 5 vezes, os resultados são: 83, 83, 83, 83, 83 (peso real: 80). Esta balança é:</div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">Válida e confiável</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">Confiável (resultados consistentes) mas NÃO válida (viés sistemático de +3 kg — mede de forma errada)</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">Válida mas não confiável</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">Nem válida nem confiável</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 13: DESAFIO 7 — Etapas da pesquisa ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('A ordem lógica: primeiro defina o <em>problema</em>, depois construa o <em>referencial teórico</em>, formule <em>hipóteses</em>, defina <em>método</em> (amostra, instrumento), colete <em>dados</em>, <em>analise</em> e por fim <em>interprete/reporte</em>.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: A Ordem da Jornada</div>
+        <div class="challenge-question">Qual é a sequência <em>correta</em> das etapas de uma pesquisa quantitativa?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">Coleta → Hipótese → Análise → Problema</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">Problema → Referencial Teórico → Hipóteses → Método → Coleta → Análise → Interpretação</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">Análise → Coleta → Hipótese → Problema</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">Hipótese → Coleta → Problema → Análise</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: Validade interna vs externa
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: Validade Interna vs Externa</div>
+          <div class="challenge-question">Um experimento altamente controlado em laboratório (ambiente artificial, amostra homogênea) encontra efeito significativo. Qual é o <em>trade-off</em> mais provável?</div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">Ambas as validades são altas — controle = qualidade total</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">Alta validade interna (controle rigoroso de variáveis confundidoras) mas baixa validade externa (resultados podem não generalizar para o mundo real)</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">Baixa validade interna e alta validade externa</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">Validade interna e externa são a mesma coisa</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+
+    // DESAFIO 9: Operacionalização de construtos
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: Operacionalização</div>
+          <div class="challenge-question">O construto "motivação para combate" é abstrato e não pode ser medido diretamente. O processo de transformá-lo em indicadores observáveis e mensuráveis (ex.: escala de 10 itens Likert) chama-se:</div>
+          <div class="options-grid" id="q9-opts">
+            <button class="option-btn" onclick="checkQ(9,this,'a')">Conceitualização</button>
+            <button class="option-btn" onclick="checkQ(9,this,'b')">Operacionalização — traduzir um construto abstrato em variáveis observáveis e mensuráveis, definindo como será medido na prática</button>
+            <button class="option-btn" onclick="checkQ(9,this,'c')">Categorização</button>
+            <button class="option-btn" onclick="checkQ(9,this,'d')">Randomização</button>
+          </div>
+          <div id="q9-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','Os Portões de Midgard se abrem por completo. O jovem pesquisador deu seu primeiro passo nos fundamentos da pesquisa quantitativa.')}
+      ${dialogue('odin','Você conquistou o <em>Reino da Pesquisa Quantitativa</em>! Agora conhece variáveis, escalas de medida, hipóteses, validade e confiabilidade. Esses são os alicerces sobre os quais toda a estatística é construída.')}
+      ${dialogue('thor','Admito que até eu precisava rever algumas coisas...')}
+      ${dialogue('muninn','Sábias palavras, ThorMento. Nos próximos Reinos, mergulharemos na Estatística Descritiva, Probabilidade e muito mais. A saga está apenas começando!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final 📜</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+const ANSWERS={1:'b',2:'b',3:'b',4:'b',5:'b',6:'b',7:'b',8:'b',9:'b'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! Escala Likert numérica, amostra de 400, estatística inferencial — todos os ingredientes de uma pesquisa <em>quantitativa</em>. O objetivo é quantificar e generalizar, não interpretar significados em profundidade.',
+    wrong:'❌ Questionário com escala Likert (numérica), n = 400 e análise inferencial = <em>pesquisa quantitativa</em>. O uso de questionário não define o tipo — o que define é a natureza dos dados (numéricos) e a análise (estatística).',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Correto! <em>Horas de treino</em> é a causa presumida (VI) e <em>precisão com arco</em> é o efeito medido (VD). A lógica: manipulamos/observamos a VI para ver seu efeito na VD.',
+    wrong:'❌ A VI é a <em>causa</em> (horas de treino) e a VD é o <em>efeito</em> (precisão). Lembre-se: a VD <em>depende</em> da VI — por isso se chama dependente.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Exato! Ranking (1º, 2º, 3º) é <em>ordinal</em> — há ordem clara, mas a distância entre posições não é necessariamente igual. O 1º pode ter vencido por muito ou por pouco do 2º.',
+    wrong:'❌ Posições num ranking = escala <em>ordinal</em>. Há ordem, mas intervalos desiguais. Não é nominal (tem ordem), não é intervalar (intervalos não são iguais) e não é razão (1º lugar não é "o dobro" do 2º).',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Perfeito! Peso em kg tem <em>zero absoluto</em> (0 kg = ausência de peso), intervalos iguais e permite todas as operações. Temperatura em °C não é razão porque 0°C não significa "sem temperatura". Satisfação 1-5 é ordinal.',
+    wrong:'❌ Peso em kg é escala de <em>razão</em>: zero absoluto, intervalos iguais, todas as operações permitidas. °C é intervalar (0°C ≠ "sem temperatura"), satisfação 1-5 é ordinal, código postal é nominal.',
+    charC:'muninn',charW:'thor'
+  },
+  5:{
+    correct:'✅ Excelente! Uma hipótese completa: indica <em>VI</em> (treinamento), <em>VD</em> (força de preensão), <em>comparação</em> (vs controle), <em>direção</em> (aumento) e <em>prazo</em> (8 semanas). É testável, falsificável e específica.',
+    wrong:'❌ Uma boa hipótese especifica VI, VD, direção esperada e é falsificável. "Guerreiros são fortes" ou "estatística é importante" são afirmações vagas, não hipóteses testáveis.',
+    charC:'odin',charW:'thor'
+  },
+  6:{
+    correct:'✅ Correto! Resultados idênticos (83, 83, 83...) = alta <em>confiabilidade</em>. Mas o valor está sempre errado (+3 kg) = <em>sem validade</em>. É o arqueiro que acerta consistentemente o mesmo ponto... longe do centro do alvo.',
+    wrong:'❌ A balança é <em>confiável</em> (consistente: sempre dá 83) mas <em>não válida</em> (viés de +3 kg). Confiabilidade ≠ validade. Um instrumento pode ser consistentemente errado.',
+    charC:'muninn',charW:'thor'
+  },
+  7:{
+    correct:'✅ Correto! A sequência lógica: <em>Problema → Teoria → Hipóteses → Método → Coleta → Análise → Interpretação</em>. Não se coleta dados antes de ter hipóteses, e não se define hipóteses sem base teórica.',
+    wrong:'❌ A ordem correta: <em>Problema → Referencial Teórico → Hipóteses → Método → Coleta → Análise → Interpretação</em>. Cada etapa depende da anterior. Coletar dados sem hipótese é pescar sem anzol.',
+    charC:'odin',charW:'thor'
+  },
+  8:{
+    correct:'✅ Perfeito! O trade-off clássico: controle rigoroso aumenta a <em>validade interna</em> (certeza de causalidade) mas diminui a <em>validade externa</em> (generalização). Ambiente artificial e amostra homogênea não refletem o mundo real.',
+    wrong:'❌ Laboratório controlado = alta <em>validade interna</em> (isolamento de variáveis confundidoras) mas baixa <em>validade externa</em> (dificuldade de generalizar para contextos reais). É o dilema fundamental do design experimental.',
+    charC:'odin',charW:'thor'
+  },
+  9:{
+    correct:'✅ Exato! <em>Operacionalização</em> é o processo de traduzir um construto abstrato (motivação, satisfação, lealdade) em indicadores concretos e mensuráveis. Sem operacionalização, o construto é apenas um conceito filosófico.',
+    wrong:'❌ Transformar um construto abstrato em variáveis observáveis = <em>operacionalização</em>. É diferente de conceitualização (definir teoricamente) e de categorização (classificar).',
+    charC:'muninn',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  const opts=document.querySelectorAll(`#q${q}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }else{
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='🏆 Sábio de Midgard';rc='#f0c040';}
+  else if(pct>=70){rank='📜 Escriba dos Fundamentos';rc='#58a6ff';}
+  else if(pct>=50){rank='🛡️ Noviço Curioso';rc='#8b949e';}
+  else{rank='⛓️ Aprendiz Perdido';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 1 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'🛡️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70
+      ?'Os Portões de Midgard estão abertos! Seus fundamentos são sólidos. Avante para a Estatística Descritiva!'
+      :'Os fundamentos precisam de reforço, jovem pesquisador. Volte e revise — sem base forte, os Reinos avançados serão impenetráveis!'
+    )}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">🔄 Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>

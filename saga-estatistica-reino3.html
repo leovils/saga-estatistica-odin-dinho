@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 3: Probabilidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117;
+  --bg-card: #161b22;
+  --bg-panel: #1c2333;
+  --odin-blue: #58a6ff;
+  --thor-red: #f85149;
+  --corvo-purple: #bc8cff;
+  --gold: #f0c040;
+  --silver: #8b949e;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --success: #3fb950;
+  --border: #30363d;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+#game-container { max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+
+/* ── TELA INICIAL ── */
+.title-screen { text-align: center; padding: 60px 20px; animation: fadeIn 1s ease; }
+.title-screen h1 {
+  font-family: 'Bangers', cursive; font-size: 2.8em; color: var(--gold);
+  text-shadow: 2px 2px 8px rgba(240,192,64,0.3); line-height: 1.1; margin-bottom: 8px;
+}
+.title-screen h2 { font-family: 'Permanent Marker', cursive; font-size: 1.5em; color: var(--odin-blue); margin-bottom: 30px; }
+.title-screen .subtitle { color: var(--text-dim); font-size: 1.1em; margin-bottom: 40px; }
+.reino-badge {
+  display: inline-block; background: linear-gradient(135deg, var(--odin-blue), var(--corvo-purple));
+  padding: 6px 20px; border-radius: 20px; font-family: 'Bangers', cursive; font-size: 1em; color: #fff; margin-bottom: 16px;
+}
+
+/* ── DIFICULDADE ── */
+.difficulty-select { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.diff-btn {
+  background: var(--bg-card); border: 2px solid var(--border); color: var(--text);
+  font-family: 'Bangers', cursive; font-size: 1.2em; padding: 16px 32px; border-radius: 12px;
+  cursor: pointer; transition: all 0.3s; min-width: 180px;
+}
+.diff-btn:hover { border-color: var(--odin-blue); transform: translateY(-2px); }
+.diff-btn .diff-label { font-size: 1.3em; }
+.diff-btn .diff-desc { font-family: 'Patrick Hand', cursive; font-size: 0.65em; color: var(--text-dim); margin-top: 4px; }
+
+/* ── CENAS / DIÁLOGOS ── */
+.scene { animation: slideIn 0.5s ease; padding: 10px 0; }
+.dialogue-box {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 24px; margin-bottom: 16px; position: relative;
+}
+.dialogue-box.odin { border-left: 4px solid var(--odin-blue); }
+.dialogue-box.thor { border-left: 4px solid var(--thor-red); }
+.dialogue-box.corvo { border-left: 4px solid var(--corvo-purple); }
+.dialogue-box.narrator { border-left: 4px solid var(--gold); }
+.char-name { font-family: 'Bangers', cursive; font-size: 1.1em; margin-bottom: 6px; }
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+.char-name.narrator { color: var(--gold); }
+.dialogue-text { line-height: 1.5; font-size: 1.05em; }
+.dialogue-text em { color: var(--gold); font-style: normal; font-weight: bold; }
+
+/* ── DESAFIOS ── */
+.challenge-box {
+  background: var(--bg-panel); border: 2px solid var(--gold); border-radius: 12px;
+  padding: 24px; margin: 20px 0; animation: pulse-border 2s ease infinite;
+}
+@keyframes pulse-border {
+  0%,100% { border-color: var(--gold); box-shadow: 0 0 8px rgba(240,192,64,0.15); }
+  50% { border-color: #f0c040cc; box-shadow: 0 0 16px rgba(240,192,64,0.3); }
+}
+.challenge-title { font-family: 'Bangers', cursive; font-size: 1.4em; color: var(--gold); margin-bottom: 12px; text-align: center; }
+.challenge-question { margin-bottom: 16px; line-height: 1.5; }
+.data-display {
+  background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 18px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 1em;
+  color: var(--odin-blue); text-align: center; letter-spacing: 1px; line-height: 1.6;
+}
+
+/* ── OPÇÕES ── */
+.options-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.option-btn {
+  background: var(--bg-card); border: 2px solid var(--border); color: var(--text);
+  font-family: 'Patrick Hand', cursive; font-size: 1.05em; padding: 14px 18px; border-radius: 10px;
+  cursor: pointer; text-align: left; transition: all 0.25s; line-height: 1.4;
+}
+.option-btn:hover:not(.disabled) { border-color: var(--odin-blue); background: #1a2233; }
+.option-btn.correct { border-color: var(--success); background: #0d2818; color: var(--success); }
+.option-btn.wrong { border-color: var(--thor-red); background: #2d1116; color: var(--thor-red); }
+.option-btn.disabled { cursor: default; opacity: 0.7; }
+
+/* ── INPUT NUMÉRICO ── */
+.num-input-group { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+.num-input {
+  background: var(--bg-dark); border: 2px solid var(--border); color: var(--odin-blue);
+  font-family: 'Patrick Hand', cursive; font-size: 1.2em; padding: 10px 16px; border-radius: 8px;
+  width: 160px; text-align: center; outline: none;
+}
+.num-input:focus { border-color: var(--odin-blue); }
+.submit-btn {
+  background: var(--odin-blue); color: var(--bg-dark); border: none;
+  font-family: 'Bangers', cursive; font-size: 1.1em; padding: 10px 24px; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s;
+}
+.submit-btn:hover { transform: scale(1.05); }
+
+/* ── VISUAL: DADOS / RUNAS ── */
+.dice-visual {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin: 16px 0;
+}
+.dice {
+  width: 64px; height: 64px; background: var(--bg-card); border: 2px solid var(--gold);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Bangers', cursive; font-size: 1.8em; color: var(--gold);
+  transition: all 0.3s; cursor: default;
+}
+.dice.highlight { border-color: var(--odin-blue); color: var(--odin-blue); transform: scale(1.1); }
+.tree-diagram {
+  background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 0.95em;
+  color: var(--odin-blue); line-height: 1.8; white-space: pre;
+}
+
+/* ── FEEDBACK ── */
+.feedback-box { border-radius: 10px; padding: 16px 20px; margin: 16px 0; animation: fadeIn 0.4s ease; line-height: 1.5; }
+.feedback-box.correct { background: #0d2818; border: 1px solid var(--success); color: var(--success); }
+.feedback-box.wrong { background: #2d1116; border: 1px solid var(--thor-red); color: var(--thor-red); }
+.xp-badge {
+  display: inline-block; background: var(--gold); color: var(--bg-dark);
+  font-family: 'Bangers', cursive; padding: 2px 10px; border-radius: 6px; font-size: 0.9em; margin-left: 6px;
+}
+
+/* ── BARRA DE XP ── */
+.xp-bar-container {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+}
+.xp-label { font-family: 'Bangers', cursive; color: var(--gold); font-size: 1em; white-space: nowrap; }
+.xp-bar-bg { flex: 1; height: 14px; background: var(--bg-dark); border-radius: 7px; overflow: hidden; }
+.xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--odin-blue), var(--gold)); border-radius: 7px; transition: width 0.6s ease; }
+.xp-count { font-family: 'Bangers', cursive; color: var(--text); font-size: 1em; min-width: 60px; text-align: right; }
+
+/* ── BOTÃO CONTINUAR ── */
+.continue-btn {
+  display: block; margin: 20px auto 0; background: transparent; border: 2px solid var(--odin-blue);
+  color: var(--odin-blue); font-family: 'Bangers', cursive; font-size: 1.15em; padding: 12px 36px;
+  border-radius: 10px; cursor: pointer; transition: all 0.25s;
+}
+.continue-btn:hover { background: var(--odin-blue); color: var(--bg-dark); }
+
+/* ── RESULTADO FINAL ── */
+.result-screen { text-align: center; padding: 40px 20px; animation: fadeIn 0.8s ease; }
+.result-screen h2 { font-family: 'Bangers', cursive; font-size: 2.2em; color: var(--gold); margin-bottom: 8px; }
+.result-rank { font-family: 'Permanent Marker', cursive; font-size: 1.5em; margin: 16px 0; }
+.result-stats {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; margin: 20px 0; text-align: left;
+}
+.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--text-dim); }
+.stat-value { font-family: 'Bangers', cursive; color: var(--odin-blue); }
+
+/* ── HINT ── */
+.hint-box {
+  background: #1a1530; border: 1px solid var(--corvo-purple); border-radius: 10px;
+  padding: 14px 18px; margin: 12px 0; font-size: 0.95em; color: var(--corvo-purple); animation: fadeIn 0.5s ease;
+}
+.hint-box .hint-label { font-family: 'Bangers', cursive; font-size: 1em; margin-bottom: 4px; }
+
+/* ── ANIMAÇÕES ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 600px) {
+  .title-screen h1 { font-size: 2em; }
+  .title-screen h2 { font-size: 1.2em; }
+  .difficulty-select { flex-direction: column; align-items: center; }
+  #game-container { padding: 12px; }
+  .challenge-box { padding: 16px; }
+  .dice { width: 52px; height: 52px; font-size: 1.4em; }
+}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="game-content"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 3
+// PROBABILIDADE
+// ════════════════════════════════════════════════════
+
+const GAME = {
+  difficulty: null,
+  xp: 0,
+  maxXP: 0,
+  hits: 0,
+  total: 0,
+  currentScene: 0,
+  scenes: [],
+};
+
+const content = () => document.getElementById('game-content');
+
+// ── PERSONAGENS ──
+function dialogue(char, text) {
+  const cls = { odin:'odin', thor:'thor', muninn:'corvo', huginn:'corvo', narrator:'narrator' };
+  const names = { odin:'Odin Dinho 🧙‍♂️', thor:'ThorMento ⚡', muninn:'Muninn 🐦‍⬛', huginn:'Huginn 🐦', narrator:'📜 Narrador' };
+  return `<div class="dialogue-box ${cls[char]||'narrator'}">
+    <div class="char-name ${cls[char]||'narrator'}">${names[char]||char}</div>
+    <div class="dialogue-text">${text}</div>
+  </div>`;
+}
+function hintBox(text) {
+  return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${text}</div>`;
+}
+
+// ── XP ──
+function xpBar() {
+  const pct = GAME.maxXP > 0 ? Math.round((GAME.xp / GAME.maxXP) * 100) : 0;
+  return `<div class="xp-bar-container">
+    <div class="xp-label">⚡ XP</div>
+    <div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
+    <div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div>
+  </div>`;
+}
+function updateXPBar() {
+  const bar = document.querySelector('.xp-bar-fill');
+  const count = document.querySelector('.xp-count');
+  if (bar && count) {
+    const pct = GAME.maxXP > 0 ? Math.round((GAME.xp / GAME.maxXP) * 100) : 0;
+    bar.style.width = pct + '%';
+    count.textContent = `${GAME.xp} / ${GAME.maxXP}`;
+  }
+}
+
+// ── TELA INICIAL ──
+function showTitleScreen() {
+  content().innerHTML = `
+    <div class="title-screen">
+      <div class="reino-badge">REINO 3</div>
+      <h1>A Saga Estatística de Odin Dinho</h1>
+      <h2>Reino da Probabilidade</h2>
+      <p class="subtitle">Quando as Nornas tecem o destino, até os deuses jogam dados.</p>
+      <div class="difficulty-select">
+        <button class="diff-btn" onclick="startGame('aprendiz')">
+          <div class="diff-label">🛡️ Aprendiz</div>
+          <div class="diff-desc">Graduação — com dicas de Muninn</div>
+        </button>
+        <button class="diff-btn" onclick="startGame('mestre')">
+          <div class="diff-label">⚔️ Mestre</div>
+          <div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div>
+        </button>
+      </div>
+    </div>`;
+}
+
+// ── INICIAR ──
+function startGame(diff) {
+  GAME.difficulty = diff;
+  GAME.xp = 0; GAME.hits = 0; GAME.total = 0; GAME.currentScene = 0;
+  buildScenes();
+  GAME.maxXP = countMaxXP();
+  renderScene();
+}
+
+// ════════════════════════════════════════════════════
+// CONSTRUÇÃO DAS CENAS
+// ════════════════════════════════════════════════════
+function buildScenes() {
+  GAME.scenes = [];
+
+  // ━━ CENA 1: Chegada ao Templo das Nornas ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${dialogue('narrator', 'Deixando a Taverna dos Dados para trás, o jovem pesquisador escala o pico mais alto de Midgard. No topo, um templo ancestral brilha sob as auroras: o <em>Templo das Nornas</em> — as tecelãs do destino.')}
+      ${dialogue('odin', 'Bem-vindo ao <em>Reino da Probabilidade</em>, jovem! Aqui moravam as Nornas — Urd (passado), Verdandi (presente) e Skuld (futuro). Elas teciam o destino de todos os seres. E a probabilidade é justamente isso: a <em>ciência de medir a incerteza</em>.')}
+      ${dialogue('thor', 'Incerteza? Eu não tenho incerteza nenhuma — eu sei que você vai errar! 😈')}
+      ${dialogue('muninn', 'A probabilidade é o alicerce de toda estatística inferencial. Sem ela, não há testes de hipóteses, nem intervalos de confiança. Preste atenção, jovem.')}
+      <button class="continue-btn" onclick="nextScene()">Entrar no Templo →</button>
+    </div>`
+  });
+
+  // ━━ CENA 2: Conceito — escala de 0 a 1 ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${dialogue('narrator', 'Dentro do templo, três grandes runas flutuam no ar. A primeira exibe o número <em>0</em>, a segunda <em>0,5</em> e a terceira <em>1</em>.')}
+      ${dialogue('odin', 'A probabilidade de qualquer evento varia entre <em>0</em> (impossível) e <em>1</em> (certo). Se jogo uma moeda justa, a probabilidade de "cara" é 0,5 — nem certo, nem impossível. Meio a meio.')}
+      ${dialogue('huginn', 'E existem dois jeitos de estimar probabilidades, Odin Dinho!')}
+      ${dialogue('odin', 'Exato! A probabilidade <em>teórica</em> — baseada em matemática — e a <em>empírica</em> — baseada em observação. Se eu sei que o dado tem 6 faces, a probabilidade teórica de tirar um 4 é 1/6. Se eu jogar o dado 600 vezes e o 4 sair 105 vezes, a probabilidade empírica é 105/600 = 0,175.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`
+  });
+
+  // ━━ CENA 3: DESAFIO 1 — Probabilidade Básica ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('Probabilidade = Número de resultados favoráveis / Número total de resultados possíveis. Um dado justo tem 6 faces. Faces pares: 2, 4, 6 = 3 faces.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: O Dado de Odin</div>
+        <div class="challenge-question">Odin Dinho saca um dado rúnico de 6 faces (1 a 6). Qual a probabilidade de tirar um número <em>par</em>?</div>
+        <div class="dice-visual">
+          <div class="dice">1</div><div class="dice highlight">2</div><div class="dice">3</div>
+          <div class="dice highlight">4</div><div class="dice">5</div><div class="dice highlight">6</div>
+        </div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1, this, 'a')">1/6 ≈ 0,17</button>
+          <button class="option-btn" onclick="checkQ(1, this, 'b')">2/6 ≈ 0,33</button>
+          <button class="option-btn" onclick="checkQ(1, this, 'c')">3/6 = 0,50</button>
+          <button class="option-btn" onclick="checkQ(1, this, 'd')">4/6 ≈ 0,67</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ CENA 4: Narrativa — Espaço Amostral ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin', 'Muito bem! Antes de avançar, precisamos falar do <em>espaço amostral</em> — o conjunto de TODOS os resultados possíveis de um experimento.')}
+      ${dialogue('muninn', 'Quando jogamos um dado, o espaço amostral é S = {1, 2, 3, 4, 5, 6}. Quando jogamos uma moeda, S = {Cara, Coroa}. Quando jogamos dois dados... as coisas ficam mais interessantes.')}
+      ${dialogue('thor', 'Dois dados? Agora ThorMento quer ver você calcular!')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`
+  });
+
+  // ━━ CENA 5: DESAFIO 2 — Espaço Amostral de 2 Dados ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('Com dois dados, cada face do primeiro pode combinar com cada face do segundo. Se o dado 1 tem 6 resultados e o dado 2 tem 6 resultados, o total de combinações é 6 × 6.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: O Espaço dos Dados Gêmeos</div>
+        <div class="challenge-question">ThorMento joga <em>dois dados rúnicos</em> ao mesmo tempo. Quantos resultados possíveis existem no espaço amostral?</div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2, this, 'a')">12 resultados</button>
+          <button class="option-btn" onclick="checkQ(2, this, 'b')">36 resultados</button>
+          <button class="option-btn" onclick="checkQ(2, this, 'c')">6 resultados</button>
+          <button class="option-btn" onclick="checkQ(2, this, 'd')">24 resultados</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ CENA 6: Narrativa — Regra da Adição ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin', 'Agora vamos aprender uma das regras fundamentais: a <em>Regra da Adição</em>.')}
+      ${dialogue('odin', 'Quando queremos saber a probabilidade de acontecer o evento A <em>OU</em> o evento B, usamos: <em>P(A ou B) = P(A) + P(B) − P(A e B)</em>.')}
+      ${dialogue('muninn', 'Subtraímos P(A e B) para não contar duas vezes os resultados que pertencem aos dois eventos ao mesmo tempo. Se os eventos são <em>mutuamente excludentes</em> (não podem acontecer juntos), então P(A e B) = 0, e a fórmula simplifica para P(A) + P(B).')}
+      ${dialogue('thor', 'Vamos ver se você sabe usar isso na prática!')}
+      <button class="continue-btn" onclick="nextScene()">Enfrentar →</button>
+    </div>`
+  });
+
+  // ━━ CENA 7: DESAFIO 3 — Regra da Adição ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('Num baralho de 52 cartas: P(Ás) = 4/52. P(Copas) = 13/52. Mas o <em>Ás de Copas</em> é contado nas duas categorias! P(Ás E Copas) = 1/52. Use: P(A ou B) = P(A) + P(B) − P(A e B).') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: As Cartas Rúnicas</div>
+        <div class="challenge-question">De um baralho de 52 cartas rúnicas, qual a probabilidade de tirar um <em>Ás</em> ou uma carta de <em>Copas</em>?</div>
+        <div class="data-display">
+          Ases = 4 cartas &nbsp;|&nbsp; Copas = 13 cartas &nbsp;|&nbsp; Ás de Copas = 1 carta
+        </div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3, this, 'a')">17/52 ≈ 0,327</button>
+          <button class="option-btn" onclick="checkQ(3, this, 'b')">16/52 ≈ 0,308</button>
+          <button class="option-btn" onclick="checkQ(3, this, 'c')">4/52 ≈ 0,077</button>
+          <button class="option-btn" onclick="checkQ(3, this, 'd')">13/52 = 0,250</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ CENA 8: Narrativa — Regra da Multiplicação ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin', 'Agora, a segunda grande regra: a <em>Regra da Multiplicação</em>.')}
+      ${dialogue('odin', 'Quando queremos saber a probabilidade de o evento A <em>E</em> o evento B acontecerem juntos, usamos: <em>P(A e B) = P(A) × P(B)</em> — mas SOMENTE se os eventos forem <em>independentes</em>!')}
+      ${dialogue('muninn', 'Dois eventos são <em>independentes</em> quando a ocorrência de um não afeta a probabilidade do outro. Jogar dois dados: o resultado do primeiro não influencia o segundo. Mas tirar duas cartas <em>sem reposição</em>... aí a história muda.')}
+      ${dialogue('thor', 'Independência... algo que eu nunca dou aos meus inimigos!')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`
+  });
+
+  // ━━ CENA 9: DESAFIO 4 — Multiplicação (independentes) ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('Uma moeda tem P(Cara) = 1/2. Um dado tem P(6) = 1/6. Se são lançados simultaneamente, os eventos são independentes. Use P(A e B) = P(A) × P(B).') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: A Moeda e o Dado</div>
+        <div class="challenge-question">Odin Dinho lança uma <em>moeda</em> e um <em>dado de 6 faces</em> ao mesmo tempo. Qual a probabilidade de obter <em>Cara</em> na moeda E <em>6</em> no dado?</div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4, this, 'a')">1/12 ≈ 0,083</button>
+          <button class="option-btn" onclick="checkQ(4, this, 'b')">1/8 = 0,125</button>
+          <button class="option-btn" onclick="checkQ(4, this, 'c')">2/6 ≈ 0,333</button>
+          <button class="option-btn" onclick="checkQ(4, this, 'd')">1/3 ≈ 0,333</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ CENA 10: Narrativa — Probabilidade Condicional ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator', 'No altar central do templo, as Nornas revelam um pergaminho antigo com uma fórmula misteriosa: <em>P(A|B)</em>.')}
+      ${dialogue('odin', 'Essa é a <em>probabilidade condicional</em> — a probabilidade de A acontecer, <em>dado que</em> B já aconteceu. Ela muda a nossa visão do mundo, porque incorpora uma informação nova.')}
+      ${dialogue('odin', 'A fórmula é: <em>P(A|B) = P(A e B) / P(B)</em>. Lê-se: "probabilidade de A dado B".')}
+      ${dialogue('thor', 'Qual a probabilidade de eu vencer... dado que eu SEMPRE venço? Hahaha!')}
+      ${dialogue('muninn', 'A condicional é onde muita gente se confunde, jovem. Vamos com calma.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`
+  });
+
+  // ━━ CENA 11: DESAFIO 5 — Probabilidade Condicional ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('P(A|B) = P(A e B) / P(B). No problema: P(Aprovado e Estudou) = 0,40. P(Estudou) = 0,50. Logo P(Aprovado | Estudou) = 0,40 / 0,50.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: O Julgamento das Nornas</div>
+        <div class="challenge-question">Na Academia Viking de Estatística:</div>
+        <div class="data-display">
+          50% dos alunos estudaram para a prova (Estudou)<br>
+          40% estudaram E foram aprovados (Estudou ∩ Aprovado)
+        </div>
+        <div class="challenge-question">Se selecionamos um aluno que <em>sabemos que estudou</em>, qual a probabilidade de ele ter sido <em>aprovado</em>?<br>Em outras palavras: <em>P(Aprovado | Estudou) = ?</em></div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5, this, 'a')">0,40 (40%)</button>
+          <button class="option-btn" onclick="checkQ(5, this, 'b')">0,80 (80%)</button>
+          <button class="option-btn" onclick="checkQ(5, this, 'c')">0,50 (50%)</button>
+          <button class="option-btn" onclick="checkQ(5, this, 'd')">0,90 (90%)</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ CENA 12: Narrativa — Eventos Mutuamente Excludentes vs Independentes ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin', 'Muito bem! Agora, uma distinção que pega muitos pesquisadores desprevenidos: <em>mutuamente excludentes</em> vs. <em>independentes</em>.')}
+      ${dialogue('odin', '<em>Mutuamente excludentes</em>: A e B NÃO podem acontecer ao mesmo tempo. Exemplo: tirar "cara" e "coroa" na mesma jogada de moeda.')}
+      ${dialogue('odin', '<em>Independentes</em>: a ocorrência de A não afeta a probabilidade de B. Exemplo: jogar uma moeda e um dado — o resultado de um não influencia o outro.')}
+      ${dialogue('muninn', 'Atenção: eventos mutuamente excludentes <em>nunca</em> são independentes (a menos que um tenha probabilidade zero)! Se eu sei que saiu cara, a probabilidade de coroa cai para zero — a informação sobre um AFETA o outro.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`
+  });
+
+  // ━━ CENA 13: DESAFIO 6 — Classificação conceitual ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('Mutuamente excludentes = não podem ocorrer juntos. Independentes = um não afeta o outro. Saber que saiu número par num dado exclui a possibilidade de ser ímpar — mas não diz nada sobre o resultado de outro dado.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: Excludente ou Independente?</div>
+        <div class="challenge-question">Qual das afirmações abaixo é <em>VERDADEIRA</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6, this, 'a')">Eventos mutuamente excludentes são sempre independentes</button>
+          <button class="option-btn" onclick="checkQ(6, this, 'b')">Se P(A e B) = 0, os eventos são independentes</button>
+          <button class="option-btn" onclick="checkQ(6, this, 'c')">Eventos mutuamente excludentes NÃO podem ser independentes (quando ambos têm P > 0)</button>
+          <button class="option-btn" onclick="checkQ(6, this, 'd')">Independência e exclusão mútua significam a mesma coisa</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ CENA 14: DESAFIO 7 — Prob. empírica vs teórica ━━
+  GAME.scenes.push({ type:'challenge', html: () => {
+    const hint = GAME.difficulty === 'aprendiz' ? hintBox('Probabilidade <em>teórica</em> é calculada pela matemática (a priori). Probabilidade <em>empírica</em> é calculada a partir de observações reais (a posteriori). A Lei dos Grandes Números diz que, com muitas repetições, a empírica converge para a teórica.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: Os Dados de ThorMento</div>
+        <div class="challenge-question">ThorMento jogou um dado 1.000 vezes e obteve os seguintes resultados:</div>
+        <div class="data-display">
+          Face 1: 165 vezes &nbsp;|&nbsp; Face 2: 170 vezes &nbsp;|&nbsp; Face 3: 168 vezes<br>
+          Face 4: 160 vezes &nbsp;|&nbsp; Face 5: 172 vezes &nbsp;|&nbsp; Face 6: 165 vezes
+        </div>
+        <div class="challenge-question">A probabilidade <em>empírica</em> da face 5 é 172/1000 = 0,172. A probabilidade <em>teórica</em> é 1/6 ≈ 0,167. O que explica a diferença?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7, this, 'a')">O dado é viciado — ThorMento trapaceou</button>
+          <button class="option-btn" onclick="checkQ(7, this, 'b')">É a variabilidade amostral natural — com mais lançamentos, a empírica tende a convergir para a teórica (Lei dos Grandes Números)</button>
+          <button class="option-btn" onclick="checkQ(7, this, 'c')">A probabilidade teórica está errada</button>
+          <button class="option-btn" onclick="checkQ(7, this, 'd')">1.000 lançamentos é insuficiente para qualquer conclusão</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;
+  }});
+
+  // ━━ DESAFIO MESTRE: Teorema de Bayes ━━
+  if (GAME.difficulty === 'mestre') {
+    GAME.scenes.push({ type:'narrative', html: () => `
+      <div class="scene">
+        ${xpBar()}
+        ${dialogue('thor', 'Achou que escapou, jovem mestre? As Nornas guardam um último enigma — o mais poderoso de todos!')}
+        ${dialogue('odin', 'O <em>Teorema de Bayes</em> inverte a probabilidade condicional. Ele nos permite atualizar nossas crenças à luz de novas evidências: <em>P(A|B) = P(B|A) × P(A) / P(B)</em>.')}
+        ${dialogue('muninn', 'Este é o coração da inferência bayesiana — e um dos conceitos mais mal compreendidos da estatística.')}
+        <button class="continue-btn" onclick="nextScene()">Enfrentar →</button>
+      </div>`
+    });
+
+    GAME.scenes.push({ type:'challenge', html: () => `
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: O Enigma de Bayes</div>
+          <div class="challenge-question">Um teste rúnico detecta guerreiros sob maldição. As informações são:</div>
+          <div class="data-display">
+            1% dos guerreiros estão amaldiçoados (prevalência)<br>
+            Sensibilidade: 95% (se amaldiçoado, o teste detecta)<br>
+            Especificidade: 90% (se sadio, o teste dá negativo)
+          </div>
+          <div class="challenge-question">Um guerreiro testou <em>positivo</em>. Qual a probabilidade de ele estar <em>realmente</em> amaldiçoado?</div>
+          <div class="data-display" style="font-size:0.85em; color: var(--text-dim);">
+Dica de cálculo:<br>
+P(Amaldiçoado) = 0,01 &nbsp;|&nbsp; P(Sadio) = 0,99<br>
+P(+|Amaldiçoado) = 0,95 &nbsp;|&nbsp; P(+|Sadio) = 0,10<br>
+P(+) = P(+|Amaldiçoado)×P(Amaldiçoado) + P(+|Sadio)×P(Sadio)<br>
+P(+) = 0,95×0,01 + 0,10×0,99 = 0,0095 + 0,099 = 0,1085<br>
+P(Amaldiçoado|+) = ?
+          </div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8, this, 'a')">Cerca de 8,8% — a maioria dos positivos são falsos alarmes!</button>
+            <button class="option-btn" onclick="checkQ(8, this, 'b')">Cerca de 95% — se o teste é bom, quase certeza</button>
+            <button class="option-btn" onclick="checkQ(8, this, 'c')">Cerca de 50% — meio a meio</button>
+            <button class="option-btn" onclick="checkQ(8, this, 'd')">Cerca de 1% — a prevalência não muda</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`
+    });
+  }
+
+  // ━━ CENA FINAL ━━
+  GAME.scenes.push({ type:'narrative', html: () => `
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator', 'As runas do templo brilham uma última vez enquanto as Nornas acenam em aprovação. O jovem pesquisador agora domina a linguagem do acaso.')}
+      ${dialogue('odin', 'Você conquistou o <em>Reino da Probabilidade</em>! Agora entende que a probabilidade é a ponte entre os dados que observamos e as conclusões que podemos tirar sobre o mundo.')}
+      ${dialogue('thor', 'Aproveite enquanto pode... No <em>Reino 4</em> as distribuições vão esmagar você!')}
+      ${dialogue('huginn', 'Parabéns, guerreiro dos dados! Até a próxima aventura!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚔️</button>
+    </div>`
+  });
+}
+
+// ════════════════════════════════════════════════════
+// LÓGICA DAS RESPOSTAS
+// ════════════════════════════════════════════════════
+
+const ANSWERS = {
+  1: 'c', // 3/6 = 0,50
+  2: 'b', // 36
+  3: 'b', // 16/52
+  4: 'a', // 1/12
+  5: 'b', // 0,80
+  6: 'c', // ME não podem ser independentes
+  7: 'b', // Lei dos Grandes Números
+  8: 'a', // ~8,8% (Bayes)
+};
+
+const EXPLANATIONS = {
+  1: {
+    correct: '✅ Perfeito! Faces pares = {2, 4, 6} = 3 resultados favoráveis em 6 possíveis. P = 3/6 = <em>0,50</em> ou 50%. A probabilidade clássica: favoráveis / possíveis.',
+    wrong: '❌ As faces pares são {2, 4, 6} — 3 resultados favoráveis em 6 possíveis. P = 3/6 = <em>0,50</em>.',
+    charC: 'odin', charW: 'thor',
+  },
+  2: {
+    correct: '✅ Exato! Com dois dados, cada face do primeiro combina com cada face do segundo: 6 × 6 = <em>36 resultados</em>. O espaço amostral cresce exponencialmente!',
+    wrong: '❌ Não é uma simples soma (6+6=12). Cada face do dado 1 combina com cada face do dado 2: 6 × 6 = <em>36</em>. Princípio fundamental da contagem!',
+    charC: 'odin', charW: 'thor',
+  },
+  3: {
+    correct: '✅ Perfeito! P(Ás ou Copas) = P(Ás) + P(Copas) − P(Ás e Copas) = 4/52 + 13/52 − 1/52 = <em>16/52 ≈ 0,308</em>. Subtraímos o Ás de Copas para não contá-lo duas vezes!',
+    wrong: '❌ P(Ás ou Copas) = 4/52 + 13/52 − 1/52 = <em>16/52 ≈ 0,308</em>. Se não subtrairmos a interseção (Ás de Copas), contamos ele duas vezes!',
+    charC: 'muninn', charW: 'thor',
+  },
+  4: {
+    correct: '✅ Correto! Os eventos são independentes. P(Cara) × P(6) = 1/2 × 1/6 = <em>1/12 ≈ 0,083</em>. A regra da multiplicação para eventos independentes!',
+    wrong: '❌ Como os eventos são independentes: P(Cara E 6) = P(Cara) × P(6) = 1/2 × 1/6 = <em>1/12 ≈ 0,083</em>.',
+    charC: 'odin', charW: 'thor',
+  },
+  5: {
+    correct: '✅ Excelente! P(Aprovado|Estudou) = P(Aprovado ∩ Estudou) / P(Estudou) = 0,40 / 0,50 = <em>0,80 (80%)</em>. A condicional "filtra" o espaço amostral — olhamos apenas para quem estudou!',
+    wrong: '❌ P(Aprovado|Estudou) = P(Aprovado ∩ Estudou) / P(Estudou) = 0,40 / 0,50 = <em>0,80</em>. A barra "|" significa "dado que" — restringimos o universo aos que estudaram.',
+    charC: 'odin', charW: 'thor',
+  },
+  6: {
+    correct: '✅ Correto! Se A e B são mutuamente excludentes (P(A∩B)=0) e ambos têm P>0, então P(A|B)=0 ≠ P(A), logo NÃO são independentes. Saber que B ocorreu <em>elimina</em> A — isso é o oposto de independência!',
+    wrong: '❌ Se A e B são mutuamente excludentes com P>0, saber que B ocorreu faz P(A|B)=0. Isso significa que B <em>afeta</em> A — logo NÃO são independentes! Exclusão mútua ≠ independência.',
+    charC: 'muninn', charW: 'thor',
+  },
+  7: {
+    correct: '✅ Perfeito! A diferença entre 0,172 e 0,167 é variabilidade amostral natural. A <em>Lei dos Grandes Números</em> garante que, com N → ∞, a frequência relativa converge para a probabilidade teórica. 1.000 já é bastante, mas a convergência é gradual.',
+    wrong: '❌ A diferença é apenas variabilidade amostral — completamente esperada! Pela <em>Lei dos Grandes Números</em>, quanto mais lançamentos, mais a probabilidade empírica se aproxima da teórica.',
+    charC: 'odin', charW: 'thor',
+  },
+  8: {
+    correct: '✅ Brilhante! P(Amaldiçoado|+) = 0,95 × 0,01 / 0,1085 ≈ <em>0,088 ou 8,8%</em>. Este é o paradoxo dos testes: quando a prevalência é baixa, mesmo um bom teste gera muitos falsos positivos. De cada ~109 positivos (por 1.000 testados), apenas ~10 são verdadeiros!',
+    wrong: '❌ Aplicando Bayes: P(Amaldiçoado|+) = (0,95 × 0,01) / 0,1085 ≈ <em>8,8%</em>. Parece contra-intuitivo, mas com prevalência de 1%, a maioria dos positivos são falsos alarmes!',
+    charC: 'odin', charW: 'thor',
+  },
+};
+
+function checkQ(qNum, btn, answer) {
+  const opts = document.querySelectorAll(`#q${qNum}-opts .option-btn`);
+  opts.forEach(b => { b.classList.add('disabled'); b.onclick = null; });
+  const fb = document.getElementById(`q${qNum}-fb`);
+  const correct = ANSWERS[qNum];
+  const exp = EXPLANATIONS[qNum];
+  GAME.total++;
+
+  if (answer === correct) {
+    btn.classList.add('correct');
+    GAME.hits++;
+    GAME.xp += 20;
+    updateXPBar();
+    fb.innerHTML = `<div class="feedback-box correct">
+      ${dialogue(exp.charC, exp.correct + ' <span class="xp-badge">+20 XP</span>')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`;
+  } else {
+    btn.classList.add('wrong');
+    // Highlight correct option
+    const correctIdx = ['a','b','c','d'].indexOf(correct);
+    if (opts[correctIdx]) opts[correctIdx].classList.add('correct');
+    fb.innerHTML = `<div class="feedback-box wrong">
+      ${dialogue(exp.charW, exp.wrong)}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`;
+  }
+}
+
+// ── XP MÁXIMO ──
+function countMaxXP() {
+  let base = 7 * 20; // 7 desafios base
+  if (GAME.difficulty === 'mestre') base += 20; // +1 Bayes
+  return base;
+}
+
+// ── NAVEGAÇÃO ──
+function renderScene() {
+  if (GAME.currentScene < GAME.scenes.length) {
+    content().innerHTML = GAME.scenes[GAME.currentScene].html();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+function nextScene() { GAME.currentScene++; renderScene(); }
+
+// ── RESULTADO ──
+function showResults() {
+  const pct = GAME.total > 0 ? Math.round((GAME.hits / GAME.total) * 100) : 0;
+  let rank, rankColor;
+  if (pct >= 90) { rank = '🏆 Guardião de Asgard'; rankColor = '#f0c040'; }
+  else if (pct >= 70) { rank = '⚔️ Guerreiro dos Dados'; rankColor = '#58a6ff'; }
+  else if (pct >= 50) { rank = '🛡️ Escudeiro Estatístico'; rankColor = '#8b949e'; }
+  else { rank = '⛓️ Cativo de ThorMento'; rankColor = '#f85149'; }
+
+  content().innerHTML = `
+    <div class="result-screen">
+      <div class="reino-badge">REINO 3 — COMPLETO</div>
+      <h2>Resultado da Aventura</h2>
+      <div class="result-rank" style="color:${rankColor}">${rank}</div>
+      <div class="result-stats">
+        <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty === 'mestre' ? '⚔️ Mestre' : '🛡️ Aprendiz'}</span></div>
+        <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+        <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+        <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+      </div>
+      ${dialogue('odin', pct >= 70
+        ? 'As Nornas tecem um destino brilhante para você, jovem pesquisador! Está pronto para os próximos desafios!'
+        : 'O destino ainda não está selado, jovem. Volte ao Templo das Nornas e tente novamente — a probabilidade está a seu favor com a prática!'
+      )}
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
+        <button class="continue-btn" onclick="showTitleScreen()">🔄 Jogar Novamente</button>
+      </div>
+    </div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── INICIALIZAR ──
+showTitleScreen();
+</script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 4: Amostragem</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}
+.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}
+.dialogue-box.thor{border-left:4px solid var(--thor-red)}
+.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}
+.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}
+.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.num-input-group{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.num-input{background:var(--bg-dark);border:2px solid var(--border);color:var(--odin-blue);font-family:'Patrick Hand',cursive;font-size:1.2em;padding:10px 16px;border-radius:8px;width:160px;text-align:center;outline:none}
+.num-input:focus{border-color:var(--odin-blue)}
+.submit-btn{background:var(--odin-blue);color:var(--bg-dark);border:none;font-family:'Bangers',cursive;font-size:1.1em;padding:10px 24px;border-radius:8px;cursor:pointer;transition:all .2s}
+.submit-btn:hover{transform:scale(1.05)}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}
+.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+/* ── VISUAL: Mapa de vilas ── */
+.village-map{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.village{background:var(--bg-card);border:2px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;min-width:100px;transition:all .3s}
+.village .v-name{font-family:'Bangers',cursive;font-size:1em;color:var(--gold);margin-bottom:4px}
+.village .v-pop{font-size:.9em;color:var(--text-dim)}
+.village.selected{border-color:var(--odin-blue);background:#1a2233}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}.village{min-width:80px;padding:8px 10px}}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 4
+// AMOSTRAGEM
+// ═══════════════════════════��════════════════════════
+
+const GAME = { difficulty:null, xp:0, maxXP:0, hits:0, total:0, currentScene:0, scenes:[] };
+const content = () => document.getElementById('game-content');
+
+function dialogue(char, text) {
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const names={odin:'Odin Dinho 🧙‍♂️',thor:'ThorMento ⚡',muninn:'Muninn 🐦‍⬛',huginn:'Huginn 🐦',narrator:'📜 Narrador'};
+  return `<div class="dialogue-box ${cls[char]||'narrator'}"><div class="char-name ${cls[char]||'narrator'}">${names[char]||char}</div><div class="dialogue-text">${text}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return `<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 4</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Reino da Amostragem</h2>
+    <p class="subtitle">Quem não pode contar todos os guerreiros de Midgard precisa aprender a escolher os certos.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">🛡️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+
+function startGame(diff){
+  GAME.difficulty=diff; GAME.xp=0; GAME.hits=0; GAME.total=0; GAME.currentScene=0;
+  buildScenes(); GAME.maxXP=countMaxXP(); renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: Chegada ���━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','Depois de dominar a probabilidade no Templo das Nornas, o jovem pesquisador desce para as planícies de Midgard. Um vasto território com centenas de vilas se estende até o horizonte: é a <em>Terra dos Mil Clãs</em>.')}
+      ${dialogue('odin','Jovem, imagine que você precisa saber a <em>altura média de todos os guerreiros de Midgard</em>. São milhares espalhados por centenas de vilas. Você não pode medir todos — isso seria um <em>censo</em>, e levaria anos.')}
+      ${dialogue('odin','A solução? Selecionar um <em>subconjunto representativo</em> — uma <em>amostra</em> — e usar os dados dessa amostra para fazer inferências sobre a <em>população</em> inteira.')}
+      ${dialogue('thor','Hahaha! E se a amostra for uma porcaria? Se você só medir os guerreiros da minha guarda pessoal — os maiores de Midgard — vai achar que todo mundo é um gigante!')}
+      ${dialogue('muninn','ThorMento acaba de descrever o <em>viés de seleção</em>. Vamos aprender a evitá-lo.')}
+      <button class="continue-btn" onclick="nextScene()">Explorar a Terra dos Mil Clãs →</button>
+    </div>`});
+
+  // ━━ CENA 2: População vs Amostra ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${dialogue('odin','Primeiro, os conceitos fundamentais:')}
+      ${dialogue('odin','<em>População</em> (N) — o conjunto COMPLETO de todos os elementos que nos interessam. Todos os guerreiros de Midgard.')}
+      ${dialogue('odin','<em>Amostra</em> (n) — um subconjunto da população, selecionado para estudo. Os guerreiros que efetivamente medimos.')}
+      ${dialogue('muninn','A mágica da estatística é que, com uma amostra <em>bem selecionada</em>, podemos estimar parâmetros da população com boa precisão. Mas "bem selecionada" é a chave de tudo.')}
+      ${dialogue('huginn','E como se seleciona bem, Muninn?')}
+      ${dialogue('muninn','Existem vários métodos. Vamos conhecê-los.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: Tipos de Amostragem ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${dialogue('odin','Os principais tipos de amostragem <em>probabilística</em> — onde cada elemento tem uma chance conhecida de ser selecionado:')}
+      ${dialogue('odin','<em>Aleatória Simples</em> — cada guerreiro de Midgard tem a mesma probabilidade de ser escolhido. Como sortear nomes de um capacete.')}
+      ${dialogue('odin','<em>Estratificada</em> — dividimos a população em grupos homogêneos (estratos) e sorteamos dentro de cada um. Exemplo: separar guerreiros por clã e sortear proporcionalmente.')}
+      ${dialogue('odin','<em>Por Conglomerados (Clusters)</em> — dividimos em grupos naturais (vilas) e sorteamos vilas inteiras. Depois medimos todos dentro das vilas sorteadas.')}
+      ${dialogue('thor','E a minha favorita: a amostragem por <em>conveniência</em>! Pega quem está mais perto! Rápido, fácil... e ENVIESADO!')}
+      ${dialogue('muninn','A conveniência é <em>não probabilística</em> — não garante representatividade. ThorMento adora porque é fácil de manipular.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 4: DESAFIO 1 — Identificar tipo de amostragem ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('Na amostragem <em>estratificada</em>, primeiro dividimos a população em subgrupos (estratos) com características semelhantes, depois sorteamos dentro de cada estrato. Isso garante que todos os subgrupos estejam representados.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: Que Tipo de Amostragem É Essa?</div>
+        <div class="challenge-question">Um pesquisador quer estudar a satisfação dos guerreiros. Ele divide todos os guerreiros em 3 grupos: <em>infantaria</em>, <em>cavalaria</em> e <em>arqueiros</em>. Depois sorteia aleatoriamente 50 guerreiros de cada grupo.</div>
+        <div class="challenge-question">Qual tipo de amostragem ele usou?</div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">Aleatória Simples</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Estratificada</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">Por Conglomerados</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Por Conveniência</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 5: DESAFIO 2 — Conglomerados ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('Na amostragem por <em>conglomerados</em>, sorteamos grupos inteiros (vilas, escolas, empresas) e medimos todos os elementos dentro dos grupos sorteados. Diferente da estratificada, onde sorteamos <em>indivíduos dentro de cada grupo</em>.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: Vilas Sorteadas</div>
+        <div class="challenge-question">Midgard tem 200 vilas. Um pesquisador sorteia <em>20 vilas</em> aleatoriamente e mede a altura de <em>todos os guerreiros</em> nessas 20 vilas.</div>
+        <div class="village-map">
+          <div class="village selected"><div class="v-name">Vila 7</div><div class="v-pop">n=45</div></div>
+          <div class="village selected"><div class="v-name">Vila 23</div><div class="v-pop">n=38</div></div>
+          <div class="village selected"><div class="v-name">Vila 91</div><div class="v-pop">n=52</div></div>
+          <div class="village"><div class="v-name">Vila 44</div><div class="v-pop">—</div></div>
+          <div class="village selected"><div class="v-name">Vila 156</div><div class="v-pop">n=41</div></div>
+          <div class="village"><div class="v-name">Vila 88</div><div class="v-pop">—</div></div>
+        </div>
+        <div class="challenge-question">Qual tipo de amostragem foi usado?</div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">Estratificada</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">Aleatória Simples</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">Por Conglomerados</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">Sistemática</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: Narrativa — Viés de Seleção ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','ThorMento se aproxima com um sorriso maligno. Ele tem um plano para sabotar a pesquisa.')}
+      ${dialogue('thor','Ei, jovem pesquisador! Eu fiz minha própria pesquisa. Perguntei para os 30 guerreiros que estavam no bar da vila central se estavam satisfeitos com o treinamento. 90% disseram que sim! Logo, os guerreiros de Midgard AMAM meu treinamento!')}
+      ${dialogue('odin','ThorMento cometeu vários erros graves aqui. Vamos identificá-los.')}
+      <button class="continue-btn" onclick="nextScene()">Analisar →</button>
+    </div>`});
+
+  // ━━ CENA 7: DESAFIO 3 — Viés de Seleção ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('O <em>viés de seleção</em> ocorre quando a amostra não é representativa da população. Perguntar apenas para quem está no bar (não aleatório) e num único local (não diversificado) gera uma amostra enviesada. Além disso, a presença de ThorMento pode gerar <em>viés de desejabilidade social</em>.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: Os Vieses de ThorMento</div>
+        <div class="challenge-question">ThorMento perguntou a 30 guerreiros <em>no bar da vila central</em> se gostam do treinamento dele — e 90% disseram sim. Qual é o <em>principal problema</em> dessa pesquisa?</div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">A amostra é muito pequena (n=30 é insuficiente para qualquer conclusão)</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">Viés de seleção — a amostra não é aleatória: guerreiros no bar de uma única vila não representam toda Midgard, e a presença de ThorMento pode intimidar respostas sinceras</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">O problema é que 90% é alto demais — deveria ser 50%</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">Não há problema — 30 é suficiente pelo Teorema Central do Limite</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 8: Narrativa — Tamanho Amostral e Margem de Erro ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Agora que sabemos <em>como</em> selecionar, precisamos saber <em>quantos</em> selecionar. O <em>tamanho amostral (n)</em> está diretamente ligado à precisão das nossas estimativas.')}
+      ${dialogue('muninn','Três conceitos cruciais aqui:')}
+      ${dialogue('muninn','<em>Margem de Erro (E)</em> — o intervalo de incerteza ao redor da estimativa. Se a média amostral é 170 cm com margem de ±3, a verdadeira média populacional provavelmente está entre 167 e 173.')}
+      ${dialogue('muninn','<em>Nível de Confiança</em> — a probabilidade de que o intervalo realmente contenha o parâmetro verdadeiro. Tipicamente 95%.')}
+      ${dialogue('muninn','<em>Intervalo de Confiança</em> = estimativa ± margem de erro. É a faixa onde esperamos encontrar o valor real.')}
+      ${dialogue('odin','Regra de ouro: quanto <em>maior</em> a amostra, <em>menor</em> a margem de erro. Mas os ganhos são decrescentes — dobrar n não reduz a margem pela metade.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 9: DESAFIO 4 — Relação n e Margem de Erro ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('A margem de erro é proporcional a 1/√n. Quando aumentamos n, a margem diminui — mas pela raiz quadrada, não linearmente. Para cortar a margem pela metade, precisamos quadruplicar n.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: O Preço da Precisão</div>
+        <div class="challenge-question">Uma pesquisa com <em>n = 100</em> guerreiros tem margem de erro de <em>±10 cm</em>. Se o pesquisador quiser reduzir a margem para <em>±5 cm</em> (metade), qual deveria ser o tamanho da amostra aproximado?</div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">n = 200 (dobrar)</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">n = 400 (quadruplicar)</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">n = 150 (aumentar 50%)</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">n = 1.000 (multiplicar por 10)</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 10: Narrativa — Intervalo de Confiança ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Vamos aprofundar o <em>Intervalo de Confiança (IC)</em>. Quando dizemos "IC de 95% = [167, 173]", estamos dizendo:')}
+      ${dialogue('odin','"Se repetirmos esta pesquisa muitas vezes, 95% dos intervalos construídos conterão o verdadeiro parâmetro populacional."')}
+      ${dialogue('thor','Então tem 5% de chance de estar errado? HAHAHA!')}
+      ${dialogue('muninn','Cuidado com a interpretação, jovem. O IC <em>NÃO</em> diz que há 95% de chance de o parâmetro estar naquele intervalo específico. O parâmetro é fixo — ou está ou não está. O que varia é o intervalo a cada nova amostra.')}
+      ${dialogue('odin','Essa distinção é uma das mais mal compreendidas da estatística. Vamos testar!')}
+      <button class="continue-btn" onclick="nextScene()">Enfrentar →</button>
+    </div>`});
+
+  // ━━ CENA 11: DESAFIO 5 — Interpretação do IC ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('O IC de 95% significa que o <em>método</em> acerta 95% das vezes — não que aquele intervalo específico tem 95% de chance de conter o valor verdadeiro. É sobre a confiança no <em>procedimento</em>, não no resultado individual.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: A Armadilha da Interpretação</div>
+        <div class="challenge-question">Um pesquisador calcula a altura média dos guerreiros e obtém um <em>IC de 95% = [167, 173] cm</em>. Qual interpretação está <em>CORRETA</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">Há 95% de probabilidade de a média populacional estar entre 167 e 173</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">Se repetirmos o estudo muitas vezes, 95% dos intervalos construídos conterão a verdadeira média populacional</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">95% dos guerreiros têm entre 167 e 173 cm de altura</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">A média amostral está 95% correta</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 12: Narrativa — Erro Amostral ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Existe um conceito que muitos confundem: o <em>erro amostral</em>. É a diferença natural entre a estatística da amostra e o parâmetro da população. Mesmo com uma amostra perfeita, sempre haverá algum erro amostral — é inevitável.')}
+      ${dialogue('odin','O que NÃO é inevitável é o <em>viés (erro sistemático)</em>. Uma amostra mal selecionada gera viés — e viés não diminui com o aumento de n. Pode ter n = 1 milhão e ainda estar errado se a seleção for enviesada.')}
+      ${dialogue('thor','Espera... quer dizer que minha pesquisa no bar, mesmo com 1 milhão de guerreiros no bar, ainda seria enviesada?')}
+      ${dialogue('odin','Exatamente, ThorMento. Viés é sobre o MÉTODO, não sobre o tamanho.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 13: DESAFIO 6 — Erro amostral vs viés ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('<em>Erro amostral</em> = variação natural por usar amostra em vez de censo. Diminui com n maior. <em>Viés</em> = erro sistemático no método de seleção. NÃO diminui com n maior. Só corrige mudando o método.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: Erro vs. Viés</div>
+        <div class="challenge-question">Qual afirmação é <em>VERDADEIRA</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">Aumentar o tamanho da amostra elimina tanto o erro amostral quanto o viés</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">O erro amostral diminui com n maior, mas o viés só se corrige mudando o método de seleção</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">Viés e erro amostral são a mesma coisa</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">Uma amostra aleatória elimina completamente o erro amostral</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 14: DESAFIO 7 — Cenário prático ━━
+  GAME.scenes.push({type:'challenge', html:()=>{
+    const hint = GAME.difficulty==='aprendiz' ? hintBox('Pense nos problemas: voluntários = autosseleção (viés), apenas online = exclui quem não tem internet, sem estratificação = pode sub-representar grupos. A opção correta garante que TODOS os subgrupos estejam representados proporcionalmente.') : '';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: O Melhor Plano Amostral</div>
+        <div class="challenge-question">Odin Dinho quer pesquisar a satisfação dos guerreiros de Midgard. A população tem 3 clãs: <em>Urso (60%)</em>, <em>Lobo (30%)</em> e <em>Corvo (10%)</em>. Qual plano amostral é o <em>mais adequado</em>?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">Pedir voluntários em cada clã</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">Sortear 100 guerreiros de uma lista completa, independente do clã</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">Amostragem estratificada proporcional: sortear 60 do Urso, 30 do Lobo e 10 do Corvo</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">Entrevistar os 100 primeiros que responderem a um formulário online</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ���━ DESAFIO MESTRE: Efeito do Design (DEFF) ━━
+  if(GAME.difficulty==='mestre'){
+    GAME.scenes.push({type:'narrative', html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        ${dialogue('thor','Hora do desafio de mestre! Vamos falar de algo que poucos conhecem!')}
+        ${dialogue('odin','Quando usamos amostragem por conglomerados em vez de aleatória simples, a precisão pode ser diferente. O <em>Efeito do Design (DEFF)</em> mede quanto a variância muda por causa do método amostral escolhido.')}
+        ${dialogue('muninn','Se DEFF > 1, a amostragem por conglomerados é <em>menos</em> eficiente que a aleatória simples — precisamos de mais elementos para a mesma precisão. Isso ocorre porque indivíduos dentro do mesmo conglomerado tendem a ser <em>mais parecidos entre si</em>.')}
+        <button class="continue-btn" onclick="nextScene()">Enfrentar →</button>
+      </div>`});
+
+    GAME.scenes.push({type:'challenge', html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: Efeito do Design</div>
+          <div class="challenge-question">Uma pesquisa por amostragem aleatória simples precisaria de <em>n = 200</em>. Porém, o pesquisador usou amostragem por conglomerados com <em>DEFF = 2,0</em>. Qual deve ser o tamanho da amostra ajustado?</div>
+          <div class="data-display">n ajustado = n original × DEFF</div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">n = 200 (DEFF não altera o n)</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">n = 400</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">n = 100 (divide por DEFF)</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">n = 283 (multiplica por √DEFF)</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL ━━
+  GAME.scenes.push({type:'narrative', html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','O jovem pesquisador contempla a Terra dos Mil Clãs do alto de uma colina. Agora sabe que não precisa medir todos os guerreiros — basta escolher os certos, da maneira certa.')}
+      ${dialogue('odin','Você conquistou o <em>Reino da Amostragem</em>! Agora entende que uma amostra representativa vale mais que um censo enviesado, que a margem de erro depende de √n, e que viés não se resolve com tamanho — se resolve com método.')}
+      ${dialogue('thor','No <em>Reino 5</em>, os testes de hipóteses vão testar até a sua paciência!')}
+      ${dialogue('huginn','Até lá, guerreiro estatístico!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚔️</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+// RESPOSTAS E EXPLICAÇÕES
+// ══════��═════════════════════════════════════════════
+const ANSWERS={1:'b',2:'c',3:'b',4:'b',5:'b',6:'b',7:'c',8:'b'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! Ele dividiu a população em estratos (infantaria, cavalaria, arqueiros) e sorteou dentro de cada um. Isso é <em>amostragem estratificada</em> — garante representação de todos os subgrupos.',
+    wrong:'❌ A resposta é <em>Estratificada</em>. Ele criou estratos (subgrupos homogêneos) e sorteou dentro de cada um. Na aleatória simples não há divisão prévia; na por conglomerados, sorteariam-se grupos inteiros.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Exato! Ele sorteou <em>vilas inteiras</em> (conglomerados/clusters) e mediu todos dentro delas. Isso é <em>amostragem por conglomerados</em>. Diferente da estratificada, onde sortearíamos indivíduos dentro de TODAS as vilas.',
+    wrong:'❌ A resposta é <em>Por Conglomerados</em>. Sortear grupos inteiros (vilas) e medir todos dentro deles = clusters. Na estratificada, sortearíamos indivíduos dentro de cada vila, não vilas inteiras.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Certíssimo! <em>Viés de seleção</em>: amostra não aleatória (só quem estava no bar), de uma única localização (uma vila), e possível <em>viés de desejabilidade social</em> (quem critica ThorMento na cara dele?). Mesmo com n=30 adequado em certas situações, o método invalida tudo.',
+    wrong:'❌ O principal problema é <em>viés de seleção</em>: a amostra não é aleatória nem representativa. Guerreiros de um único bar, com ThorMento presente, não representam Midgard. Tamanho não salva método ruim!',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Perfeito! A margem de erro é proporcional a <em>1/���n</em>. Para reduzir pela metade, precisamos multiplicar n por 2² = 4. Logo, n = 100 × 4 = <em>400</em>. Precisão custa caro!',
+    wrong:'❌ Como E ∝ 1/√n, para reduzir a margem pela metade precisamos <em>quadruplicar</em> n: 100 × 4 = <em>400</em>. Dobrar n só reduziria a margem por √2 ≈ 1,41.',
+    charC:'odin',charW:'thor'
+  },
+  5:{
+    correct:'✅ Excelente! A interpretação correta é <em>frequentista</em>: se repetirmos o estudo muitas vezes, 95% dos intervalos construídos conterão o verdadeiro parâmetro. NÃO é "95% de chance de estar neste intervalo" — o parâmetro é fixo, o que varia é o intervalo.',
+    wrong:'❌ A interpretação correta é: <em>se repetirmos o estudo muitas vezes, 95% dos ICs conterão o valor verdadeiro</em>. NÃO é "95% de chance de estar neste intervalo" — isso seria interpretação bayesiana, não frequentista.',
+    charC:'muninn',charW:'thor'
+  },
+  6:{
+    correct:'✅ Correto! O <em>erro amostral</em> é natural e diminui com n maior. O <em>viés</em> �� sistemático e só se corrige mudando o método de seleção. Uma amostra gigante porém enviesada continua enviesada!',
+    wrong:'❌ A resposta correta: <em>erro amostral diminui com n, viés só se corrige com método</em>. Aumentar n reduz o erro aleatório, mas não conserta um método de seleção falho.',
+    charC:'odin',charW:'thor'
+  },
+  7:{
+    correct:'✅ Perfeito! A <em>amostragem estratificada proporcional</em> garante que cada clã esteja representado na amostra na mesma proporção da população. Voluntários geram autosseleção, formulários online excluem quem não tem acesso, e aleatória simples pode sub-representar o clã Corvo (10%).',
+    wrong:'❌ A melhor opção é a <em>estratificada proporcional</em>: 60 do Urso, 30 do Lobo, 10 do Corvo — mantendo a proporção populacional. Isso garante representatividade de todos os subgrupos.',
+    charC:'odin',charW:'thor'
+  },
+  8:{
+    correct:'✅ Correto! n ajustado = n × DEFF = 200 × 2,0 = <em>400</em>. Como indivíduos dentro de um mesmo conglomerado tendem a ser parecidos (alta correlação intraclasse), a amostragem por clusters é menos eficiente e exige mais elementos para a mesma precisão.',
+    wrong:'❌ n ajustado = n original × DEFF = 200 × 2,0 = <em>400</em>. O DEFF > 1 indica que a amostragem por conglomerados é menos eficiente — precisamos de mais elementos para compensar a homogeneidade intracluster.',
+    charC:'muninn',charW:'thor'
+  }
+};
+
+function checkQ(qNum,btn,answer){
+  const opts=document.querySelectorAll(`#q${qNum}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${qNum}-fb`);
+  const correct=ANSWERS[qNum]; const exp=EXPLANATIONS[qNum];
+  GAME.total++;
+  if(answer===correct){
+    btn.classList.add('correct'); GAME.hits++; GAME.xp+=20; updateXPBar();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  } else {
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(correct); if(opts[ci]) opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){ return (GAME.difficulty==='mestre'?8:7)*20; }
+function renderScene(){
+  if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();window.scrollTo({top:0,behavior:'smooth'});}
+}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='🏆 Guardião de Asgard';rc='#f0c040';}
+  else if(pct>=70){rank='⚔️ Guerreiro dos Dados';rc='#58a6ff';}
+  else if(pct>=50){rank='🛡️ Escudeiro Estatístico';rc='#8b949e';}
+  else{rank='⛓️ Cativo de ThorMento';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 4 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'🛡️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70?'A Terra dos Mil Clãs reconhece sua sabedoria! Você sabe que uma amostra vale tanto quanto o método que a criou. Avante!':'Volte à Terra dos Mil Clãs e pratique, jovem. Lembre-se: amostra boa não é grande — é bem selecionada!')}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">🔄 Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>

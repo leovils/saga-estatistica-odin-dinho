@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh}
+.hub-container{max-width:900px;margin:0 auto;padding:30px 20px}
+
+/* ── HEADER ── */
+.hub-header{text-align:center;padding:40px 20px 30px;animation:fadeIn 1s ease}
+.hub-header h1{font-family:'Bangers',cursive;font-size:3em;color:var(--gold);text-shadow:2px 2px 12px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.hub-header h2{font-family:'Permanent Marker',cursive;font-size:1.3em;color:var(--odin-blue);margin-bottom:16px}
+.hub-header .hub-desc{color:var(--text-dim);font-size:1.05em;max-width:620px;margin:0 auto;line-height:1.5}
+
+/* ── CHARACTERS ── */
+.characters{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin:30px 0 10px}
+.char-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:center;min-width:130px;transition:transform .3s}
+.char-card:hover{transform:translateY(-3px)}
+.char-card .char-icon{font-size:2em;margin-bottom:6px}
+.char-card .char-label{font-family:'Bangers',cursive;font-size:1em}
+.char-card.odin .char-label{color:var(--odin-blue)}
+.char-card.thor .char-label{color:var(--thor-red)}
+.char-card.corvo .char-label{color:var(--corvo-purple)}
+.char-card .char-role{font-size:.8em;color:var(--text-dim)}
+
+/* ── MAPA DOS REINOS ── */
+.realm-map{display:grid;grid-template-columns:1fr;gap:16px;margin:30px 0}
+.realm-card{background:var(--bg-card);border:2px solid var(--border);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:20px;text-decoration:none;color:inherit;transition:all .3s;cursor:pointer;position:relative;overflow:hidden}
+.realm-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px}
+.realm-card:hover{border-color:var(--odin-blue);transform:translateX(6px);box-shadow:0 4px 20px rgba(88,166,255,.1)}
+.realm-card .realm-number{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);min-width:50px;text-align:center;line-height:1}
+.realm-card .realm-info{flex:1}
+.realm-card .realm-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--text);margin-bottom:4px}
+.realm-card .realm-setting{font-family:'Permanent Marker',cursive;font-size:.85em;color:var(--corvo-purple);margin-bottom:6px}
+.realm-card .realm-topics{font-size:.9em;color:var(--text-dim);line-height:1.4}
+.realm-card .realm-badge{font-family:'Bangers',cursive;font-size:.8em;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.badge-aprendiz{background:rgba(88,166,255,.15);color:var(--odin-blue)}
+.badge-mestre{background:rgba(248,81,73,.15);color:var(--thor-red)}
+
+/* Cores por reino */
+.realm-card:nth-child(1)::before{background:var(--success)}
+.realm-card:nth-child(2)::before{background:var(--odin-blue)}
+.realm-card:nth-child(3)::before{background:var(--corvo-purple)}
+.realm-card:nth-child(4)::before{background:var(--gold)}
+.realm-card:nth-child(5)::before{background:var(--thor-red)}
+.realm-card:nth-child(6)::before{background:#f97316}
+.realm-card:nth-child(7)::before{background:#06b6d4}
+
+/* ── FOOTER ── */
+.hub-footer{text-align:center;margin-top:40px;padding:20px;border-top:1px solid var(--border);color:var(--text-dim);font-size:.9em}
+.hub-footer a{color:var(--odin-blue);text-decoration:none}
+.hub-footer a:hover{text-decoration:underline}
+.hub-footer .footer-credit{font-family:'Bangers',cursive;font-size:1em;color:var(--gold);margin-bottom:8px}
+
+/* ── STATS ── */
+.hub-stats{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin:20px 0 30px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.hub-stat{text-align:center}
+.hub-stat .stat-num{font-family:'Bangers',cursive;font-size:1.8em;color:var(--gold)}
+.hub-stat .stat-txt{font-size:.85em;color:var(--text-dim)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){
+  .hub-header h1{font-size:2.2em}
+  .hub-header h2{font-size:1.1em}
+  .realm-card{padding:16px;gap:14px}
+  .realm-card .realm-number{font-size:1.6em;min-width:36px}
+  .realm-card .realm-title{font-size:1.15em}
+  .characters{gap:12px}
+  .char-card{min-width:100px;padding:10px 12px}
+  .hub-stats{gap:16px}
+}
+</style>
+</head>
+<body>
+<div class="hub-container">
+
+  <!-- HEADER -->
+  <div class="hub-header">
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>O Maravilhoso Livro de Receitas Estatísticas</h2>
+    <p class="hub-desc">Um RPG didático de visual novel onde a estatística ganha vida através da mitologia nórdica. Escolha um reino, enfrente desafios e domine os fundamentos — do nível graduação ao pós-graduação.</p>
+  </div>
+
+  <!-- PERSONAGENS -->
+  <div class="characters">
+    <div class="char-card odin">
+      <div class="char-icon">🧙‍♂️</div>
+      <div class="char-label">Odin Dinho</div>
+      <div class="char-role">O Mentor Sábio</div>
+    </div>
+    <div class="char-card thor">
+      <div class="char-icon">⚡</div>
+      <div class="char-label">ThorMento</div>
+      <div class="char-role">O Antagonista</div>
+    </div>
+    <div class="char-card corvo">
+      <div class="char-icon">🐦‍⬛</div>
+      <div class="char-label">Muninn & Huginn</div>
+      <div class="char-role">Corvos Ajudantes</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="hub-stats">
+    <div class="hub-stat"><div class="stat-num">7</div><div class="stat-txt">Reinos</div></div>
+    <div class="hub-stat"><div class="stat-num">63</div><div class="stat-txt">Desafios (Mestre)</div></div>
+    <div class="hub-stat"><div class="stat-num">2</div><div class="stat-txt">Dificuldades</div></div>
+    <div class="hub-stat"><div class="stat-num">∞</div><div class="stat-txt">Rejogabilidade</div></div>
+  </div>
+
+  <!-- MAPA DOS REINOS -->
+  <div class="realm-map">
+    <a class="realm-card" href="saga-estatistica-reino1.html">
+      <div class="realm-number">1</div>
+      <div class="realm-info">
+        <div class="realm-title">Pesquisa Quantitativa</div>
+        <div class="realm-setting">📜 Portões de Midgard</div>
+        <div class="realm-topics">Quanti vs Quali · Variáveis (VI, VD) · Escalas de Medida · Hipóteses · Validade e Confiabilidade</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 2🏴</span></div>
+    </a>
+
+    <a class="realm-card" href="saga-estatistica-reino2.html">
+      <div class="realm-number">2</div>
+      <div class="realm-info">
+        <div class="realm-title">Estatística Descritiva</div>
+        <div class="realm-setting">🏔️ Montanhas de Jotunheim</div>
+        <div class="realm-topics">Média · Mediana · Moda · Outliers · Variância e DP · Regra Empírica 68-95-99.7</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 1🏴</span></div>
+    </a>
+
+    <a class="realm-card" href="saga-estatistica-reino3.html">
+      <div class="realm-number">3</div>
+      <div class="realm-info">
+        <div class="realm-title">Probabilidade</div>
+        <div class="realm-setting">🏛️ Templo das Nornas</div>
+        <div class="realm-topics">Espaço Amostral · Regra da Adição · Multiplicação · Condicional · Excludentes vs Independentes</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 1🏴</span></div>
+    </a>
+
+    <a class="realm-card" href="saga-estatistica-reino4.html">
+      <div class="realm-number">4</div>
+      <div class="realm-info">
+        <div class="realm-title">Amostragem</div>
+        <div class="realm-setting">🏘️ Terra dos Mil Clãs</div>
+        <div class="realm-topics">População vs Amostra · Aleatória/Estratificada/Conglomerados · Viés · Margem de Erro · IC</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 1🏴</span></div>
+    </a>
+
+    <a class="realm-card" href="saga-estatistica-reino5.html">
+      <div class="realm-number">5</div>
+      <div class="realm-info">
+        <div class="realm-title">Teste de Hipóteses</div>
+        <div class="realm-setting">⚖️ Tribunal de Asgard</div>
+        <div class="realm-topics">H₀ e H₁ · p-valor · Erro Tipo I/II · Significância vs Prática · d de Cohen</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 2🏴</span></div>
+    </a>
+
+    <a class="realm-card" href="saga-estatistica-reino6.html">
+      <div class="realm-number">6</div>
+      <div class="realm-info">
+        <div class="realm-title">Teste t</div>
+        <div class="realm-setting">🗡️ Arena de Valhalla</div>
+        <div class="realm-topics">t para uma amostra · Independente · Pareado · Pressupostos · Levene/Welch · Reporte APA</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 2🏴</span></div>
+    </a>
+
+    <a class="realm-card" href="saga-estatistica-reino7.html">
+      <div class="realm-number">7</div>
+      <div class="realm-info">
+        <div class="realm-title">Teste de Equivalência (TOST)</div>
+        <div class="realm-setting">🌈 Ponte de Bifrost</div>
+        <div class="realm-topics">SESOI · TOST (Two One-Sided Tests) · IC 90% · Pareado vs Independente · 4 Quadrantes NHST×TOST</div>
+      </div>
+      <div><span class="realm-badge badge-aprendiz">7 + 2🏴</span></div>
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="hub-footer">
+    <div class="footer-credit">Criado por Dr. Leonardo Vils</div>
+    <p>Baseado no e-book "O Maravilhoso Livro de Receitas Estatísticas de Odin Dinho"</p>
+    <p style="margin-top:6px">🛡️ = desafios Aprendiz &nbsp;|&nbsp; 🏴 = desafios extras Mestre</p>
+    <p style="margin-top:12px"><a href="https://github.com" target="_blank">GitHub</a> · Licença MIT · 2026</p>
+  </div>
+
+</div>
+</body>
+</html>
