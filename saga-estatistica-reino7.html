@@ -74,6 +74,47 @@ body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',curs
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}.equiv-zone{flex-wrap:wrap}.ez-segment{min-width:50px;font-size:.75em}}
+
+/* ── ARMOR SYSTEM ── */
+.armor-panel{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.viking-mini{position:relative;width:120px;height:180px;flex-shrink:0}
+.vm-head{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:#d4a574;border:1.5px solid #b8956a;z-index:5}
+.vm-torso{position:absolute;top:56px;left:50%;transform:translateX(-50%);width:44px;height:58px;background:#8b7355;border-radius:7px 7px 4px 4px;z-index:3}
+.vm-arm-l{position:absolute;top:59px;left:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-arm-r{position:absolute;top:59px;right:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-leg-l{position:absolute;top:111px;left:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-leg-r{position:absolute;top:111px;right:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-slot{position:absolute;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);transform:scale(.3)}
+.vm-slot.on{opacity:1;transform:scale(1)}
+.vm-helm{top:16px;left:50%;transform:translateX(-50%) scale(.3);z-index:8}.vm-helm.on{transform:translateX(-50%) scale(1)}
+.vm-mail{top:57px;left:50%;transform:translateX(-50%) scale(.3);z-index:4}.vm-mail.on{transform:translateX(-50%) scale(1)}
+.vm-cape{top:53px;left:50%;transform:translateX(-50%) scale(.3);z-index:1}.vm-cape.on{transform:translateX(-50%) scale(1)}
+.vm-left{top:66px;left:0;z-index:7}.vm-right{top:56px;right:0;z-index:7}
+.vm-boots{bottom:4px;left:50%;transform:translateX(-50%) scale(.3);z-index:7;display:flex;gap:10px}.vm-boots.on{transform:translateX(-50%) scale(1)}
+.gear-progress{flex:1;display:flex;flex-direction:column;gap:4px}
+.gp-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:.8em;color:var(--text-dim);transition:all .3s}
+.gp-row.earned{color:var(--success);font-weight:bold}
+.gp-row .gp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .3s;flex-shrink:0}
+.gp-row.earned .gp-dot{background:var(--success);border-color:var(--success)}
+.vm-sparks{position:absolute;pointer-events:none;z-index:20}
+.vm-spark{position:absolute;border-radius:50%;animation:vmSp .6s ease-out forwards}
+@keyframes vmSp{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+.vm-flash{animation:vmFl .4s ease}
+@keyframes vmFl{0%{filter:brightness(1)}30%{filter:brightness(1.8) drop-shadow(0 0 12px rgba(240,180,40,.6))}100%{filter:brightness(1)}}
+.result-viking{position:relative;width:160px;height:240px;margin:16px auto}
+.rv-head{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#d4a574;border:2px solid #b8956a;z-index:5}
+.rv-torso{position:absolute;top:73px;left:50%;transform:translateX(-50%);width:56px;height:74px;background:#8b7355;border-radius:9px 9px 5px 5px;z-index:3}
+.rv-arm-l{position:absolute;top:77px;left:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-arm-r{position:absolute;top:77px;right:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-leg-l{position:absolute;top:144px;left:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-leg-r{position:absolute;top:144px;right:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-slot{position:absolute}
+.rv-helm{top:20px;left:50%;transform:translateX(-50%);z-index:8}
+.rv-mail{top:74px;left:50%;transform:translateX(-50%);z-index:4}
+.rv-cape{top:69px;left:50%;transform:translateX(-50%);z-index:1}
+.rv-left{top:86px;left:4px;z-index:7}.rv-right{top:72px;right:4px;z-index:7}
+.rv-boots{bottom:4px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:14px}
+@media(max-width:600px){.armor-panel{flex-direction:column;align-items:center}.viking-mini{width:100px;height:160px}}
 </style>
 </head>
 <body>
@@ -522,6 +563,52 @@ function showResults(){
     </div>
   </div>`;
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+var GEAR_ITEMS=[{"s":"boots","n":"Sandália de Bifrost","h":"<div style=\"display:flex;gap:14px\"><div style=\"width:24px;height:18px;background:#4a3880;border-radius:3px 3px 4px 7px;border:2px solid #6050a0\"></div><div style=\"width:24px;height:18px;background:#4a3880;border-radius:3px 3px 4px 7px;border:2px solid #6050a0\"></div></div>"},{"s":"mail","n":"Túnica do Equilíbrio","h":"<div style=\"width:60px;height:72px;background:linear-gradient(180deg,#5848a0,#383070);border-radius:7px 7px 4px 4px;border:2px solid #484090\"></div>"},{"s":"right","n":"Prisma da Equivalência","h":"<div style=\"margin-top:8px;display:flex;flex-direction:column;align-items:center\"><div style=\"width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:22px solid #a080e0\"></div><div style=\"width:24px;height:3px;background:linear-gradient(to right,#e04040,#e0e040,#4040e0);margin-top:3px;border-radius:1px\"></div></div>"},{"s":"left","n":"Balança de Ouro","h":"<div style=\"width:36px;height:42px;position:relative\"><div style=\"position:absolute;top:3px;left:50%;transform:translateX(-50%);width:4px;height:26px;background:#d4a535\"></div><div style=\"position:absolute;top:3px;left:50%;transform:translateX(-50%);width:32px;height:3px;background:#f0c848;border-radius:2px\"></div><div style=\"position:absolute;top:6px;left:0;width:12px;height:8px;border:2px solid #d4a535;border-radius:0 0 6px 6px\"></div><div style=\"position:absolute;top:6px;right:0;width:12px;height:8px;border:2px solid #d4a535;border-radius:0 0 6px 6px\"></div><div style=\"position:absolute;top:0;left:50%;transform:translateX(-50%);width:7px;height:7px;background:#f0d060;border-radius:50%\"></div></div>"},{"s":"cape","n":"Capa Arco-Íris","h":"<div style=\"width:84px;height:110px;background:linear-gradient(180deg,#e04040,#e08040,#e0c040,#40a040,#4060c0,#7040a0);border-radius:5px 5px 28px 28px;clip-path:polygon(16% 0%,84% 0%,100% 18%,92% 100%,50% 88%,8% 100%,0% 18%);opacity:0.85\"></div>"},{"s":"helm","n":"Coroa de Bifrost","h":"<div style=\"width:52px;height:24px;background:linear-gradient(90deg,#e04040,#e0a040,#40c040,#4080e0,#8040c0);border-radius:26px 26px 5px 5px;border:2px solid #a080c0;position:relative\"><div style=\"position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:9px;height:14px;background:linear-gradient(180deg,#f0e0ff,#c0a0e0);border-radius:3px 3px 2px 2px\"></div></div>"}];
+var gearEarned=0;
+function armorPanelHTML(){
+  var rows='';
+  for(var i=0;i<GEAR_ITEMS.length;i++){rows+='<div class="gp-row'+(i<gearEarned?' earned':'')+'" id="gprow'+i+'"><span class="gp-dot"></span><span>'+GEAR_ITEMS[i].n+'</span></div>';}
+  var sl='<div class="vm-sparks" id="vmsparks"></div>';
+  sl+='<div class="vm-slot vm-cape" id="vmslot-cape"></div>';
+  sl+='<div class="vm-head"></div><div class="vm-arm-l"></div><div class="vm-arm-r"></div><div class="vm-torso"></div><div class="vm-leg-l"></div><div class="vm-leg-r"></div>';
+  sl+='<div class="vm-slot vm-boots" id="vmslot-boots"></div><div class="vm-slot vm-mail" id="vmslot-mail"></div>';
+  sl+='<div class="vm-slot vm-left" id="vmslot-left"></div><div class="vm-slot vm-right" id="vmslot-right"></div>';
+  sl+='<div class="vm-slot vm-helm" id="vmslot-helm"></div>';
+  return '<div class="armor-panel"><div class="viking-mini" id="vmini">'+sl+'</div><div class="gear-progress">'+rows+'</div></div>';
+}
+function restoreGear(){for(var i=0;i<gearEarned&&i<GEAR_ITEMS.length;i++){var g=GEAR_ITEMS[i],el=document.getElementById('vmslot-'+g.s);if(el){el.innerHTML=g.h;el.classList.add('on');}}}
+function earnGear(){
+  if(gearEarned>=GEAR_ITEMS.length)return;
+  var g=GEAR_ITEMS[gearEarned],el=document.getElementById('vmslot-'+g.s);
+  if(el){el.innerHTML=g.h;el.classList.add('on','vm-flash');setTimeout(function(){el.classList.remove('vm-flash')},500);spawnVMSparks(el);}
+  var row=document.getElementById('gprow'+gearEarned);if(row)row.classList.add('earned');
+  gearEarned++;
+}
+function spawnVMSparks(el){
+  var sc=document.getElementById('vmsparks');if(!sc||!el)return;
+  var r=el.getBoundingClientRect(),sr=document.getElementById('vmini').getBoundingClientRect();
+  var cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+  var cols=['#f0c040','#f08030','#f0e080','#ff6040','#ffd060'];
+  for(var i=0;i<10;i++){var s=document.createElement('div');s.className='vm-spark';
+    var a=Math.random()*Math.PI*2,d=20+Math.random()*30;
+    s.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+cols[Math.floor(Math.random()*5)]+';--sx:'+(Math.cos(a)*d)+'px;--sy:'+(Math.sin(a)*d)+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px';
+    sc.appendChild(s);setTimeout(function(x){x.remove()},700,s);}
+}
+function resultVikingHTML(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var ti=[];if(pct>=90)ti=GEAR_ITEMS;else if(pct>=70)ti=GEAR_ITEMS.slice(0,5);else if(pct>=50)ti=GEAR_ITEMS.slice(0,2);
+  var sm={boots:'rv-boots',mail:'rv-mail',right:'rv-right',left:'rv-left',cape:'rv-cape',helm:'rv-helm'};
+  var html='<div class="result-viking">';
+  html+='<div class="rv-slot rv-cape" id="rvs-cape"></div>';
+  html+='<div class="rv-head"></div><div class="rv-arm-l"></div><div class="rv-arm-r"></div><div class="rv-torso"></div><div class="rv-leg-l"></div><div class="rv-leg-r"></div>';
+  html+='<div class="rv-slot rv-boots" id="rvs-boots"></div><div class="rv-slot rv-mail" id="rvs-mail"></div>';
+  html+='<div class="rv-slot rv-left" id="rvs-left"></div><div class="rv-slot rv-right" id="rvs-right"></div>';
+  html+='<div class="rv-slot rv-helm" id="rvs-helm"></div></div>';
+  setTimeout(function(){ti.forEach(function(g){var e=document.getElementById('rvs-'+g.s);if(e)e.innerHTML=g.h;});},100);
+  return html;
 }
 
 showTitleScreen();
