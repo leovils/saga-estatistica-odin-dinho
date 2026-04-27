@@ -929,7 +929,7 @@ function checkOutlierMean() {
   if (val === 6000) {
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('odin', '✅ Exato! (2.000 + 2.200 + 2.800 + 3.000 + 20.000) / 5 = <em>6.000</em>. Veja como um único outlier puxou a média de 2.500 para 6.000! <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -954,7 +954,7 @@ function checkMeasure(btn, answer) {
     btn.classList.add('correct');
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('muninn', '✅ Correto! A <em>mediana</em> é o valor central dos dados ordenados e não é afetada por valores extremos. Quando há outliers, ela é muito mais representativa que a média. <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -978,7 +978,7 @@ function checkMedian() {
   if (val === 2800) {
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('odin', '✅ Perfeito! Dados ordenados: 2.000, 2.200, <em>2.800</em>, 3.000, 20.000. Com N=5, a posição central é (5+1)/2 = 3ª. O 3º valor é 2.800. Enquanto a média foi para 6.000, a mediana ficou em 2.800 — muito mais representativa! <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -1003,7 +1003,7 @@ function checkDeviation(btn, answer) {
     btn.classList.add('correct');
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('odin', '✅ Excelente! A soma dos desvios em relação à média é <em>SEMPRE ZERO</em>. É uma propriedade matemática fundamental da média aritmética: (−500) + (−300) + 0 + 300 + 500 = 0. Por isso, para medir dispersão, usamos os desvios ao quadrado! <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -1028,7 +1028,7 @@ function checkDP(btn, answer) {
     btn.classList.add('correct');
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('muninn', '✅ Muito bem! O desvio padrão indica a <em>dispersão</em> dos dados. Com DP = 0,8, as notas da Taverna A são muito concentradas em torno de 7,2 (clientes consistentes). Na Taverna B (DP = 3,1), há enorme variação — alguns dão notas altíssimas e outros, muito baixas. A média sozinha não conta toda a história! <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -1053,7 +1053,7 @@ function checkNormal(btn, answer) {
     btn.classList.add('correct');
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('odin', '✅ Perfeito! 95% dos dados ficam entre μ ± 2σ. Com média 170 e DP 10: 170 − 20 = <em>150</em> e 170 + 20 = <em>190</em>. A regra 68-95-99,7 é uma das ferramentas mais poderosas da estatística! <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -1078,7 +1078,7 @@ function checkCV(btn, answer) {
     btn.classList.add('correct');
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('odin', '✅ Correto! CV do Alfa = 12/80 × 100 = <em>15%</em>. CV do Beta = 10/50 × 100 = <em>20%</em>. Apesar do Grupo Alfa ter DP absoluto maior (12 > 10), proporcionalmente o Grupo Beta é mais disperso. O CV permite comparações justas entre grupos com médias diferentes! <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
