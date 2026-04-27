@@ -128,7 +128,7 @@ function dialogue(c,t){
 function hintBox(t){return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${t}</div>`;}
 function xpBar(){
   const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
-  return `<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+  return armorPanelHTML()+`<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
 }
 function updateXPBar(){
   const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
@@ -150,7 +150,7 @@ function showTitleScreen(){
 }
 
 function startGame(d){
-  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;gearEarned=0;
   buildScenes();GAME.maxXP=countMaxXP();renderScene();
 }
 
@@ -499,7 +499,7 @@ function checkQ(q,btn,ans){
   const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
   GAME.total++;
   if(ans===cor){
-    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();earnGear();
     fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
   }else{
     btn.classList.add('wrong');
@@ -509,7 +509,7 @@ function checkQ(q,btn,ans){
 }
 
 function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
-function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();window.scrollTo({top:0,behavior:'smooth'});}}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();restoreGear();window.scrollTo({top:0,behavior:'smooth'});}}
 function nextScene(){GAME.currentScene++;renderScene();}
 
 function showResults(){
@@ -523,6 +523,7 @@ function showResults(){
   <div class="result-screen">
     <div class="reino-badge">REINO 5 — COMPLETO</div>
     <h2>Resultado da Aventura</h2>
+    ${resultVikingHTML()}
     <div class="result-rank" style="color:${rc}">${rank}</div>
     <div class="result-stats">
       <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'🛡️ Aprendiz'}</span></div>

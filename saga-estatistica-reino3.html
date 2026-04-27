@@ -275,7 +275,7 @@ function hintBox(text) {
 // ── XP ──
 function xpBar() {
   const pct = GAME.maxXP > 0 ? Math.round((GAME.xp / GAME.maxXP) * 100) : 0;
-  return `<div class="xp-bar-container">
+  return armorPanelHTML()+`<div class="xp-bar-container">
     <div class="xp-label">⚡ XP</div>
     <div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
     <div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div>
@@ -316,6 +316,7 @@ function showTitleScreen() {
 function startGame(diff) {
   GAME.difficulty = diff;
   GAME.xp = 0; GAME.hits = 0; GAME.total = 0; GAME.currentScene = 0;
+  gearEarned = 0;
   buildScenes();
   GAME.maxXP = countMaxXP();
   renderScene();
@@ -700,7 +701,7 @@ function checkQ(qNum, btn, answer) {
     btn.classList.add('correct');
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue(exp.charC, exp.correct + ' <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -728,6 +729,7 @@ function countMaxXP() {
 function renderScene() {
   if (GAME.currentScene < GAME.scenes.length) {
     content().innerHTML = GAME.scenes[GAME.currentScene].html();
+    restoreGear();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
@@ -746,6 +748,7 @@ function showResults() {
     <div class="result-screen">
       <div class="reino-badge">REINO 3 — COMPLETO</div>
       <h2>Resultado da Aventura</h2>
+      ${resultVikingHTML()}
       <div class="result-rank" style="color:${rankColor}">${rank}</div>
       <div class="result-stats">
         <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty === 'mestre' ? '⚔️ Mestre' : '🛡️ Aprendiz'}</span></div>

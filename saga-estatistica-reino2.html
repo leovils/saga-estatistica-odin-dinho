@@ -486,7 +486,7 @@ function hintBox(text) {
 // ── XP BAR ──
 function xpBar() {
   const pct = GAME.maxXP > 0 ? Math.round((GAME.xp / GAME.maxXP) * 100) : 0;
-  return `<div class="xp-bar-container">
+  return armorPanelHTML()+`<div class="xp-bar-container">
     <div class="xp-label">⚡ XP</div>
     <div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
     <div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div>
@@ -531,6 +531,7 @@ function startGame(diff) {
   GAME.hits = 0;
   GAME.total = 0;
   GAME.currentScene = 0;
+  gearEarned = 0;
   buildScenes();
   GAME.maxXP = countMaxXP();
   renderScene();
@@ -883,6 +884,7 @@ function renderScene() {
   if (GAME.currentScene < GAME.scenes.length) {
     const scene = GAME.scenes[GAME.currentScene];
     content().innerHTML = scene.html();
+    restoreGear();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
@@ -903,7 +905,7 @@ function checkMean() {
   if (val === 2500) {
     GAME.hits++;
     GAME.xp += 20;
-    updateXPBar();
+    updateXPBar();earnGear();
     fb.innerHTML = `<div class="feedback-box correct">
       ${dialogue('odin', '✅ Perfeito! (2.000 + 2.200 + 2.500 + 2.800 + 3.000) / 5 = <em>2.500</em>. A média é a soma dividida por N. <span class="xp-badge">+20 XP</span>')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
@@ -1106,6 +1108,7 @@ function showResults() {
     <div class="result-screen">
       <div class="reino-badge">REINO 2 — COMPLETO</div>
       <h2>Resultado da Aventura</h2>
+      ${resultVikingHTML()}
       <div class="result-rank" style="color:${rankColor}">${rank}</div>
 
       <div class="result-stats">
