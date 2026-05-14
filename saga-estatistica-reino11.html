@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 11: ANCOVA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+/* ── VISUAL: Variance Partition ── */
+.variance-visual{display:flex;align-items:center;justify-content:center;gap:4px;margin:16px 0;flex-wrap:wrap}
+.var-segment{padding:12px 10px;text-align:center;font-family:'Courier New',monospace;font-size:.85em;min-width:80px;border-radius:6px}
+.var-total{background:#1a2040;color:var(--gold);border:2px solid var(--gold)}
+.var-model{background:#0d2818;color:var(--success);border:2px solid var(--success)}
+.var-resid{background:#2d1116;color:var(--thor-red);border:2px solid var(--thor-red)}
+.var-covar{background:#1a1530;color:var(--corvo-purple);border:2px solid var(--corvo-purple)}
+.var-eq{font-family:'Bangers',cursive;color:var(--text);font-size:1.2em;padding:0 4px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}.variance-visual{flex-wrap:wrap}.var-segment{min-width:60px;font-size:.75em}}
+
+/* ── ARMOR SYSTEM ── */
+.armor-panel{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.viking-mini{position:relative;width:120px;height:180px;flex-shrink:0}
+.vm-head{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:#d4a574;border:1.5px solid #b8956a;z-index:5}
+.vm-torso{position:absolute;top:56px;left:50%;transform:translateX(-50%);width:44px;height:58px;background:#8b7355;border-radius:7px 7px 4px 4px;z-index:3}
+.vm-arm-l{position:absolute;top:59px;left:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-arm-r{position:absolute;top:59px;right:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-leg-l{position:absolute;top:111px;left:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-leg-r{position:absolute;top:111px;right:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-slot{position:absolute;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);transform:scale(.3)}
+.vm-slot.on{opacity:1;transform:scale(1)}
+.vm-helm{top:16px;left:50%;transform:translateX(-50%) scale(.3);z-index:8}.vm-helm.on{transform:translateX(-50%) scale(1)}
+.vm-mail{top:57px;left:50%;transform:translateX(-50%) scale(.3);z-index:4}.vm-mail.on{transform:translateX(-50%) scale(1)}
+.vm-cape{top:53px;left:50%;transform:translateX(-50%) scale(.3);z-index:1}.vm-cape.on{transform:translateX(-50%) scale(1)}
+.vm-left{top:66px;left:0;z-index:7}.vm-right{top:56px;right:0;z-index:7}
+.vm-boots{bottom:4px;left:50%;transform:translateX(-50%) scale(.3);z-index:7;display:flex;gap:10px}.vm-boots.on{transform:translateX(-50%) scale(1)}
+.gear-progress{flex:1;display:flex;flex-direction:column;gap:4px}
+.gp-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:.8em;color:var(--text-dim);transition:all .3s}
+.gp-row.earned{color:var(--success);font-weight:bold}
+.gp-row .gp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .3s;flex-shrink:0}
+.gp-row.earned .gp-dot{background:var(--success);border-color:var(--success)}
+.vm-sparks{position:absolute;pointer-events:none;z-index:20}
+.vm-spark{position:absolute;border-radius:50%;animation:vmSp .6s ease-out forwards}
+@keyframes vmSp{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+.vm-flash{animation:vmFl .4s ease}
+@keyframes vmFl{0%{filter:brightness(1)}30%{filter:brightness(1.8) drop-shadow(0 0 12px rgba(240,180,40,.6))}100%{filter:brightness(1)}}
+.result-viking{position:relative;width:160px;height:240px;margin:16px auto}
+.rv-head{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#d4a574;border:2px solid #b8956a;z-index:5}
+.rv-torso{position:absolute;top:73px;left:50%;transform:translateX(-50%);width:56px;height:74px;background:#8b7355;border-radius:9px 9px 5px 5px;z-index:3}
+.rv-arm-l{position:absolute;top:77px;left:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-arm-r{position:absolute;top:77px;right:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-leg-l{position:absolute;top:144px;left:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-leg-r{position:absolute;top:144px;right:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-slot{position:absolute}
+.rv-helm{top:20px;left:50%;transform:translateX(-50%);z-index:8}
+.rv-mail{top:74px;left:50%;transform:translateX(-50%);z-index:4}
+.rv-cape{top:69px;left:50%;transform:translateX(-50%);z-index:1}
+.rv-left{top:86px;left:4px;z-index:7}.rv-right{top:72px;right:4px;z-index:7}
+.rv-boots{bottom:4px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:14px}
+@media(max-width:600px){.armor-panel{flex-direction:column;align-items:center}.viking-mini{width:100px;height:160px}}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 11
+// ANCOVA (Análise de Covariância)
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho 🧙‍♂️',thor:'ThorMento ⚡',muninn:'Muninn 🐦‍⬛',huginn:'Huginn 🐦',narrator:'📜 Narrador'};
+  return `<div class="dialogue-box ${cls[c]||'narrator'}"><div class="char-name ${cls[c]||'narrator'}">${nm[c]||c}</div><div class="dialogue-text">${t}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return armorPanelHTML()+`<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 11</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Reino da ANCOVA</h2>
+    <p class="subtitle">Na Biblioteca dos Sábios, onde pergaminhos milenares guardam segredos da purificação estatística, Odin Dinho ensina a arte de controlar confundidores e isolar o efeito verdadeiro.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">🛡️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;gearEarned=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: A Biblioteca dos Sábios ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','As portas de carvalho da <em>Biblioteca dos Sábios de Asgard</em> se abrem com um rangido reverente. Estantes imensas alcançam o teto abobadado, repletas de pergaminhos milenares cobertos de runas. O ar cheira a tinta antiga e cera de vela. Aqui, os maiores segredos da purificação estatística aguardam quem tem coragem de desvendá-los.')}
+      ${dialogue('odin','A <em>ANCOVA (Análise de Covariância)</em> é como uma ANOVA turbinada. Além de comparar grupos, ela CONTROLA variáveis contínuas que podem confundir o resultado — as <em>covariáveis</em>.')}
+      ${dialogue('odin','Estrutura: 1 Variável Dependente (contínua) + 1 ou mais Variáveis Independentes (categóricas/fatores) + 1 ou mais Covariáveis (contínuas). A covariável afeta a VD mas <em>NÃO</em> faz parte da manipulação experimental.')}
+      ${dialogue('muninn','Exemplo: comparar 3 métodos de treinamento de guerreiros (VI) na força final (VD), controlando pela <em>experiência prévia</em> (covariável). A ANCOVA "limpa" o efeito da experiência antes de comparar os métodos.')}
+      <button class="continue-btn" onclick="nextScene()">Entrar na Biblioteca →</button>
+    </div>`});
+
+  // ━━ CENA 2: O Efeito Purificador ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('odin','A ANCOVA reduz a <em>variância do erro (SSR)</em> dentro dos grupos ao eliminar a parte explicada pela covariável. Ao purificar o ruído, o efeito do modelo (SSM) brilha mais forte.')}
+      <div class="variance-visual">
+        <div class="var-segment var-total">SST<br><small>Total</small></div>
+        <div class="var-eq">=</div>
+        <div class="var-segment var-model">SSM<br><small>Modelo</small></div>
+        <div class="var-eq">+</div>
+        <div class="var-segment var-covar">SS<sub>cov</sub><br><small>Covariável</small></div>
+        <div class="var-eq">+</div>
+        <div class="var-segment var-resid">SSR<br><small>Erro purificado</small></div>
+      </div>
+      ${dialogue('odin','Pense num gráfico de pizza: SST se divide em SSM (modelo), variância da covariável e SSR (erro purificado). O SSR fica <em>menor</em> → o teste F fica mais poderoso.')}
+      ${dialogue('huginn','Será que sua covariável não está mascarando o próprio efeito do tratamento? A covariável deve compartilhar variância com a VD, mas idealmente <em>NÃO</em> deve ser correlacionada com a VI.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: DESAFIO 1 — O que a ANCOVA faz ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('ANCOVA = ANOVA + controle de covariável contínua. Reduz SSR ao explicar parte do ruído.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: O Propósito da Purificação</div>
+        <div class="challenge-question">Qual é o objetivo principal da ANCOVA?</div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">Testar múltiplas variáveis dependentes ao mesmo tempo</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Substituir o teste t quando os dados não são normais</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">Controlar variáveis contínuas (covariáveis) que confundem a relação entre VI e VD, reduzindo o erro residual e aumentando o poder do teste F</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Eliminar outliers dos dados automaticamente</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 4: Pressupostos da ANCOVA ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Pressupostos da ANCOVA: 1) <em>Independência</em>, 2) <em>Normalidade dos resíduos</em> (Shapiro-Wilk), 3) <em>Homogeneidade das variâncias</em> (Levene/Breusch-Pagan), 4) <em>Homogeneidade dos parâmetros de regressão</em> (regression slopes).')}
+      ${dialogue('odin','O 4º pressuposto é <em>EXCLUSIVO da ANCOVA</em>: a relação entre a covariável e a VD deve ser a mesma para todos os grupos. As retas de regressão devem ser <em>paralelas</em>!')}
+      ${dialogue('muninn','No software, verifique a interação entre o Fator e a Covariável. Se a interação for significativa (p < 0,05), o pressuposto foi violado. Pare de cozinhar!')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 5: DESAFIO 2 — Homogeneidade dos Parâmetros ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Na interação Fator × Covariável, queremos p > 0,05 (retas paralelas). p < 0,05 = retas não paralelas = violação.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: Retas Paralelas ou Cruzadas?</div>
+        <div class="challenge-question">Para verificar a homogeneidade dos parâmetros na ANCOVA, você testa a interação Fator × Covariável e obtém p = 0,03. O que fazer?</div>
+        <div class="data-display">
+          Interação Fator × Covariável: p = 0,03
+        </div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">O pressuposto foi VIOLADO (p < 0,05). As retas de regressão não são paralelas — a relação covariável-VD difere entre os grupos. A ANCOVA padrão não é apropriada.</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">Perfeito, p < 0,05 confirma que o pressuposto está atendido</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">Ignore e rode a ANCOVA normalmente — esse pressuposto é secundário</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">Transforme os dados com logaritmo e tente novamente</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: Pressupostos Gerais (resíduos) ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Os pressupostos de independência, normalidade e homocedasticidade são avaliados nos <em>RESÍDUOS</em>, não nas variáveis em si. O Teorema de Gauss-Markov abençoa as estimativas pontuais; mas Testes F e Intervalos de Confiança exigem que os resíduos se comportem.')}
+      ${dialogue('thor','Pra que perder tempo checando resíduos em gráficos chatos? É só apertar "Rodar" no software e olhar o p-valor!')}
+      ${dialogue('odin','Inaceitável! Modelos lineares não são mágicas cegas. Sem verificar os resíduos, você serve ilusões, não estatística.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 7: DESAFIO 3 — Pressupostos nos Resíduos ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('GLM avalia pressupostos nos RESÍDUOS. Não nas variáveis originais.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: Onde Mora a Verdade?</div>
+        <div class="challenge-question">Os pressupostos de normalidade e homocedasticidade na ANCOVA são avaliados:</div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">Na variável dependente diretamente</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">Nos resíduos do modelo — não nas variáveis brutas. Os resíduos devem seguir distribuição normal e ter variância constante.</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">Na covariável isoladamente</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">Em todos os grupos separadamente antes de rodar o modelo</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 8: Quando Usar ANCOVA ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Use ANCOVA quando: 1) Há uma <em>covariável contínua</em> que influencia a VD, 2) Você quer "limpar" o efeito dessa covariável, 3) Não pode randomizar completamente.')}
+      ${dialogue('odin','<em>NÃO</em> use como desculpa para jogar tudo no modelo. Cada covariável custa graus de liberdade.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 9: DESAFIO 4 — Quando Usar ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Peso inicial é uma variável contínua que confunde a VD. ANCOVA é perfeita para isso.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: A Dieta dos Guerreiros</div>
+        <div class="challenge-question">Um pesquisador de Midgard compara 3 dietas (VI) no peso final dos guerreiros (VD). Os participantes começaram com pesos iniciais diferentes. O que ele deveria fazer?</div>
+        <div class="data-display">
+          VI = 3 dietas &nbsp;|&nbsp; VD = peso final<br>
+          Problema: pesos iniciais diferentes entre participantes
+        </div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">Ignorar o peso inicial e rodar ANOVA simples</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">Usar MANOVA com peso inicial e final como VDs</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">Fazer teste t entre cada par de dietas</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">Usar ANCOVA com peso inicial como covariável — assim controla as diferenças de linha de base entre grupos</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 10: y = Xβ + ε ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','A ANCOVA é um caso do <em>Modelo Linear Geral (GLM)</em>: y = Xβ + ε. A VI categórica entra como <em>dummy variable</em>, e a covariável entra como preditor contínuo no mesmo modelo.')}
+      ${dialogue('muninn','É como ler um pergaminho com duas camadas de escrita: uma camada são os fatores categóricos (dummies), a outra é a covariável contínua. Juntas, purificam a mensagem final.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 11: DESAFIO 5 — Conexão com GLM ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('ANCOVA = GLM com preditores categóricos (dummies) + contínuos (covariável).'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: O Pergaminho do GLM</div>
+        <div class="challenge-question">Na ANCOVA, a equação do modelo inclui:</div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">Variável dependente = efeito dos fatores (VI categórica como dummies) + efeito da covariável (contínua) + erro residual. É um modelo linear geral com preditores mistos.</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">Apenas variáveis categóricas como preditores</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">Apenas variáveis contínuas como preditores</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">A covariável substitui a variável dependente no modelo</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 12: DESAFIO 6 — Interpretação ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Se o efeito some quando controlamos a covariável, ele era confundido por ela.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: O Efeito Fantasma</div>
+        <div class="challenge-question">Após rodar a ANCOVA, o efeito do Fator (3 grupos) foi F(2, 56) = 0,89, p = ,42, mas ANTES de controlar a covariável (ANOVA simples), era F(2, 57) = 5,20, p = ,008. O que aconteceu?</div>
+        <div class="data-display">
+          ANOVA simples: F(2, 57) = 5,20, p = ,008 ✓<br>
+          ANCOVA: F(2, 56) = 0,89, p = ,42 ✗
+        </div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">A ANCOVA está errada — volte para a ANOVA simples</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">A covariável destruiu o efeito real do tratamento</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">A covariável explicava a diferença aparente entre os grupos. Ao purificar seu efeito, a diferença desapareceu — o "efeito" era espúrio, causado pela covariável.</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">Sempre use a ANOVA simples para evitar esse problema</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 13: DESAFIO 7 — Aplicação Prática ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Covariável = variável que confunde, não a manipulação principal.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: O Impostor na Biblioteca</div>
+        <div class="challenge-question">Qual das seguintes NÃO é uma covariável adequada para uma ANCOVA?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">Idade dos participantes</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">A própria variável independente (o fator manipulado) — a covariável deve ser uma variável de confusão, não a manipulação experimental em si</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">Score do pré-teste</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">QI dos participantes</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: ANCOVA com Randomização
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: Randomização e Covariável</div>
+          <div class="challenge-question">Um pesquisador usou a nota do pré-teste como covariável na ANCOVA. Mas no delineamento, os grupos JÁ foram randomizados. Faz sentido usar ANCOVA mesmo com randomização?</div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">Não — a randomização elimina a necessidade de qualquer covariável</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">Sim, mas apenas quando os grupos são muito pequenos</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">Sim — mesmo com randomização, a ANCOVA com pré-teste como covariável AUMENTA o poder estatístico ao reduzir a variância do erro, mesmo que a covariável não seja um confundidor</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">A randomização torna a ANCOVA estatisticamente inválida</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+
+    // DESAFIO 9: Dupla Violação
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: A Dupla Violação</div>
+          <div class="challenge-question">Dois pressupostos da ANCOVA foram violados: a homogeneidade das variâncias (Levene p = ,02) e a homogeneidade dos parâmetros de regressão (interação Fator×Covariável p = ,04). O que é mais grave?</div>
+          <div class="data-display">
+            Levene: p = ,02 (variâncias heterogêneas)<br>
+            Interação Fator×Covariável: p = ,04 (slopes não paralelos)
+          </div>
+          <div class="options-grid" id="q9-opts">
+            <button class="option-btn" onclick="checkQ(9,this,'a')">Ambas são igualmente graves — invalide tudo</button>
+            <button class="option-btn" onclick="checkQ(9,this,'b')">A violação do Levene é mais grave</button>
+            <button class="option-btn" onclick="checkQ(9,this,'c')">Nenhuma importa com N grande</button>
+            <button class="option-btn" onclick="checkQ(9,this,'d')">A violação da homogeneidade dos parâmetros é mais grave — significa que a covariável afeta a VD de forma DIFERENTE em cada grupo, invalidando a lógica central da ANCOVA. A violação do Levene é menos crítica com grupos de tamanho similar.</button>
+          </div>
+          <div id="q9-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','Os pergaminhos da Biblioteca se fecham suavemente. O pó dourado das runas flutua no ar enquanto as velas crepitam em aprovação. O conhecimento da purificação estatística foi absorvido.')}
+      ${dialogue('odin','Você conquistou o <em>Reino da ANCOVA</em>! Dominou a arte de controlar covariáveis, verificar a homogeneidade dos parâmetros, avaliar resíduos e interpretar a purificação do efeito. Poucos sábios alcançam essa clareza.')}
+      ${dialogue('thor','Tá bom, admito... checar os resíduos valeu a pena. Sem isso, eu teria servido ilusões estatísticas como se fossem verdades.')}
+      ${dialogue('muninn','Nos próximos Reinos, a Biblioteca revela técnicas ainda mais poderosas: MANOVA e MANCOVA — quando múltiplas variáveis dependentes entram na dança. Prepare-se!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final 📜</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+const ANSWERS={1:'c',2:'a',3:'b',4:'d',5:'a',6:'c',7:'b',8:'c',9:'d'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! A ANCOVA <em>controla variáveis contínuas (covariáveis)</em> que confundem a relação entre VI e VD. Ao "limpar" a variância explicada pela covariável, o SSR diminui e o teste F ganha poder. É uma ANOVA com purificação embutida.',
+    wrong:'❌ A ANCOVA não testa múltiplas VDs (isso é MANOVA), não substitui o teste t, e não elimina outliers. Seu objetivo é <em>controlar covariáveis contínuas</em> que confundem o resultado, reduzindo o erro residual e aumentando o poder do teste F.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Correto! p = 0,03 < 0,05 → a interação Fator × Covariável é significativa → as <em>retas de regressão NÃO são paralelas</em>. A relação entre a covariável e a VD difere entre os grupos. A ANCOVA padrão não é apropriada nesse cenário.',
+    wrong:'❌ Na interação Fator × Covariável, queremos p > 0,05 (retas paralelas). p = 0,03 < 0,05 significa que as retas <em>não</em> são paralelas — o pressuposto exclusivo da ANCOVA foi violado. Não ignore nem transforme cegamente.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Exato! Os pressupostos de normalidade e homocedasticidade são avaliados nos <em>resíduos do modelo</em>, não nas variáveis brutas. Os resíduos devem seguir distribuição normal e ter variância constante. Gauss-Markov protege as estimativas pontuais; os testes F exigem resíduos bem-comportados.',
+    wrong:'❌ Não avaliamos pressupostos nas variáveis originais nem na covariável isolada. O GLM avalia normalidade e homocedasticidade nos <em>resíduos do modelo</em> — é a diferença entre o observado e o predito que precisa se comportar.',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Perfeito! O peso inicial é uma <em>variável contínua que confunde a VD</em>. A ANCOVA com peso inicial como covariável "limpa" essas diferenças de linha de base antes de comparar as dietas. É exatamente para isso que ela existe.',
+    wrong:'❌ Ignorar o peso inicial contamina a comparação. MANOVA é para múltiplas VDs. Teste t não compara 3 grupos. A solução correta é <em>ANCOVA com peso inicial como covariável</em>, controlando as diferenças de linha de base.',
+    charC:'odin',charW:'thor'
+  },
+  5:{
+    correct:'✅ Brilhante! A ANCOVA é um GLM com <em>preditores mistos</em>: a VI categórica entra como dummies e a covariável entra como preditor contínuo. VD = efeito dos fatores + efeito da covariável + erro. Duas camadas de escrita no mesmo pergaminho.',
+    wrong:'❌ A ANCOVA NÃO usa apenas preditores categóricos (isso seria ANOVA) nem apenas contínuos (regressão pura). Ela combina <em>ambos</em>: dummies para o fator + covariável contínua. E a covariável nunca substitui a VD.',
+    charC:'muninn',charW:'thor'
+  },
+  6:{
+    correct:'✅ Excelente leitura! A <em>covariável explicava a diferença aparente</em> entre os grupos. Sem controlar, parecia haver efeito (p = ,008). Ao purificar, a diferença desapareceu (p = ,42) — era um efeito espúrio, confundido pela covariável. A ANCOVA revelou a verdade.',
+    wrong:'❌ A ANCOVA não está errada nem "destruiu" o efeito. O que aconteceu é que a <em>covariável explicava a diferença aparente</em>. Ao controlá-la, o efeito sumiu — provando que era espúrio. A ANCOVA purificou a ilusão.',
+    charC:'huginn',charW:'thor'
+  },
+  7:{
+    correct:'✅ Correto! A <em>variável independente (fator manipulado) NUNCA</em> é uma covariável adequada. A covariável deve ser uma variável de confusão externa — algo que afeta a VD mas não é a manipulação principal. Idade, pré-teste e QI são covariáveis legítimas.',
+    wrong:'❌ Idade, score do pré-teste e QI são covariáveis perfeitamente válidas — são variáveis contínuas que podem confundir o resultado. O que <em>NÃO</em> pode ser covariável é a própria VI (o fator manipulado). Covariável ≠ manipulação experimental.',
+    charC:'odin',charW:'thor'
+  },
+  8:{
+    correct:'✅ Correto! Mesmo com <em>randomização perfeita</em>, a ANCOVA com pré-teste como covariável <em>AUMENTA o poder estatístico</em>. A covariável reduz a variância do erro (SSR), tornando o teste F mais sensível. Não é só para corrigir confundimento — é para ganhar precisão.',
+    wrong:'❌ A randomização elimina confundimento sistemático, mas <em>NÃO</em> elimina variância residual. A ANCOVA com covariável relevante (como pré-teste) <em>aumenta o poder</em> ao reduzir SSR, mesmo em designs perfeitamente randomizados.',
+    charC:'odin',charW:'thor'
+  },
+  9:{
+    correct:'✅ Excelente! A violação da <em>homogeneidade dos parâmetros de regressão</em> é mais grave porque atinge a lógica central da ANCOVA: se a covariável afeta a VD de forma diferente em cada grupo, o "ajuste" da covariável é inválido. A violação do Levene é menos crítica com grupos balanceados.',
+    wrong:'❌ As violações não são iguais. A <em>homogeneidade dos parâmetros</em> (slopes paralelos) é o pressuposto mais crítico da ANCOVA — sem ele, a lógica do ajuste pela covariável colapsa. O Levene, embora importante, é menos destrutivo com grupos de tamanho similar.',
+    charC:'muninn',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  const opts=document.querySelectorAll(`#q${q}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();earnGear();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }else{
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();restoreGear();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='🏆 Sábio Supremo de Asgard';rc='#f0c040';}
+  else if(pct>=70){rank='📜 Guardião dos Pergaminhos';rc='#58a6ff';}
+  else if(pct>=50){rank='🛡️ Estudante da Biblioteca';rc='#8b949e';}
+  else{rank='⛓️ Aprendiz Perdido nos Livros';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 11 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    ${resultVikingHTML()}
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'🛡️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70
+      ?'A Biblioteca dos Sábios aplaude em silêncio! Você dominou a ANCOVA — controle de covariáveis, homogeneidade dos parâmetros, avaliação de resíduos, conexão com o GLM e interpretação da purificação. Os pergaminhos guardarão seu nome!'
+      :'Os pergaminhos se fecharam antes que você pudesse absorver todo o conhecimento... Volte à Biblioteca e revise: covariáveis, pressupostos exclusivos (slopes paralelos), resíduos e a lógica da purificação. A sabedoria aguarda!'
+    )}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">🔄 Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+var GEAR_ITEMS=[
+  {"s":"boots","n":"Sandálias do Sábio","h":"<div style=\"display:flex;gap:14px\"><div style=\"width:24px;height:18px;background:#8b7355;border-radius:3px 3px 4px 7px;border:2px solid #a08860\"></div><div style=\"width:24px;height:18px;background:#8b7355;border-radius:3px 3px 4px 7px;border:2px solid #a08860\"></div></div>"},
+  {"s":"mail","n":"Toga da Purificação","h":"<div style=\"width:60px;height:72px;background:linear-gradient(180deg,#f0e8d0,#d8c8a0);border-radius:7px 7px 4px 4px;border:2px solid #c0b080;position:relative\"><div style=\"position:absolute;top:30px;left:50%;transform:translateX(-50%);width:20px;height:20px;border:2px solid #4a8a4a;border-radius:50%;background:rgba(74,138,74,0.2)\"></div></div>"},
+  {"s":"right","n":"Lente da Covariável","h":"<div style=\"display:flex;flex-direction:column;align-items:center\"><div style=\"width:24px;height:24px;border:3px solid #c0a050;border-radius:50%;background:rgba(240,200,100,0.15)\"></div><div style=\"width:4px;height:20px;background:#8b6914;border-radius:2px;transform:rotate(-30deg);margin-top:-4px;margin-left:12px\"></div></div>"},
+  {"s":"left","n":"Pergaminho da Regressão","h":"<div style=\"width:34px;height:42px;background:#f0e0c0;border-radius:2px;border:2px solid #c0a870;position:relative;overflow:hidden\"><div style=\"position:absolute;top:12px;left:4px;width:26px;height:2px;background:#4a8a4a;transform:rotate(-20deg)\"></div><div style=\"position:absolute;top:12px;left:4px;width:26px;height:2px;background:#8a4a4a;transform:rotate(-25deg)\"></div></div>"},
+  {"s":"cape","n":"Manto do Controle","h":"<div style=\"width:84px;height:110px;background:linear-gradient(135deg,#2a6a2a,#1a4a1a);border-radius:5px 5px 28px 28px;clip-path:polygon(16% 0%,84% 0%,100% 18%,92% 100%,50% 88%,8% 100%,0% 18%)\"></div>"},
+  {"s":"helm","n":"Coroa da Sabedoria","h":"<div style=\"width:52px;height:24px;background:linear-gradient(135deg,#d4a535,#b08820);border-radius:26px 26px 5px 5px;border:2px solid #b08820;position:relative\"><div style=\"position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:20px;height:14px;border:3px solid #d4a535;border-bottom:none;border-radius:10px 10px 0 0\"></div></div>"}
+];
+var gearEarned=0;
+function armorPanelHTML(){
+  var rows='';
+  for(var i=0;i<GEAR_ITEMS.length;i++){rows+='<div class="gp-row'+(i<gearEarned?' earned':'')+'" id="gprow'+i+'"><span class="gp-dot"></span><span>'+GEAR_ITEMS[i].n+'</span></div>';}
+  var sl='<div class="vm-sparks" id="vmsparks"></div>';
+  sl+='<div class="vm-slot vm-cape" id="vmslot-cape"></div>';
+  sl+='<div class="vm-head"></div><div class="vm-arm-l"></div><div class="vm-arm-r"></div><div class="vm-torso"></div><div class="vm-leg-l"></div><div class="vm-leg-r"></div>';
+  sl+='<div class="vm-slot vm-boots" id="vmslot-boots"></div><div class="vm-slot vm-mail" id="vmslot-mail"></div>';
+  sl+='<div class="vm-slot vm-left" id="vmslot-left"></div><div class="vm-slot vm-right" id="vmslot-right"></div>';
+  sl+='<div class="vm-slot vm-helm" id="vmslot-helm"></div>';
+  return '<div class="armor-panel"><div class="viking-mini" id="vmini">'+sl+'</div><div class="gear-progress">'+rows+'</div></div>';
+}
+function restoreGear(){for(var i=0;i<gearEarned&&i<GEAR_ITEMS.length;i++){var g=GEAR_ITEMS[i],el=document.getElementById('vmslot-'+g.s);if(el){el.innerHTML=g.h;el.classList.add('on');}}}
+function earnGear(){
+  if(gearEarned>=GEAR_ITEMS.length)return;
+  var g=GEAR_ITEMS[gearEarned],el=document.getElementById('vmslot-'+g.s);
+  if(el){el.innerHTML=g.h;el.classList.add('on','vm-flash');setTimeout(function(){el.classList.remove('vm-flash')},500);spawnVMSparks(el);}
+  var row=document.getElementById('gprow'+gearEarned);if(row)row.classList.add('earned');
+  gearEarned++;
+}
+function spawnVMSparks(el){
+  var sc=document.getElementById('vmsparks');if(!sc||!el)return;
+  var r=el.getBoundingClientRect(),sr=document.getElementById('vmini').getBoundingClientRect();
+  var cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+  var cols=['#f0c040','#f08030','#f0e080','#ff6040','#ffd060'];
+  for(var i=0;i<10;i++){var s=document.createElement('div');s.className='vm-spark';
+    var a=Math.random()*Math.PI*2,d=20+Math.random()*30;
+    s.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+cols[Math.floor(Math.random()*5)]+';--sx:'+(Math.cos(a)*d)+'px;--sy:'+(Math.sin(a)*d)+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px';
+    sc.appendChild(s);setTimeout(function(x){x.remove()},700,s);}
+}
+function resultVikingHTML(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var ti=[];if(pct>=90)ti=GEAR_ITEMS;else if(pct>=70)ti=GEAR_ITEMS.slice(0,5);else if(pct>=50)ti=GEAR_ITEMS.slice(0,2);
+  var sm={boots:'rv-boots',mail:'rv-mail',right:'rv-right',left:'rv-left',cape:'rv-cape',helm:'rv-helm'};
+  var html='<div class="result-viking">';
+  html+='<div class="rv-slot rv-cape" id="rvs-cape"></div>';
+  html+='<div class="rv-head"></div><div class="rv-arm-l"></div><div class="rv-arm-r"></div><div class="rv-torso"></div><div class="rv-leg-l"></div><div class="rv-leg-r"></div>';
+  html+='<div class="rv-slot rv-boots" id="rvs-boots"></div><div class="rv-slot rv-mail" id="rvs-mail"></div>';
+  html+='<div class="rv-slot rv-left" id="rvs-left"></div><div class="rv-slot rv-right" id="rvs-right"></div>';
+  html+='<div class="rv-slot rv-helm" id="rvs-helm"></div></div>';
+  setTimeout(function(){ti.forEach(function(g){var e=document.getElementById('rvs-'+g.s);if(e)e.innerHTML=g.h;});},100);
+  return html;
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>

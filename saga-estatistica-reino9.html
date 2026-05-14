@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 9: ANOVA Fatorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+/* ── VISUAL: Variance Partition ── */
+.variance-visual{display:flex;align-items:center;justify-content:center;gap:4px;margin:16px 0;flex-wrap:wrap}
+.var-segment{padding:12px 10px;text-align:center;font-family:'Courier New',monospace;font-size:.85em;min-width:80px;border-radius:6px}
+.var-total{background:#1a2040;color:var(--gold);border:2px solid var(--gold)}
+.var-model{background:#0d2818;color:var(--success);border:2px solid var(--success)}
+.var-resid{background:#2d1116;color:var(--thor-red);border:2px solid var(--thor-red)}
+.var-interact{background:#1a1530;color:var(--corvo-purple);border:2px solid var(--corvo-purple)}
+.var-eq{font-family:'Bangers',cursive;color:var(--text);font-size:1.2em;padding:0 4px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}.variance-visual{flex-wrap:wrap}.var-segment{min-width:60px;font-size:.75em}}
+
+/* ── ARMOR SYSTEM ── */
+.armor-panel{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.viking-mini{position:relative;width:120px;height:180px;flex-shrink:0}
+.vm-head{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:#d4a574;border:1.5px solid #b8956a;z-index:5}
+.vm-torso{position:absolute;top:56px;left:50%;transform:translateX(-50%);width:44px;height:58px;background:#8b7355;border-radius:7px 7px 4px 4px;z-index:3}
+.vm-arm-l{position:absolute;top:59px;left:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-arm-r{position:absolute;top:59px;right:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-leg-l{position:absolute;top:111px;left:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-leg-r{position:absolute;top:111px;right:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-slot{position:absolute;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);transform:scale(.3)}
+.vm-slot.on{opacity:1;transform:scale(1)}
+.vm-helm{top:16px;left:50%;transform:translateX(-50%) scale(.3);z-index:8}.vm-helm.on{transform:translateX(-50%) scale(1)}
+.vm-mail{top:57px;left:50%;transform:translateX(-50%) scale(.3);z-index:4}.vm-mail.on{transform:translateX(-50%) scale(1)}
+.vm-cape{top:53px;left:50%;transform:translateX(-50%) scale(.3);z-index:1}.vm-cape.on{transform:translateX(-50%) scale(1)}
+.vm-left{top:66px;left:0;z-index:7}.vm-right{top:56px;right:0;z-index:7}
+.vm-boots{bottom:4px;left:50%;transform:translateX(-50%) scale(.3);z-index:7;display:flex;gap:10px}.vm-boots.on{transform:translateX(-50%) scale(1)}
+.gear-progress{flex:1;display:flex;flex-direction:column;gap:4px}
+.gp-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:.8em;color:var(--text-dim);transition:all .3s}
+.gp-row.earned{color:var(--success);font-weight:bold}
+.gp-row .gp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .3s;flex-shrink:0}
+.gp-row.earned .gp-dot{background:var(--success);border-color:var(--success)}
+.vm-sparks{position:absolute;pointer-events:none;z-index:20}
+.vm-spark{position:absolute;border-radius:50%;animation:vmSp .6s ease-out forwards}
+@keyframes vmSp{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+.vm-flash{animation:vmFl .4s ease}
+@keyframes vmFl{0%{filter:brightness(1)}30%{filter:brightness(1.8) drop-shadow(0 0 12px rgba(240,180,40,.6))}100%{filter:brightness(1)}}
+.result-viking{position:relative;width:160px;height:240px;margin:16px auto}
+.rv-head{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#d4a574;border:2px solid #b8956a;z-index:5}
+.rv-torso{position:absolute;top:73px;left:50%;transform:translateX(-50%);width:56px;height:74px;background:#8b7355;border-radius:9px 9px 5px 5px;z-index:3}
+.rv-arm-l{position:absolute;top:77px;left:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-arm-r{position:absolute;top:77px;right:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-leg-l{position:absolute;top:144px;left:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-leg-r{position:absolute;top:144px;right:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-slot{position:absolute}
+.rv-helm{top:20px;left:50%;transform:translateX(-50%);z-index:8}
+.rv-mail{top:74px;left:50%;transform:translateX(-50%);z-index:4}
+.rv-cape{top:69px;left:50%;transform:translateX(-50%);z-index:1}
+.rv-left{top:86px;left:4px;z-index:7}.rv-right{top:72px;right:4px;z-index:7}
+.rv-boots{bottom:4px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:14px}
+@media(max-width:600px){.armor-panel{flex-direction:column;align-items:center}.viking-mini{width:100px;height:160px}}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 9
+// ANOVA FATORIAL
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho 🧙‍♂️',thor:'ThorMento ⚡',muninn:'Muninn 🐦‍⬛',huginn:'Huginn 🐦',narrator:'📜 Narrador'};
+  return `<div class="dialogue-box ${cls[c]||'narrator'}"><div class="char-name ${cls[c]||'narrator'}">${nm[c]||c}</div><div class="dialogue-text">${t}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">🐦‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return armorPanelHTML()+`<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 9</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Reino da ANOVA Fatorial</h2>
+    <p class="subtitle">No Grimório secreto onde Odin Dinho combina ingredientes, o chef ensina a arte de combinar múltiplos fatores e descobrir interações ocultas.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">🛡️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;gearEarned=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: O Grimório Culinário ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','Nas profundezas do <em>Grimório Culinário de Valhalla</em>, Odin Dinho abre um capítulo proibido — onde ingredientes não são degustados isoladamente, mas em combinações. O aroma de especiarias entrelaçadas paira no ar como fórmulas arcanas.')}
+      ${dialogue('odin','A <em>ANOVA Fatorial</em> analisa duas ou mais variáveis independentes (fatores) simultaneamente. Não basta testar ingredientes isolados — precisamos entender como eles se <em>combinam</em>!')}
+      ${dialogue('thor','Pra quê complicar? Basta fazer vários testes t separados! Mais rápido e com mais barulho!')}
+      ${dialogue('huginn','Erro grotesco! Múltiplos testes t no mesmo conjunto inflacionam a <em>Taxa de Erro do Conjunto</em> (Familywise error). Com 3 fatores a 5% cada, o erro acumulado pode passar de 14%! A ANOVA Fatorial controla o caos testando o modelo global.')}
+      <button class="continue-btn" onclick="nextScene()">Abrir o Grimório →</button>
+    </div>`});
+
+  // ━━ CENA 2: Efeitos Principais e Interação ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('odin','A ANOVA Fatorial testa três coisas: 1) <em>Efeito Principal do Fator A</em>, 2) <em>Efeito Principal do Fator B</em>, 3) A <em>Interação A × B</em>.')}
+      ${dialogue('odin','A Interação é o tempero secreto: quando o efeito de um fator <em>MUDA</em> dependendo do nível do outro. Exemplo: álcool pode não afetar a atratividade de parceiros... mas álcool + gênero podem gerar um efeito completamente diferente!')}
+      ${dialogue('muninn','Regra visual: se as linhas no gráfico de interação são <em>paralelas</em> → sem interação. Se se <em>cruzam</em> ou <em>divergem</em> → interação presente!')}
+      ${dialogue('thor','Efeitos de Interação? Bobagem acadêmica! Se a carne é boa, o prato é bom!')}
+      ${dialogue('odin','Tolo. A interação pode <em>esconder</em> ou <em>reverter</em> o efeito principal. Ignorá-la é servir um prato cru.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: DESAFIO 1 — O que é ANOVA Fatorial ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Fatorial = múltiplos fatores (VIs) combinados. O que define é ter 2+ VIs categóricas analisadas simultaneamente sobre uma VD contínua.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: O Primeiro Ingrediente</div>
+        <div class="challenge-question">Quando usamos a ANOVA Fatorial em vez da ANOVA de um fator?</div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">Quando temos duas ou mais variáveis independentes (fatores) e queremos analisar seus efeitos principais e a interação entre eles sobre uma VD contínua</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Quando temos uma VI e múltiplas VDs</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">Quando temos amostras repetidas do mesmo grupo</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Quando o teste t não funciona por causa do tamanho amostral</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 4: Partição da Variância na Fatorial ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Na ANOVA Fatorial, a <em>SST</em> se divide em mais componentes do que na ANOVA de um fator:')}
+      <div class="variance-visual">
+        <div class="var-segment var-total">SST<br><small>Total</small></div>
+        <div class="var-eq">=</div>
+        <div class="var-segment var-model">SS<sub>A</sub><br><small>Fator A</small></div>
+        <div class="var-eq">+</div>
+        <div class="var-segment var-model">SS<sub>B</sub><br><small>Fator B</small></div>
+        <div class="var-eq">+</div>
+        <div class="var-segment var-interact">SS<sub>A×B</sub><br><small>Interação</small></div>
+        <div class="var-eq">+</div>
+        <div class="var-segment var-resid">SS<sub>R</sub><br><small>Resíduo</small></div>
+      </div>
+      ${dialogue('odin','Cada componente tem seu próprio F: <em>F<sub>A</sub> = MS<sub>A</sub>/MS<sub>R</sub></em>, <em>F<sub>B</sub> = MS<sub>B</sub>/MS<sub>R</sub></em>, <em>F<sub>A×B</sub> = MS<sub>A×B</sub>/MS<sub>R</sub></em>.')}
+      ${dialogue('muninn','gl para Fator A: <em>a−1</em>. gl para Fator B: <em>b−1</em>. gl para Interação: <em>(a−1)(b−1)</em>. gl para Resíduo: <em>N−ab</em>.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 5: DESAFIO 2 — Graus de Liberdade ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('gl interação = (a−1)(b−1). gl resíduo = N − ab. Aqui: a=2, b=3, N=60.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: Os Graus da Combinação</div>
+        <div class="challenge-question">Em uma ANOVA 2×3 (Fator A com 2 níveis, Fator B com 3 níveis), N=60. Quais são os gl da interação e do resíduo?</div>
+        <div class="data-display">
+          Fator A: a = 2 níveis &nbsp;|&nbsp; Fator B: b = 3 níveis<br>
+          N = 60 observações &nbsp;|&nbsp; Células = a×b = 6
+        </div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">gl_interação = 6; gl_resíduo = 54</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">gl_interação = 2; gl_resíduo = 57</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">gl_interação = (2−1)(3−1) = 2; gl_resíduo = 60 − (2×3) = 54</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">gl_interação = 5; gl_resíduo = 55</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: Gráficos de Interação ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','O <em>gráfico de interação</em> é a ferramenta visual mais poderosa da ANOVA Fatorial. Linhas paralelas = sem interação. Linhas que se cruzam ou divergem = interação significativa.')}
+      ${dialogue('huginn','Mas cuidado! O gráfico mostra o <em>padrão</em>, mas só o teste F confirma a <em>significância estatística</em>. Um cruzamento visual pode ser aleatório — e linhas quase paralelas podem esconder uma interação real se a amostra for grande.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 7: DESAFIO 3 — Interação ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Linhas paralelas = efeito constante de um fator em todos os níveis do outro = sem interação.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: As Linhas do Grimório</div>
+        <div class="challenge-question">Num gráfico de interação, as linhas representando Grupo A e Grupo B são paralelas. O que isso indica?</div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">Interação significativa entre os fatores</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">Ausência de interação — o efeito do Fator A é o mesmo em todos os níveis do Fator B</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">Os fatores são completamente independentes e não correlacionados</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">O modelo é inválido e precisa ser refeito</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 8: Pressupostos ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Pressupostos da ANOVA Fatorial: <em>Normalidade</em> (Shapiro-Wilk), <em>Homogeneidade das variâncias</em> (Levene), <em>Independência</em>, Dados em <em>escala intervalar ou de razão</em>.')}
+      ${dialogue('muninn','Antes de acender o fogo do Modelo Linear Geral, certifique-se de que sua despensa atende a estas quatro regras. Se não, o prato desmorona!')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 9: DESAFIO 4 — Pressupostos ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Normalidade, homogeneidade e independência são da Fatorial entre-sujeitos. A esfericidade pertence a outro tipo de ANOVA (Medidas Repetidas).'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: A Despensa dos Pressupostos</div>
+        <div class="challenge-question">Qual pressuposto NÃO é da ANOVA Fatorial entre-sujeitos?</div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">Normalidade dos resíduos por célula</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">Homogeneidade das variâncias (Teste de Levene)</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">Independência das observações</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">Esfericidade — esse pressuposto é da ANOVA de Medidas Repetidas, não da Fatorial entre-sujeitos</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 10: Lendo a Tabela de Saída ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','A tabela ANOVA Fatorial (<em>Tests of Between-Subjects Effects</em>) tem linhas para: Corrected Model, Intercept, Fator A, Fator B, A*B (interação), Error, Total.')}
+      ${dialogue('odin','Reporte cada teste F <em>separadamente</em>. Olhe a coluna Sig. para cada um. Três perguntas, três respostas independentes.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 11: DESAFIO 5 — Lendo a Saída ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Olhe o p de cada linha separadamente: Álcool p<.05 ✓, Gênero p>.05 ✗, Interação p<.05 ✓. Cada efeito tem sua própria conclusão.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: O Pergaminho dos Resultados</div>
+        <div class="challenge-question">Na tabela ANOVA: Álcool F(1,42)=17.97, p=.001; Gênero F(1,42)=0.03, p=.86; Álcool×Gênero F(2,42)=5.57, p=.006. O que concluir?</div>
+        <div class="data-display">
+          Álcool: F(1,42) = 17.97, p = .001 ✓<br>
+          Gênero: F(1,42) = 0.03, p = .86 ✗<br>
+          Álcool×Gênero: F(2,42) = 5.57, p = .006 ✓
+        </div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">Há efeito principal de Álcool e interação significativa Álcool×Gênero, mas NÃO há efeito principal de Gênero isoladamente. A interação é crucial para entender o fenômeno</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">Todos os efeitos são significativos porque o modelo geral é forte</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">Apenas o Álcool importa — ignore a interação</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">O modelo é inválido porque Gênero não é significativo</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 12: Relato APA ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Reporte APA separado para cada efeito: Fator A, Fator B e Interação. Exemplo: <em>"Houve efeito principal significativo do consumo de álcool, F(2, 42) = 20,06, p < ,001, ω² = .14"</em>')}
+      ${dialogue('odin','Regra de Ouro: relate Fator A, Fator B e a Interação <em>separadamente</em>, construindo a narrativa completa do fenômeno.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 13: DESAFIO 6 — Relato APA ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('APA: F(gl_efeito, gl_resíduo) = valor, p = valor, tamanho do efeito. O ω² é obrigatório — sem ele, o leitor não sabe se a diferença importa.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: O Selo APA</div>
+        <div class="challenge-question">Como reportar em APA: "O efeito de interação Álcool × Gênero sobre atratividade foi significativo, ..." com F=5.57, df1=2, df2=42, p=.006, ω²=.08?</div>
+        <div class="data-display">
+          F = 5.57 &nbsp;|&nbsp; df1 = 2 &nbsp;|&nbsp; df2 = 42<br>
+          p = .006 &nbsp;|&nbsp; ω² = .08
+        </div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">F(42, 2) = 5.57, p = .006, ω² = .08</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">F(2, 42) = 5.57, p = .006, ω² = .08</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">F(2, 42) = 5.57, p = .006 — sem necessidade de ω²</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">t(42) = 5.57, p = .006, ω² = .08</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 14: DESAFIO 7 — Interpretação da Interação ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Interação significativa sem efeitos principais = o que importa é a combinação. Cada fator sozinho não basta para explicar a VD.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: A Alquimia Oculta</div>
+        <div class="challenge-question">Se a interação A×B é significativa, mas os efeitos principais de A e B NÃO são, o que isso significa?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">O modelo está errado e deve ser descartado</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">Ignore a interação — sem efeitos principais, ela não tem sentido</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">Os fatores isolados não afetam a VD, mas sua COMBINAÇÃO sim — o efeito de cada fator depende do nível do outro. A interação pode mascarar efeitos principais</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">Significa que A e B são completamente independentes</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: Delineamento 3×2×2
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: O Grimório Triplo</div>
+          <div class="challenge-question">Num delineamento 3×2×2, quantos efeitos a ANOVA Fatorial testa (incluindo efeitos principais e todas as interações)?</div>
+          <div class="data-display">
+            Fator A: 3 níveis &nbsp;|&nbsp; Fator B: 2 níveis &nbsp;|&nbsp; Fator C: 2 níveis<br>
+            Efeitos principais + Interações de 2ª ordem + Interação de 3ª ordem = ?
+          </div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">3 — apenas os efeitos principais (A, B, C)</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">6 — três principais e três interações de 2ª ordem</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">8 — todos os efeitos mais o intercepto</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">7 — três principais (A, B, C), três interações de 2ª ordem (A×B, A×C, B×C) e uma de 3ª ordem (A×B×C)</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+
+    // DESAFIO 9: Tipo de Interação
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: A Interação Revelada</div>
+          <div class="challenge-question">Um pesquisador rodou uma ANOVA 2×2 e encontrou interação significativa. No gráfico, no nível 1 do Fator B o Fator A teve efeito grande, mas no nível 2 do Fator B o efeito do Fator A desapareceu. Que tipo de interação é essa?</div>
+          <div class="options-grid" id="q9-opts">
+            <button class="option-btn" onclick="checkQ(9,this,'a')">Interação ordinal (atenuada) — o efeito de A existe em ambos os níveis de B mas é muito mais forte em um deles, OU interação desordinal se o efeito inverte de direção</button>
+            <button class="option-btn" onclick="checkQ(9,this,'b')">Interação espúria causada por outliers</button>
+            <button class="option-btn" onclick="checkQ(9,this,'c')">Efeito principal reverso do Fator B</button>
+            <button class="option-btn" onclick="checkQ(9,this,'d')">Isso indica que a ANOVA falhou nos pressupostos</button>
+          </div>
+          <div id="q9-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','O Grimório se fecha com um estalo mágico. As fórmulas das interações brilham nas páginas como runas douradas antes de se apagarem — gravadas agora na memória do jovem estatístico.')}
+      ${dialogue('odin','Você conquistou o <em>Reino da ANOVA Fatorial</em>! Dominou a partição da variância em múltiplos componentes, os graus de liberdade combinados, os gráficos de interação, os pressupostos e o relato APA completo. O Grimório reconhece um novo Mestre Alquimista!')}
+      ${dialogue('thor','Tá bom... as interações de fato mudam o jogo. Uma carne pode ser ruim sozinha, mas com a especiaria certa vira um banquete. Admito.')}
+      ${dialogue('muninn','No próximo Reino, as receitas ganham uma dimensão temporal: <em>ANOVA de Medidas Repetidas</em> — quando os mesmos guerreiros são testados mais de uma vez. Prepare-se para a esfericidade!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final 🧪</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+const ANSWERS={1:'a',2:'c',3:'b',4:'d',5:'a',6:'b',7:'c',8:'d',9:'a'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! A ANOVA Fatorial é usada quando temos <em>duas ou mais VIs categóricas</em> (fatores) e queremos analisar tanto os efeitos principais quanto a interação entre eles sobre uma VD contínua. É a extensão natural da ANOVA de um fator para múltiplos fatores.',
+    wrong:'❌ A ANOVA Fatorial exige <em>duas ou mais VIs categóricas</em> (fatores). Uma VI com múltiplas VDs seria MANOVA. Amostras repetidas seria Medidas Repetidas. E o teste t funcionando ou não depende do desenho, não da Fatorial.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Exato! gl_interação = (a−1)(b−1) = (2−1)(3−1) = <em>2</em>. gl_resíduo = N − ab = 60 − (2×3) = <em>54</em>. Cada componente da partição tem seus próprios gl — e eles somam ao total (N−1 = 59).',
+    wrong:'❌ gl_interação = (a−1)(b−1) = (2−1)(3−1) = 2. gl_resíduo = N − ab = 60 − 6 = 54. Lembre-se: a interação usa o produto dos gl dos fatores, e o resíduo desconta todas as células (ab).',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Correto! Linhas paralelas indicam <em>ausência de interação</em> — o efeito do Fator A é constante em todos os níveis do Fator B. A diferença entre os grupos A não muda dependendo de B.',
+    wrong:'❌ Linhas paralelas = <em>sem interação</em>. O efeito do Fator A é o mesmo independentemente do nível do Fator B. Cruzamento ou divergência é que indicaria interação.',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Perfeito! A <em>esfericidade</em> é um pressuposto da ANOVA de <em>Medidas Repetidas</em>, não da Fatorial entre-sujeitos. Na Fatorial entre-sujeitos, os pressupostos são: normalidade, homogeneidade das variâncias (Levene), independência e escala intervalar/razão.',
+    wrong:'❌ Normalidade, homogeneidade (Levene) e independência SÃO pressupostos da Fatorial. A <em>esfericidade</em> pertence à ANOVA de Medidas Repetidas — é o pressuposto sobre a igualdade das variâncias das diferenças entre pares de condições.',
+    charC:'muninn',charW:'thor'
+  },
+  5:{
+    correct:'✅ Excelente leitura! Cada efeito é avaliado separadamente: Álcool (p=.001) ✓ significativo, Gênero (p=.86) ✗ não significativo, Interação (p=.006) ✓ significativa. A <em>interação é crucial</em> — o efeito do álcool muda dependendo do gênero!',
+    wrong:'❌ Olhe cada linha separadamente: Álcool p=.001 < .05 → significativo. Gênero p=.86 > .05 → NÃO significativo. Interação p=.006 < .05 → significativa. Cada efeito tem sua própria conclusão — e a interação merece atenção especial.',
+    charC:'odin',charW:'thor'
+  },
+  6:{
+    correct:'✅ Perfeito! Formato APA: <em>F(gl_efeito, gl_resíduo) = valor, p = valor, ω² = valor</em>. Neste caso: F(2, 42) = 5.57, p = .006, ω² = .08. O tamanho do efeito é <em>obrigatório</em> — sem ele, significância não diz nada sobre relevância prática.',
+    wrong:'❌ O formato APA correto é <em>F(gl_efeito, gl_resíduo)</em> — primeiro vem o gl do efeito (numerador), depois o gl do resíduo (denominador). E o ω² é obrigatório, não opcional. Nunca use t para reportar ANOVA.',
+    charC:'odin',charW:'thor'
+  },
+  7:{
+    correct:'✅ Brilhante! Interação significativa sem efeitos principais é perfeitamente possível — significa que os fatores <em>isolados</em> não afetam a VD, mas sua <em>combinação</em> sim. A interação pode mascarar ou cancelar os efeitos principais. Isso é fundamental na Fatorial!',
+    wrong:'❌ Interação significativa sem efeitos principais NÃO invalida o modelo. Significa que o efeito de cada fator <em>depende do nível do outro</em>. Os fatores podem se cancelar isoladamente mas gerar efeito combinado. Ignorar a interação seria um erro grave.',
+    charC:'huginn',charW:'thor'
+  },
+  8:{
+    correct:'✅ Correto! Num delineamento 3×2×2: <em>3 efeitos principais</em> (A, B, C) + <em>3 interações de 2ª ordem</em> (A×B, A×C, B×C) + <em>1 interação de 3ª ordem</em> (A×B×C) = <em>7 efeitos</em>. A complexidade cresce exponencialmente com cada fator adicionado!',
+    wrong:'❌ Num delineamento 3×2×2, contamos: 3 efeitos principais + 3 interações de 2ª ordem (A×B, A×C, B×C) + 1 interação de 3ª ordem (A×B×C) = <em>7 efeitos</em>. Não confunda com o número de níveis ou células.',
+    charC:'odin',charW:'thor'
+  },
+  9:{
+    correct:'✅ Excelente! Quando o efeito de A é forte em um nível de B mas desaparece (ou enfraquece muito) no outro, temos uma <em>interação ordinal (atenuada)</em>. Se o efeito invertesse de direção, seria uma <em>interação desordinal (crossover)</em>. Ambas são interações reais — a diferença é a direção e magnitude da mudança.',
+    wrong:'❌ O cenário descreve uma <em>interação ordinal</em> — o efeito de A existe mas varia de magnitude entre os níveis de B. Não é espúria, não é falha de pressupostos, e não é efeito principal reverso. A interação muda a <em>magnitude</em> (ordinal) ou a <em>direção</em> (desordinal) do efeito.',
+    charC:'muninn',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  const opts=document.querySelectorAll(`#q${q}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();earnGear();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }else{
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();restoreGear();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='🏆 Mestre Alquimista de Valhalla';rc='#f0c040';}
+  else if(pct>=70){rank='📜 Artesão das Interações';rc='#58a6ff';}
+  else if(pct>=50){rank='🛡️ Misturador de Poções';rc='#8b949e';}
+  else{rank='⛓️ Aprendiz de Alquimia';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 9 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    ${resultVikingHTML()}
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'🛡️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70
+      ?'O Grimório Culinário vibra de orgulho! Você dominou a ANOVA Fatorial — a partição em múltiplos componentes, os graus de liberdade combinados, as interações ocultas, os pressupostos e o relato APA completo. O Alquimista de Valhalla reconhece um mestre das combinações!'
+      :'As especiarias se recusaram a se combinar... Volte ao Grimório e revise: SSA + SSB + SS(A×B) + SSR, os gl, os gráficos de interação e o relato APA separado para cada efeito. A próxima poção será perfeita!'
+    )}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">🔄 Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+var GEAR_ITEMS=[
+  {"s":"boots","n":"Botas do Alquimista","h":"<div style=\"display:flex;gap:14px\"><div style=\"width:24px;height:18px;background:#4a3728;border-radius:3px 3px 4px 7px;border:2px solid #6b5040\"></div><div style=\"width:24px;height:18px;background:#4a3728;border-radius:3px 3px 4px 7px;border:2px solid #6b5040\"></div></div>"},
+  {"s":"mail","n":"Túnica das Especiarias","h":"<div style=\"width:60px;height:72px;background:linear-gradient(180deg,#8b4513,#654321);border-radius:7px 7px 4px 4px;border:2px solid #5c3317;position:relative\"><div style=\"position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid #f0c040;border-radius:50%\"></div></div>"},
+  {"s":"right","n":"Frasco da Interação","h":"<div style=\"display:flex;flex-direction:column;align-items:center\"><div style=\"width:12px;height:6px;background:#a08040;border-radius:2px\"></div><div style=\"width:22px;height:30px;background:linear-gradient(180deg,#e0a0ff,#8040c0);border-radius:0 0 8px 8px;border:2px solid #6030a0\"></div></div>"},
+  {"s":"left","n":"Grimório Fatorial","h":"<div style=\"width:34px;height:42px;background:#2a1a40;border-radius:2px 5px 5px 2px;border:2px solid #4a2a60;position:relative\"><div style=\"position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:16px;color:#f0c040\">×</div></div>"},
+  {"s":"cape","n":"Manto da Combinação","h":"<div style=\"width:84px;height:110px;background:linear-gradient(135deg,#4a0080,#800040);border-radius:5px 5px 28px 28px;clip-path:polygon(16% 0%,84% 0%,100% 18%,92% 100%,50% 88%,8% 100%,0% 18%)\"></div>"},
+  {"s":"helm","n":"Coroa das Variáveis","h":"<div style=\"width:52px;height:24px;background:linear-gradient(135deg,#c040f0,#6020a0);border-radius:26px 26px 5px 5px;border:2px solid #8030c0;position:relative\"><div style=\"position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:7px;height:12px;background:#f0c040;border-radius:3px 3px 1px 1px\"></div><div style=\"position:absolute;top:-9px;left:30%;width:5px;height:9px;background:#f0c040;border-radius:2px 2px 1px 1px\"></div><div style=\"position:absolute;top:-9px;right:30%;width:5px;height:9px;background:#f0c040;border-radius:2px 2px 1px 1px\"></div></div>"}
+];
+var gearEarned=0;
+function armorPanelHTML(){
+  var rows='';
+  for(var i=0;i<GEAR_ITEMS.length;i++){rows+='<div class="gp-row'+(i<gearEarned?' earned':'')+'" id="gprow'+i+'"><span class="gp-dot"></span><span>'+GEAR_ITEMS[i].n+'</span></div>';}
+  var sl='<div class="vm-sparks" id="vmsparks"></div>';
+  sl+='<div class="vm-slot vm-cape" id="vmslot-cape"></div>';
+  sl+='<div class="vm-head"></div><div class="vm-arm-l"></div><div class="vm-arm-r"></div><div class="vm-torso"></div><div class="vm-leg-l"></div><div class="vm-leg-r"></div>';
+  sl+='<div class="vm-slot vm-boots" id="vmslot-boots"></div><div class="vm-slot vm-mail" id="vmslot-mail"></div>';
+  sl+='<div class="vm-slot vm-left" id="vmslot-left"></div><div class="vm-slot vm-right" id="vmslot-right"></div>';
+  sl+='<div class="vm-slot vm-helm" id="vmslot-helm"></div>';
+  return '<div class="armor-panel"><div class="viking-mini" id="vmini">'+sl+'</div><div class="gear-progress">'+rows+'</div></div>';
+}
+function restoreGear(){for(var i=0;i<gearEarned&&i<GEAR_ITEMS.length;i++){var g=GEAR_ITEMS[i],el=document.getElementById('vmslot-'+g.s);if(el){el.innerHTML=g.h;el.classList.add('on');}}}
+function earnGear(){
+  if(gearEarned>=GEAR_ITEMS.length)return;
+  var g=GEAR_ITEMS[gearEarned],el=document.getElementById('vmslot-'+g.s);
+  if(el){el.innerHTML=g.h;el.classList.add('on','vm-flash');setTimeout(function(){el.classList.remove('vm-flash')},500);spawnVMSparks(el);}
+  var row=document.getElementById('gprow'+gearEarned);if(row)row.classList.add('earned');
+  gearEarned++;
+}
+function spawnVMSparks(el){
+  var sc=document.getElementById('vmsparks');if(!sc||!el)return;
+  var r=el.getBoundingClientRect(),sr=document.getElementById('vmini').getBoundingClientRect();
+  var cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+  var cols=['#f0c040','#f08030','#f0e080','#ff6040','#ffd060'];
+  for(var i=0;i<10;i++){var s=document.createElement('div');s.className='vm-spark';
+    var a=Math.random()*Math.PI*2,d=20+Math.random()*30;
+    s.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+cols[Math.floor(Math.random()*5)]+';--sx:'+(Math.cos(a)*d)+'px;--sy:'+(Math.sin(a)*d)+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px';
+    sc.appendChild(s);setTimeout(function(x){x.remove()},700,s);}
+}
+function resultVikingHTML(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var ti=[];if(pct>=90)ti=GEAR_ITEMS;else if(pct>=70)ti=GEAR_ITEMS.slice(0,5);else if(pct>=50)ti=GEAR_ITEMS.slice(0,2);
+  var sm={boots:'rv-boots',mail:'rv-mail',right:'rv-right',left:'rv-left',cape:'rv-cape',helm:'rv-helm'};
+  var html='<div class="result-viking">';
+  html+='<div class="rv-slot rv-cape" id="rvs-cape"></div>';
+  html+='<div class="rv-head"></div><div class="rv-arm-l"></div><div class="rv-arm-r"></div><div class="rv-torso"></div><div class="rv-leg-l"></div><div class="rv-leg-r"></div>';
+  html+='<div class="rv-slot rv-boots" id="rvs-boots"></div><div class="rv-slot rv-mail" id="rvs-mail"></div>';
+  html+='<div class="rv-slot rv-left" id="rvs-left"></div><div class="rv-slot rv-right" id="rvs-right"></div>';
+  html+='<div class="rv-slot rv-helm" id="rvs-helm"></div></div>';
+  setTimeout(function(){ti.forEach(function(g){var e=document.getElementById('rvs-'+g.s);if(e)e.innerHTML=g.h;});},100);
+  return html;
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 13: MANCOVA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+/* ── VISUAL: Matrix Structure ── */
+.matrix-visual{display:flex;align-items:center;justify-content:center;gap:4px;margin:16px 0;flex-wrap:wrap}
+.mat-segment{padding:12px 10px;text-align:center;font-family:'Courier New',monospace;font-size:.85em;min-width:80px;border-radius:6px}
+.mat-total{background:#1a2040;color:var(--gold);border:2px solid var(--gold)}
+.mat-hyp{background:#0d2818;color:var(--success);border:2px solid var(--success)}
+.mat-err{background:#2d1116;color:var(--thor-red);border:2px solid var(--thor-red)}
+.mat-eq{font-family:'Bangers',cursive;color:var(--text);font-size:1.2em;padding:0 4px}
+/* ── VISUAL: Comparison Table ── */
+.comparison-table{width:100%;border-collapse:separate;border-spacing:0;margin:16px 0;font-size:.9em}
+.comparison-table th{background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:10px;text-align:center}
+.comparison-table td{padding:10px;text-align:center;border-bottom:1px solid var(--border);background:var(--bg-card)}
+.comparison-table tr:last-child td{border-bottom:none}
+.comparison-table .highlight-row{background:var(--bg-panel);border:2px solid var(--gold)}
+.comparison-table .highlight-row td{background:var(--bg-panel);color:var(--gold);font-weight:bold}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}.matrix-visual{flex-wrap:wrap}.mat-segment{min-width:60px;font-size:.75em}.comparison-table{font-size:.78em}.comparison-table th,.comparison-table td{padding:6px 4px}}
+
+/* ── ARMOR SYSTEM ── */
+.armor-panel{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.viking-mini{position:relative;width:120px;height:180px;flex-shrink:0}
+.vm-head{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:#d4a574;border:1.5px solid #b8956a;z-index:5}
+.vm-torso{position:absolute;top:56px;left:50%;transform:translateX(-50%);width:44px;height:58px;background:#8b7355;border-radius:7px 7px 4px 4px;z-index:3}
+.vm-arm-l{position:absolute;top:59px;left:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-arm-r{position:absolute;top:59px;right:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-leg-l{position:absolute;top:111px;left:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-leg-r{position:absolute;top:111px;right:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-slot{position:absolute;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);transform:scale(.3)}
+.vm-slot.on{opacity:1;transform:scale(1)}
+.vm-helm{top:16px;left:50%;transform:translateX(-50%) scale(.3);z-index:8}.vm-helm.on{transform:translateX(-50%) scale(1)}
+.vm-mail{top:57px;left:50%;transform:translateX(-50%) scale(.3);z-index:4}.vm-mail.on{transform:translateX(-50%) scale(1)}
+.vm-cape{top:53px;left:50%;transform:translateX(-50%) scale(.3);z-index:1}.vm-cape.on{transform:translateX(-50%) scale(1)}
+.vm-left{top:66px;left:0;z-index:7}.vm-right{top:56px;right:0;z-index:7}
+.vm-boots{bottom:4px;left:50%;transform:translateX(-50%) scale(.3);z-index:7;display:flex;gap:10px}.vm-boots.on{transform:translateX(-50%) scale(1)}
+.gear-progress{flex:1;display:flex;flex-direction:column;gap:4px}
+.gp-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:.8em;color:var(--text-dim);transition:all .3s}
+.gp-row.earned{color:var(--success);font-weight:bold}
+.gp-row .gp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .3s;flex-shrink:0}
+.gp-row.earned .gp-dot{background:var(--success);border-color:var(--success)}
+.vm-sparks{position:absolute;pointer-events:none;z-index:20}
+.vm-spark{position:absolute;border-radius:50%;animation:vmSp .6s ease-out forwards}
+@keyframes vmSp{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+.vm-flash{animation:vmFl .4s ease}
+@keyframes vmFl{0%{filter:brightness(1)}30%{filter:brightness(1.8) drop-shadow(0 0 12px rgba(240,180,40,.6))}100%{filter:brightness(1)}}
+.result-viking{position:relative;width:160px;height:240px;margin:16px auto}
+.rv-head{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#d4a574;border:2px solid #b8956a;z-index:5}
+.rv-torso{position:absolute;top:73px;left:50%;transform:translateX(-50%);width:56px;height:74px;background:#8b7355;border-radius:9px 9px 5px 5px;z-index:3}
+.rv-arm-l{position:absolute;top:77px;left:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-arm-r{position:absolute;top:77px;right:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-leg-l{position:absolute;top:144px;left:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-leg-r{position:absolute;top:144px;right:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-slot{position:absolute}
+.rv-helm{top:20px;left:50%;transform:translateX(-50%);z-index:8}
+.rv-mail{top:74px;left:50%;transform:translateX(-50%);z-index:4}
+.rv-cape{top:69px;left:50%;transform:translateX(-50%);z-index:1}
+.rv-left{top:86px;left:4px;z-index:7}.rv-right{top:72px;right:4px;z-index:7}
+.rv-boots{bottom:4px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:14px}
+@media(max-width:600px){.armor-panel{flex-direction:column;align-items:center}.viking-mini{width:100px;height:160px}}
+footer{text-align:center;padding:24px 12px;color:var(--text-dim);font-size:.85em;border-top:1px solid var(--border);margin-top:40px}
+footer a{color:var(--odin-blue);text-decoration:none}footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<footer>
+  <a href="index.html">Voltar ao Hub dos Reinos</a><br>
+  Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026
+</footer>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 13
+// MANCOVA — ANÁLISE MULTIVARIADA DE COVARIÂNCIA
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho \u{1F9D9}‍♂️',thor:'ThorMento ⚡',muninn:'Muninn \u{1F426}‍⬛',huginn:'Huginn \u{1F426}',narrator:'\u{1F4DC} Narrador'};
+  return `<div class="dialogue-box ${cls[c]||'narrator'}"><div class="char-name ${cls[c]||'narrator'}">${nm[c]||c}</div><div class="dialogue-text">${t}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">\u{1F426}‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return armorPanelHTML()+`<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 13</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Trono de Odin — MANCOVA</h2>
+    <p class="subtitle">No Trono Supremo de Odin, onde todas as variações da ANOVA convergem, o Padrinho dos Métodos revela a técnica definitiva: controlar covariáveis enquanto analisa múltiplas variáveis dependentes simultaneamente. A MANCOVA — o caso mais geral do Modelo Linear Geral.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">\u{1F6E1}️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;gearEarned=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: Chegada ao Trono de Odin ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','As portas do <em>Trono de Odin</em> se abrem com um estrondo que ecoa por todos os Nove Mundos. A sala é imensa — pilares de mármore gravados com equações do Modelo Linear Geral sustentam um teto constelado de matrizes. No centro, Odin Dinho senta-se em seu trono dourado, a lança da regressão em uma mão e o escudo da distribuição normal na outra.')}
+      ${dialogue('odin','Você percorreu 12 Reinos. Dominou ANOVA, ANCOVA, MANOVA. Agora, no meu Trono, revelo a técnica que <em>unifica tudo</em>: a MANCOVA — Análise Multivariada de Covariância.')}
+      ${dialogue('thor','Lá vem o velho com mais complicação! Pra que essa sopa de letrinhas? Roda uma ANOVA pra cada VD e pronto! Se precisar de covariável, joga uma ANCOVA no meio. Simples, rápido, indolor!')}
+      ${dialogue('odin','Simples? Rápido? E <em>errado</em>! Rodar testes separados é como um mercador de Midgard pesando cada especiaria em balanças diferentes — perde a visão do carregamento inteiro e inflaciona o Erro Tipo I. A MANCOVA faz tudo em um único modelo.')}
+      <button class="continue-btn" onclick="nextScene()">Entrar no Trono →</button>
+    </div>`});
+
+  // ━━ CENA 2: O que é MANCOVA ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('odin','MANCOVA = MANOVA + ANCOVA. Em uma única receita: <em>múltiplas VDs</em> (contínuas e correlacionadas) + <em>IVs categóricas</em> (grupos) + <em>covariáveis contínuas</em> (controle estatístico). Tudo ao mesmo tempo, no mesmo caldeirão.')}
+      ${dialogue('odin','Pense assim: um Jarl quer comparar <em>3 clãs de guerreiros</em> em <em>força E agilidade</em> simultaneamente, mas precisa <em>controlar por anos de treinamento</em>. Força e agilidade são as VDs. Clã é a IV. Anos de treinamento é a covariável. Isso é MANCOVA!')}
+      ${dialogue('muninn','Lembra: ANCOVA = ANOVA + covariável. MANOVA = ANOVA + múltiplas VDs. MANCOVA = MANOVA + covariáveis. É a fusão suprema — o melhor dos dois mundos.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: DESAFIO 1 — O que MANCOVA acrescenta ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Lembra que ANCOVA = ANOVA + covariável? Agora pense no “M” de multivariada...'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: A Fusão Suprema</div>
+        <div class="challenge-question">O que a MANCOVA acrescenta em relação à MANOVA?</div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">Mais variáveis independentes categóricas</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Inclusão de covariáveis contínuas para controle estatístico</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">Maior número de participantes por grupo</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Uso exclusivo de medidas repetidas</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 4: Parcimônia ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','A grande vantagem da MANCOVA é a <em>parcimônia</em>. Um único modelo resolve o que antes exigiria uma MANOVA separada mais várias ANCOVAs. Menos testes = menos inflação do Erro Tipo I = mais confiança nos resultados.')}
+      ${dialogue('huginn','Parcimônia é a virtude do cozinheiro sábio: por que usar três panelas quando uma única faz o trabalho? A MANCOVA é a panela de pressão do GLM — tudo cozinha junto, no mesmo tempo, com o mesmo fogo.')}
+      ${dialogue('thor','Mas eu gosto de muitas panelas! Uma pra cada ingrediente! Dá mais trabalho, mas... bom... na verdade só dá mais trabalho mesmo.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 5: DESAFIO 2 — Parcimônia ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Parcimônia = fazer mais com menos. Um único modelo que resolve vários problemas...'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: A Panela de Pressão</div>
+        <div class="challenge-question">Por que a MANCOVA é mais parcimoniosa do que rodar ANOVAs, ANCOVAs e MANOVAs separadas?</div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">Porque exige menos participantes</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">Porque ignora as covariáveis</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">Porque testa tudo em um único modelo, controlando erro Tipo I e covariáveis simultaneamente</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">Porque elimina a necessidade de pressupostos</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: Tabela comparativa ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Veja como a família GLM se organiza. Cada técnica adiciona uma camada:')}
+      <table class="comparison-table">
+        <thead><tr><th>Técnica</th><th>IVs</th><th>VDs</th><th>Covariáveis</th></tr></thead>
+        <tbody>
+          <tr><td>ANOVA</td><td>1+ categóricas</td><td>1 contínua</td><td>—</td></tr>
+          <tr><td>ANCOVA</td><td>1+ categóricas</td><td>1 contínua</td><td>1+ contínuas</td></tr>
+          <tr><td>MANOVA</td><td>1+ categóricas</td><td>2+ contínuas</td><td>—</td></tr>
+          <tr class="highlight-row"><td>MANCOVA</td><td>1+ categóricas</td><td>2+ contínuas</td><td>1+ contínuas</td></tr>
+        </tbody>
+      </table>
+      ${dialogue('muninn','A MANCOVA é o caso mais geral. ANOVA, ANCOVA e MANOVA são todos casos particulares dela — basta remover VDs ou covariáveis.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 7: DESAFIO 3 — Tabela comparativa ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('M = múltiplas VDs. ANCOVA = covariáveis. Junte os dois...'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: O Pergaminho da Família GLM</div>
+        <div class="challenge-question">Qual técnica usa múltiplas VDs E covariáveis ao mesmo tempo?</div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">ANOVA</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">ANCOVA</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">MANOVA</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">MANCOVA</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 8: Pressupostos da MANCOVA ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','A MANCOVA herda <em>todos</em> os pressupostos da MANOVA: normalidade multivariada, homogeneidade das matrizes de covariância (Box\'s M), independência das observações.')}
+      ${dialogue('odin','E adiciona um pressuposto específico: <em>homogeneidade das inclinações de regressão</em>. A relação entre cada covariável e cada VD deve ser <em>similar em todos os grupos</em>. Se a covariável “anos de treinamento” afeta força de modo diferente no Clã A e no Clã B, o ajuste da covariável fica distorcido.')}
+      ${dialogue('muninn','Na prática: teste a interação Grupo × Covariável. Se for significativa, as inclinações não são homogêneas e a MANCOVA pode não ser adequada — ou você precisa modelar as inclinações separadamente.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 9: DESAFIO 4 — Pressupostos ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('A covariável entra como regressora. O que acontece se a relação covariável→VD for diferente em cada grupo?'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: O Pressuposto Oculto</div>
+        <div class="challenge-question">Além dos pressupostos da MANOVA, qual pressuposto adicional a MANCOVA exige?</div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">Normalidade bivariada</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">Esfericidade</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">Homogeneidade das inclinações de regressão entre grupos</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">Independência temporal</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 10: Follow-up — Pillai → ANCOVAs ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Interpretação da MANCOVA em dois passos: Primeiro, o <em>teste multivariado</em> — Pillai\'s Trace (ou Wilks\' Lambda). Se significativo, existe diferença global entre os grupos após controlar as covariáveis.')}
+      ${dialogue('odin','Segundo, os <em>follow-ups</em>: ANCOVAs univariadas para cada VD, <em>mantendo as covariáveis no modelo</em>, com correção de Bonferroni. Não remova as covariáveis nos follow-ups — isso desfaz o ajuste que a MANCOVA fez!')}
+      ${dialogue('huginn','Atenção: se o Jarl avaliou 4 receitas de hidromel em <em>sabor E aroma</em>, ajustando pela <em>qualidade da água</em>, os follow-ups são ANCOVAs — uma para sabor e uma para aroma — ambas com qualidade da água como covariável. Bonferroni: α = .05/2 = .025.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 11: DESAFIO 5 — Follow-up ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('O teste multivariado é omnibus. Para saber QUAL VD difere, precisa descer um nível...'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: O Próximo Passo</div>
+        <div class="challenge-question">Após um Pillai's Trace significativo na MANCOVA, qual é o próximo passo?</div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">Rodar testes t para cada VD</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">Realizar ANCOVAs univariadas com correção de Bonferroni</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">Ignorar e reportar apenas o teste global</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">Remover as covariáveis e rodar ANOVA</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 12: Kitchen sink warning ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('huginn','Cuidado com a abordagem <em>kitchen sink</em> — jogar toda covariável disponível no modelo! Cada covariável consome graus de liberdade do erro. Covariáveis demais = poder estatístico de menos.')}
+      ${dialogue('odin','Regra: inclua apenas covariáveis <em>teoricamente justificadas</em>. Se o Jarl quer comparar clãs em força e agilidade, “anos de treinamento” faz sentido como covariável. “Cor do elmo” não faz. Além disso, covariáveis correlacionadas entre si geram <em>multicolinearidade</em>.')}
+      ${dialogue('muninn','Lembre: covariáveis correlacionadas entre si (r > .80) criam multicolinearidade — o modelo não consegue separar o efeito de cada uma. Escolha uma ou combine-as.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 13: DESAFIO 6 — Covariáveis demais ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Cada covariável “custa” graus de liberdade. E se você gastar demais...'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: A Pia da Cozinha</div>
+        <div class="challenge-question">Qual é o risco de incluir covariáveis demais na MANCOVA?</div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">Aumenta o poder estatístico</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">Reduz graus de liberdade do erro e pode mascarar efeitos reais</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">Elimina toda a variância das VDs</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">Torna o teste de Box desnecessário</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 14: GLM — Grande Unificação ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Agora, a revelação final. No framework do <em>Modelo Linear Geral (GLM)</em>, tudo se conecta pela equação matricial:')}
+      <div class="matrix-visual">
+        <div class="mat-segment mat-total"><strong>Y</strong><br><small>Matriz de VDs</small></div>
+        <div class="mat-eq">=</div>
+        <div class="mat-segment mat-hyp"><strong>Xβ</strong><br><small>Fatores + Covariáveis</small></div>
+        <div class="mat-eq">+</div>
+        <div class="mat-segment mat-err"><strong>ε</strong><br><small>Erro</small></div>
+      </div>
+      ${dialogue('odin','Se Y tem uma coluna = ANOVA/ANCOVA. Se Y tem múltiplas colunas e X só tem fatores = MANOVA. Se Y tem múltiplas colunas e X inclui fatores + covariáveis = <em>MANCOVA</em>. A MANCOVA é o caso mais geral!')}
+      ${dialogue('muninn','A beleza do GLM: ANOVA, ANCOVA, MANOVA e MANCOVA são todas instâncias da mesma equação. A diferença está na <em>dimensionalidade de Y</em> e na <em>composição de X</em>.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 15: DESAFIO 7 — GLM ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Y = Xβ + ε. Se Y é uma matriz (múltiplas VDs) e X inclui fatores + covariáveis...'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: A Equação Suprema</div>
+        <div class="challenge-question">No framework do GLM, como a MANCOVA se encaixa?</div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">É um caso especial da regressão logística</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">É o caso mais geral do modelo linear geral, com matriz Y de múltiplas VDs e covariáveis na matriz X</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">É independente do GLM</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">É idêntica à ANOVA de medidas repetidas</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: Tamanho amostral
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: O Exército Mínimo</div>
+          <div class="challenge-question">Em uma MANCOVA com 3 grupos, 4 VDs e 2 covariáveis, qual cuidado é mais crítico quanto ao tamanho amostral?</div>
+          <div class="data-display">
+            3 grupos &nbsp;|&nbsp; 4 VDs &nbsp;|&nbsp; 2 covariáveis<br>
+            Total de variáveis no modelo: 4 + 2 = 6
+          </div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">Ter pelo menos 5 participantes por grupo</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">Ter mais participantes em cada grupo do que o número de VDs + covariáveis combinados</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">Ter exatamente o mesmo N em todos os grupos</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">Ter no mínimo 1000 participantes no total</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+
+    // DESAFIO 9: ThorMento refutado
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre: A Tolice de ThorMento</div>
+          <div class="challenge-question">ThorMento sugere: “Roda uma MANOVA e depois várias ANCOVAs separadas — dá no mesmo!” Por que isso é incorreto?</div>
+          <div class="data-display">
+            Proposta de ThorMento:<br>
+            MANOVA (sem covariáveis) + ANCOVAs separadas (uma por VD)<br>
+            vs. MANCOVA (modelo único)
+          </div>
+          <div class="options-grid" id="q9-opts">
+            <button class="option-btn" onclick="checkQ(9,this,'a')">Porque a MANOVA não aceita mais de uma VD</button>
+            <button class="option-btn" onclick="checkQ(9,this,'b')">Porque as ANCOVAs separadas não consideram a correlação entre VDs, inflam o erro Tipo I e desperdiçam informação que a MANCOVA preserva em um modelo unificado</button>
+            <button class="option-btn" onclick="checkQ(9,this,'c')">Porque a ANCOVA é mais poderosa que a MANCOVA</button>
+            <button class="option-btn" onclick="checkQ(9,this,'d')">Porque ThorMento está sempre certo sobre parcimônia</button>
+          </div>
+          <div id="q9-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL: Lição dos Corvos ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','O Trono de Odin pulsa com energia dourada. As equações nos pilares brilham — ANOVA, ANCOVA, MANOVA, MANCOVA — todas convergindo para a fórmula suprema do GLM. O estudante que chegou até aqui dominou a família inteira.')}
+      ${dialogue('muninn','<strong>Lição dos Corvos — Muninn resume:</strong><br>• MANCOVA = MANOVA + covariáveis contínuas<br>• Parcimônia: um modelo único para múltiplas VDs + covariáveis<br>• Pressupostos: todos da MANOVA + homogeneidade das inclinações de regressão<br>• Follow-up: ANCOVAs univariadas com Bonferroni (mantendo covariáveis!)<br>• MANCOVA é o caso mais geral do GLM: Y = Xβ + ε')}
+      ${dialogue('huginn','<strong>Lição dos Corvos — Huginn desafia:</strong><br>• Não jogue covariáveis no modelo só porque coletou — justifique teoricamente!<br>• N por grupo deve exceder o número de VDs + covariáveis<br>• Teste a homogeneidade das inclinações ANTES de rodar a MANCOVA<br>• MANOVA + ANCOVAs separadas ≠ MANCOVA — não caia nessa!')}
+      ${dialogue('odin','Você conquistou o <em>Trono de Odin</em>! A MANCOVA é a coroa do Modelo Linear Geral — e agora ela é sua. Use-a com sabedoria, parcimônia e rigor. Que os dados estejam sempre a seu favor!')}
+      ${dialogue('thor','Tá bom... admito que rodar MANOVA + ANCOVAs separadas era uma péssima ideia. Mas ninguém vai me convencer a gostar de matrizes SSCP!')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚔️</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+const ANSWERS={1:'b',2:'c',3:'d',4:'c',5:'b',6:'b',7:'b',8:'b',9:'b'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! A MANCOVA é a fusão de MANOVA + ANCOVA. Ela analisa <em>múltiplas VDs simultaneamente</em> enquanto controla <em>covariáveis contínuas</em> — o melhor dos dois mundos!',
+    wrong:'❌ A MANCOVA acrescenta à MANOVA a <em>inclusão de covariáveis contínuas</em> para controle estatístico. Assim como a ANCOVA adiciona covariáveis à ANOVA, a MANCOVA adiciona covariáveis à MANOVA.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Exato! A MANCOVA é parcimoniosa porque um único modelo abarca múltiplas VDs + covariáveis + IVs categóricas — sem inflar o erro Tipo I com testes múltiplos.',
+    wrong:'❌ A parcimônia da MANCOVA vem de <em>testar tudo em um único modelo</em>. Isso controla o erro Tipo I e as covariáveis simultaneamente — algo que testes separados não conseguem.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Perfeito! ANOVA: 1 VD, sem covariável. ANCOVA: 1 VD + covariáveis. MANOVA: múltiplas VDs, sem covariável. <em>MANCOVA: múltiplas VDs + covariáveis</em>. A MANCOVA é o modelo mais completo da família GLM.',
+    wrong:'❌ Apenas a <em>MANCOVA</em> combina múltiplas VDs E covariáveis ao mesmo tempo. ANOVA e ANCOVA têm apenas 1 VD. MANOVA não inclui covariáveis.',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Correto! A MANCOVA herda os pressupostos da MANOVA (normalidade multivariada, homogeneidade de matrizes — Box\'s M) e adiciona: <em>homogeneidade das inclinações de regressão</em> — a relação covariável→VD deve ser similar em todos os grupos.',
+    wrong:'❌ O pressuposto adicional da MANCOVA é a <em>homogeneidade das inclinações de regressão</em>. A relação entre covariável e VD precisa ser consistente entre os grupos — senão o ajuste da covariável fica distorcido.',
+    charC:'muninn',charW:'thor'
+  },
+  5:{
+    correct:'✅ Perfeito! Após significância no teste multivariado (Pillai/Wilks), fazemos <em>ANCOVAs univariadas para cada VD</em> — mantendo as covariáveis! — com correção de Bonferroni para controlar o erro Tipo I.',
+    wrong:'❌ O próximo passo após Pillai significativo são <em>ANCOVAs univariadas com Bonferroni</em>, mantendo as covariáveis no modelo. Testes t ignoram as covariáveis; remover covariáveis desfaz o ajuste.',
+    charC:'odin',charW:'thor'
+  },
+  6:{
+    correct:'✅ Excelente! Covariáveis demais = abordagem <em>kitchen sink</em>. Cada covariável consome gl do erro, reduzindo o poder. Além disso, covariáveis correlacionadas entre si geram multicolinearidade. Selecione apenas covariáveis teoricamente justificadas!',
+    wrong:'❌ O risco de covariáveis demais é <em>reduzir graus de liberdade do erro</em>, o que diminui o poder estatístico e pode mascarar efeitos reais. Cada covariável custa gl — use apenas as teoricamente justificadas.',
+    charC:'huginn',charW:'thor'
+  },
+  7:{
+    correct:'✅ Brilhante! A MANCOVA é o caso mais geral do GLM: <em>Y (matriz de VDs) = X (fatores categóricos + covariáveis contínuas) × β + ε</em>. ANOVA, ANCOVA e MANOVA são todos casos particulares da MANCOVA!',
+    wrong:'❌ No GLM, a MANCOVA é o <em>caso mais geral</em>: Y é uma matriz (múltiplas VDs) e X inclui fatores + covariáveis. ANOVA, ANCOVA e MANOVA são simplificações dessa equação.',
+    charC:'odin',charW:'thor'
+  },
+  8:{
+    correct:'✅ Correto! Regra prática: <em>n por grupo deve exceder o número de VDs + covariáveis</em>. Com 4 VDs e 2 covariáveis = 6 variáveis, cada grupo precisa de mais que 6 sujeitos (recomenda-se 20+ por célula). Grupos menores que p + covariáveis tornam as matrizes singulares!',
+    wrong:'❌ O cuidado crítico é que <em>n por grupo deve exceder VDs + covariáveis</em>. Com 4 VDs + 2 covariáveis = 6, cada grupo precisa de mais de 6 sujeitos (ideal: 20+). Matrizes singulares invalidam toda a análise.',
+    charC:'muninn',charW:'thor'
+  },
+  9:{
+    correct:'✅ ThorMento erra feio! Rodar MANOVA + ANCOVAs separadas: (1) ignora a correlação entre VDs nos testes de follow-up, (2) não controla covariáveis no teste omnibus, (3) infla erro Tipo I. A <em>MANCOVA faz tudo em um modelo</em> — esse é o poder da parcimônia!',
+    wrong:'❌ A proposta de ThorMento falha porque ANCOVAs separadas <em>ignoram a correlação entre VDs</em>, não controlam covariáveis no teste omnibus e inflam o erro Tipo I. A MANCOVA unifica tudo em um modelo — parcimônia real.',
+    charC:'odin',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  const opts=document.querySelectorAll(`#q${q}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();earnGear();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }else{
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();restoreGear();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='\u{1F3C6} Soberano do Trono de Odin';rc='#f0c040';}
+  else if(pct>=70){rank='\u{1F4DC} Conselheiro Real';rc='#58a6ff';}
+  else if(pct>=40){rank='\u{1F6E1}️ Escudeiro do Salão';rc='#8b949e';}
+  else{rank='⛓️ Servo dos Corredores';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 13 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    ${resultVikingHTML()}
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'\u{1F6E1}️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70
+      ?'O Trono de Odin brilha em sua homenagem! Você dominou a MANCOVA — a coroa do Modelo Linear Geral. Da parcimônia às inclinações de regressão, do Pillai\'s Trace ao Bonferroni, tudo converge em suas mãos. Vá e analise com sabedoria!'
+      :'O Trono tremeu, mas não se curvou... Volte e revise: a fusão MANOVA + ANCOVA, os pressupostos adicionais, o follow-up com ANCOVAs, a armadilha do kitchen sink e o GLM. A MANCOVA espera sua segunda tentativa!'
+    )}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">\u{1F504} Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+// ════════════════════════════════════════════════════
+// ARMOR SYSTEM
+// ════════════════════════════════════════════════════
+var GEAR_ITEMS=[
+  {s:'boots',n:'Botas do Trono',h:'<div style="display:flex;gap:14px"><div style="background:linear-gradient(#f0c040,#d4a017);width:16px;height:10px;border-radius:3px;border:1.5px solid #b8860b"></div><div style="background:linear-gradient(#f0c040,#d4a017);width:16px;height:10px;border-radius:3px;border:1.5px solid #b8860b"></div></div>'},
+  {s:'mail',n:'Armadura Suprema',h:'<div style="width:46px;height:42px;background:linear-gradient(135deg,#f0c040,#ff6b35);clip-path:polygon(50% 0%,100% 30%,100% 100%,0 100%,0 30%);border:1.5px solid #d4a017"></div>'},
+  {s:'right',n:'Cetro da Unificação',h:'<div style="display:flex;flex-direction:column;align-items:center"><div style="width:10px;height:10px;background:linear-gradient(135deg,#f0c040,#58a6ff);border-radius:50%;border:1.5px solid #b8860b"></div><div style="width:8px;height:40px;background:linear-gradient(#f0c040,#58a6ff);border-radius:3px;border:1.5px solid #b8860b;margin-top:-2px"></div></div>'},
+  {s:'left',n:'Escudo do GLM',h:'<div style="width:28px;height:32px;background:radial-gradient(circle,#58a6ff,#1a3a5c);border-radius:50% 50% 50% 50% / 45% 45% 55% 55%;border:2px solid #f0c040;position:relative"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;color:#f0c040;font-weight:bold;font-family:monospace">GLM</div></div>'},
+  {s:'cape',n:'Manto da Parcimônia',h:'<div style="width:58px;height:52px;background:linear-gradient(180deg,#f0c040,#9b59b6);clip-path:polygon(15% 0%,85% 0%,100% 100%,0% 100%);opacity:.7"></div>'},
+  {s:'helm',n:'Coroa de Odin',h:'<div style="width:38px;height:24px;background:linear-gradient(#f0c040,#ff9500);clip-path:polygon(10% 100%,20% 30%,35% 60%,50% 0%,65% 60%,80% 30%,90% 100%);border-bottom:3px solid #d4a017"></div>'}
+];
+var gearEarned=0;
+function armorPanelHTML(){
+  var rows='';
+  for(var i=0;i<GEAR_ITEMS.length;i++){rows+='<div class="gp-row'+(i<gearEarned?' earned':'')+'" id="gprow'+i+'"><span class="gp-dot"></span><span>'+GEAR_ITEMS[i].n+'</span></div>';}
+  var sl='<div class="vm-sparks" id="vmsparks"></div>';
+  sl+='<div class="vm-slot vm-cape" id="vmslot-cape"></div>';
+  sl+='<div class="vm-head"></div><div class="vm-arm-l"></div><div class="vm-arm-r"></div><div class="vm-torso"></div><div class="vm-leg-l"></div><div class="vm-leg-r"></div>';
+  sl+='<div class="vm-slot vm-boots" id="vmslot-boots"></div><div class="vm-slot vm-mail" id="vmslot-mail"></div>';
+  sl+='<div class="vm-slot vm-left" id="vmslot-left"></div><div class="vm-slot vm-right" id="vmslot-right"></div>';
+  sl+='<div class="vm-slot vm-helm" id="vmslot-helm"></div>';
+  return '<div class="armor-panel"><div class="viking-mini" id="vmini">'+sl+'</div><div class="gear-progress">'+rows+'</div></div>';
+}
+function restoreGear(){for(var i=0;i<gearEarned&&i<GEAR_ITEMS.length;i++){var g=GEAR_ITEMS[i],el=document.getElementById('vmslot-'+g.s);if(el){el.innerHTML=g.h;el.classList.add('on');}}}
+function earnGear(){
+  if(gearEarned>=GEAR_ITEMS.length)return;
+  var g=GEAR_ITEMS[gearEarned],el=document.getElementById('vmslot-'+g.s);
+  if(el){el.innerHTML=g.h;el.classList.add('on','vm-flash');setTimeout(function(){el.classList.remove('vm-flash')},500);spawnVMSparks(el);}
+  var row=document.getElementById('gprow'+gearEarned);if(row)row.classList.add('earned');
+  gearEarned++;
+}
+function spawnVMSparks(el){
+  var sc=document.getElementById('vmsparks');if(!sc||!el)return;
+  var r=el.getBoundingClientRect(),sr=document.getElementById('vmini').getBoundingClientRect();
+  var cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+  var cols=['#f0c040','#f08030','#f0e080','#ff6040','#ffd060'];
+  for(var i=0;i<10;i++){var s=document.createElement('div');s.className='vm-spark';
+    var a=Math.random()*Math.PI*2,d=20+Math.random()*30;
+    s.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+cols[Math.floor(Math.random()*5)]+';--sx:'+(Math.cos(a)*d)+'px;--sy:'+(Math.sin(a)*d)+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px';
+    sc.appendChild(s);setTimeout(function(x){x.remove()},700,s);}
+}
+function resultVikingHTML(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var ti=[];if(pct>=90)ti=GEAR_ITEMS;else if(pct>=70)ti=GEAR_ITEMS.slice(0,5);else if(pct>=40)ti=GEAR_ITEMS.slice(0,2);
+  var html='<div class="result-viking">';
+  html+='<div class="rv-slot rv-cape" id="rvs-cape"></div>';
+  html+='<div class="rv-head"></div><div class="rv-arm-l"></div><div class="rv-arm-r"></div><div class="rv-torso"></div><div class="rv-leg-l"></div><div class="rv-leg-r"></div>';
+  html+='<div class="rv-slot rv-boots" id="rvs-boots"></div><div class="rv-slot rv-mail" id="rvs-mail"></div>';
+  html+='<div class="rv-slot rv-left" id="rvs-left"></div><div class="rv-slot rv-right" id="rvs-right"></div>';
+  html+='<div class="rv-slot rv-helm" id="rvs-helm"></div></div>';
+  setTimeout(function(){ti.forEach(function(g){var e=document.getElementById('rvs-'+g.s);if(e)e.innerHTML=g.h;});},100);
+  return html;
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>
