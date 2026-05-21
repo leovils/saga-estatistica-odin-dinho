@@ -326,7 +326,7 @@ function buildScenes(){
       ${xpBar()}
       ${dialogue('odin','<em>Friedman</em> é o Kruskal-Wallis para <em>medidas repetidas</em>. A diferença crucial: os rankings são feitos <em>DENTRO de cada sujeito</em> (por linha), não no conjunto todo.')}
       ${dialogue('muninn','A diferença chave: no Kruskal-Wallis, ranqueamos <em>TODOS</em> os dados juntos. No Friedman, ranqueamos <em>DENTRO de cada sujeito</em> (por linha). Cada sujeito tem seus próprios ranks de 1 a k.')}
-      ${dialogue('huginn','Kendall\\'s W = χ²_F / [n(k−1)] mede a <em>concordância entre os sujeitos</em>. W = 1 significa unanimidade total; W = 0 significa zero acordo. É o tamanho de efeito do Friedman!')}
+      ${dialogue('huginn','Kendall&rsquo;s W = χ²_F / [n(k−1)] mede a <em>concordância entre os sujeitos</em>. W = 1 significa unanimidade total; W = 0 significa zero acordo. É o tamanho de efeito do Friedman!')}
       <button class="continue-btn" onclick="nextScene()">Continuar →</button>
     </div>`});
 
@@ -470,7 +470,7 @@ function buildScenes(){
       ${dialogue('narrator','A névoa de Niflheim começa a dissipar. As ferramentas de ranking brilham no cinturão do estudante — Mann-Whitney, Wilcoxon, Kruskal-Wallis, Friedman, Spearman, Kendall. Cada uma forjada para enfrentar os dados mais rebeldes.')}
       ${dialogue('odin','Você conquistou o <em>Reino dos Testes Não-Paramétricos</em>! Rankings são armas versáteis que funcionam onde as métricas tradicionais falham.')}
       ${dialogue('thor','Tá, admito... tem situações onde o teste t não serve mesmo. Mas eu ainda prefiro força bruta!')}
-      ${dialogue('muninn','<strong>Lição dos Corvos — Muninn resume:</strong><br>• Mann-Whitney U: 2 grupos independentes<br>• Wilcoxon Signed-Rank: dados pareados<br>• Kruskal-Wallis H: 3+ grupos independentes (post-hoc: Dunn)<br>• Friedman: 3+ condições repetidas (efeito: Kendall\\'s W)<br>• Spearman ρ e Kendall τ: correlações não-paramétricas<br>• Tamanho de efeito: r = |z|/√N')}
+      ${dialogue('muninn','<strong>Lição dos Corvos — Muninn resume:</strong><br>• Mann-Whitney U: 2 grupos independentes<br>• Wilcoxon Signed-Rank: dados pareados<br>• Kruskal-Wallis H: 3+ grupos independentes (post-hoc: Dunn)<br>• Friedman: 3+ condições repetidas (efeito: Kendall&rsquo;s W)<br>• Spearman ρ e Kendall τ: correlações não-paramétricas<br>• Tamanho de efeito: r = |z|/√N')}
       ${dialogue('huginn','<strong>Lição dos Corvos — Huginn desafia:</strong><br>• Paramétrico quando possível (mais poder), não-paramétrico quando necessário (mais robusto)<br>• A escolha depende dos <em>dados</em>, não da sua preferência<br>• SEMPRE reporte o tamanho de efeito — mesmo em testes não-paramétricos<br>• Kruskal-Wallis é omnibus — não esqueça o post-hoc!')}
       <button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚔️</button>
     </div>`});
