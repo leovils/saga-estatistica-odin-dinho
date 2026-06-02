@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANOVA Fatorial 2×3 — Passo a Passo | Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117; --bg-card: #161b22; --bg-panel: #1c2333;
+  --odin-blue: #58a6ff; --thor-red: #f85149; --corvo-purple: #bc8cff;
+  --gold: #f0c040; --silver: #8b949e; --text: #e6edf3; --text-dim: #8b949e;
+  --success: #3fb950; --border: #30363d;
+  --ferro-color: #58a6ff; --aco-color: #f0c040;
+  --agua-color: #58a6ff; --oleo-color: #f0c040; --neve-color: #bc8cff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-dark); color: var(--text);
+  font-family: 'Patrick Hand', cursive; font-size: 18px;
+  line-height: 1.6; min-height: 100vh;
+}
+.container { max-width: 920px; margin: 0 auto; padding: 20px; }
+
+/* PROGRESS BAR */
+.progress-bar-container {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg-dark); padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+.progress-label {
+  font-family: 'Permanent Marker', cursive; font-size: 14px;
+  color: var(--text-dim); margin-bottom: 6px; text-align: center;
+}
+.progress-track {
+  width: 100%; height: 8px; background: var(--bg-panel);
+  border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--odin-blue), var(--gold));
+  border-radius: 4px; transition: width 0.5s ease;
+}
+
+/* STEP CONTENT */
+.step-content {
+  min-height: 60vh; padding: 30px 0;
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.step-title {
+  font-family: 'Bangers', cursive; font-size: 2.2rem;
+  color: var(--gold); margin-bottom: 20px; letter-spacing: 1px;
+}
+.step-subtitle {
+  font-family: 'Permanent Marker', cursive; font-size: 1.3rem;
+  color: var(--odin-blue); margin-bottom: 15px;
+}
+
+/* DIALOGUE BOXES */
+.dialogue-box {
+  border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+  border-left: 4px solid; position: relative;
+}
+.dialogue-box.odin { background: rgba(88,166,255,0.08); border-left-color: var(--odin-blue); }
+.dialogue-box.thor { background: rgba(248,81,73,0.08); border-left-color: var(--thor-red); }
+.dialogue-box.corvo { background: rgba(188,140,255,0.08); border-left-color: var(--corvo-purple); }
+.char-name {
+  font-family: 'Permanent Marker', cursive; font-size: 1rem; margin-bottom: 6px;
+}
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+.dialogue-text { font-size: 1.05rem; line-height: 1.5; }
+
+/* DATA TABLE */
+.data-table {
+  width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 1rem;
+}
+.data-table th, .data-table td {
+  padding: 10px 14px; text-align: center; border: 1px solid var(--border);
+}
+.data-table th {
+  background: var(--bg-panel); font-family: 'Permanent Marker', cursive; font-size: 0.95rem;
+}
+.data-table td { background: var(--bg-card); transition: background 0.2s; }
+.data-table tr:hover td { background: rgba(88,166,255,0.1); }
+.mean-row td, .mean-row th {
+  font-family: 'Permanent Marker', cursive; background: var(--bg-panel) !important;
+  color: var(--gold);
+}
+
+/* FORMULA */
+.formula {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+  font-size: 1.15rem; text-align: center;
+  font-family: 'Patrick Hand', cursive; color: var(--gold);
+}
+.formula-label {
+  font-family: 'Permanent Marker', cursive; color: var(--text-dim);
+  font-size: 0.85rem; margin-bottom: 6px;
+}
+
+/* CALC TABLE */
+.calc-table {
+  width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.95rem;
+}
+.calc-table th, .calc-table td {
+  padding: 8px 10px; text-align: center; border: 1px solid var(--border);
+}
+.calc-table th {
+  background: var(--bg-panel); font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem; color: var(--text-dim);
+}
+.calc-table td { background: var(--bg-card); }
+
+/* ANIMATED BAR */
+.bar-container { margin: 20px 0; }
+.bar-wrapper { display: flex; align-items: center; margin: 8px 0; }
+.bar-label {
+  width: 120px; font-family: 'Permanent Marker', cursive;
+  font-size: 0.9rem; text-align: right; padding-right: 10px; flex-shrink:0;
+}
+.bar-track {
+  flex: 1; height: 30px; background: var(--bg-panel);
+  border-radius: 6px; overflow: hidden; position: relative;
+}
+.bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+  width: 0;
+}
+.bar-value {
+  width: 90px; font-size: 0.9rem; padding-left: 10px; color: var(--gold); flex-shrink:0;
+}
+
+/* NAVIGATION */
+.nav-container {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0; border-top: 1px solid var(--border); margin-top: 30px;
+}
+.nav-btn {
+  font-family: 'Permanent Marker', cursive; font-size: 1.1rem;
+  padding: 12px 28px; border-radius: 10px; border: 2px solid var(--border);
+  background: var(--bg-card); color: var(--text); cursor: pointer;
+  transition: all 0.3s;
+}
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--odin-blue); background: rgba(88,166,255,0.15);
+  transform: translateY(-2px);
+}
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.next { border-color: var(--odin-blue); color: var(--odin-blue); }
+.step-indicator {
+  font-family: 'Permanent Marker', cursive; font-size: 0.9rem; color: var(--text-dim);
+}
+
+/* ANOVA TABLE */
+.anova-table {
+  width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95rem;
+}
+.anova-table th, .anova-table td {
+  padding: 10px 12px; text-align: center; border: 1px solid var(--border);
+}
+.anova-table th {
+  background: var(--bg-panel); font-family: 'Permanent Marker', cursive;
+  color: var(--gold); font-size: 0.9rem;
+}
+.anova-table td { background: var(--bg-card); }
+.anova-table .sig { color: var(--success); font-weight: bold; }
+.anova-table .ns { color: var(--text-dim); }
+.anova-table .total-row td { background: var(--bg-panel); font-weight: bold; }
+
+/* INTERACTION PLOT (canvas) */
+canvas.plot { background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--border); display: block; margin: 20px auto; max-width: 100%; }
+
+/* STACKED BAR */
+.ss-stack { display: flex; height: 40px; border-radius: 8px; overflow: hidden; margin: 16px 0; }
+.ss-stack div { display: flex; align-items: center; justify-content: center; font-family: 'Permanent Marker', cursive; font-size: 0.75rem; transition: width 1s ease; }
+.ss-legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 10px 0; font-size: 0.9rem; }
+.ss-legend span { display: flex; align-items: center; gap: 6px; }
+.ss-legend .dot { width: 12px; height: 12px; border-radius: 3px; }
+
+/* HIGHLIGHT */
+.highlight { color: var(--gold); font-weight: bold; }
+.highlight-blue { color: var(--odin-blue); }
+.highlight-red { color: var(--thor-red); }
+.highlight-green { color: var(--success); }
+.highlight-purple { color: var(--corvo-purple); }
+
+/* ANIMATION */
+.anim-number {
+  display: inline-block; transition: all 0.5s;
+  color: var(--gold); font-weight: bold;
+}
+.fade-in { animation: fadeIn 0.6s ease forwards; }
+.slide-up { animation: slideUp 0.6s ease forwards; }
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(20px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+/* CELL COLORS */
+.cell-ferro-agua { background: rgba(88,166,255,0.12) !important; }
+.cell-ferro-oleo { background: rgba(88,166,255,0.18) !important; }
+.cell-ferro-neve { background: rgba(88,166,255,0.08) !important; }
+.cell-aco-agua { background: rgba(240,192,64,0.12) !important; }
+.cell-aco-oleo { background: rgba(240,192,64,0.18) !important; }
+.cell-aco-neve { background: rgba(240,192,64,0.08) !important; }
+
+/* MINI CHARTS */
+.mini-charts { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin: 20px 0; }
+.mini-chart { flex: 1; min-width: 200px; max-width: 280px; background: var(--bg-panel); border-radius: 10px; padding: 16px; border: 1px solid var(--border); }
+.mini-chart h4 { font-family: 'Permanent Marker', cursive; text-align: center; margin-bottom: 12px; color: var(--text-dim); font-size: 0.9rem; }
+.mini-bar-group { display: flex; align-items: flex-end; justify-content: center; gap: 12px; height: 120px; }
+.mini-bar { width: 50px; border-radius: 6px 6px 0 0; transition: height 1s ease; position: relative; }
+.mini-bar .val { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; font-family: 'Permanent Marker', cursive; white-space: nowrap; }
+
+/* HYPOTHESIS BOX */
+.hyp-box {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px; margin: 14px 0;
+}
+.hyp-box h4 {
+  font-family: 'Permanent Marker', cursive; color: var(--odin-blue);
+  margin-bottom: 8px; font-size: 1rem;
+}
+.hyp-box p { font-size: 1rem; margin: 4px 0; }
+
+/* APA BOX */
+.apa-box {
+  background: rgba(63,185,80,0.08); border: 1px solid var(--success);
+  border-radius: 10px; padding: 18px; margin: 16px 0;
+  font-family: 'Patrick Hand', cursive; font-size: 1rem;
+  line-height: 1.7;
+}
+.apa-box .apa-label {
+  font-family: 'Permanent Marker', cursive; color: var(--success);
+  font-size: 0.85rem; margin-bottom: 8px;
+}
+
+/* SIGNATURE */
+.signature {
+  text-align: center; padding: 30px 0; color: var(--text-dim);
+  font-family: 'Permanent Marker', cursive; font-size: 0.85rem;
+  border-top: 1px solid var(--border); margin-top: 30px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .step-title { font-size: 1.6rem; }
+  .data-table, .calc-table, .anova-table { font-size: 0.8rem; }
+  .data-table th, .data-table td, .calc-table th, .calc-table td { padding: 6px 4px; }
+  .bar-label { width: 80px; font-size: 0.75rem; }
+  .mini-charts { flex-direction: column; align-items: center; }
+  .nav-btn { padding: 10px 18px; font-size: 0.95rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- PROGRESS -->
+<div class="progress-bar-container">
+  <div class="progress-label" id="progressLabel">Passo 0 de 13</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- CONTENT -->
+<div id="stepContent" class="step-content"></div>
+
+<!-- NAVIGATION -->
+<div class="nav-container">
+  <button class="nav-btn" id="btnPrev" onclick="prevStep()" disabled>&#9664; Anterior</button>
+  <span class="step-indicator" id="stepIndicator">0 / 13</span>
+  <button class="nav-btn next" id="btnNext" onclick="nextStep()">Pr&oacute;ximo &#9654;</button>
+</div>
+
+<div class="signature">Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026</div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const DATA = {
+  Ferro: { 'Água': [45,50,42,47], 'Óleo': [55,58,52,55], 'Neve': [40,38,44,42] },
+  'Aço':  { 'Água': [60,65,58,63], 'Óleo': [70,75,68,72], 'Neve': [65,62,68,61] }
+};
+const metals = ['Ferro','Aço'];
+const techs = ['Água','Óleo','Neve'];
+const a=2, b=3, n=4, N=24;
+
+function mean(arr){ return arr.reduce((s,v)=>s+v,0)/arr.length; }
+function round2(v){ return Math.round(v*100)/100; }
+function round4(v){ return Math.round(v*10000)/10000; }
+
+// Cell means
+const cellMean = {};
+metals.forEach(m => techs.forEach(t => { cellMean[m+'+'+t] = mean(DATA[m][t]); }));
+
+// Row means
+const rowMean = {};
+metals.forEach(m => {
+  let all = []; techs.forEach(t => all.push(...DATA[m][t]));
+  rowMean[m] = mean(all);
+});
+
+// Col means
+const colMean = {};
+techs.forEach(t => {
+  let all = []; metals.forEach(m => all.push(...DATA[m][t]));
+  colMean[t] = mean(all);
+});
+
+// Grand mean
+let allVals = [];
+metals.forEach(m => techs.forEach(t => allVals.push(...DATA[m][t])));
+const GM = mean(allVals); // 56.458333...
+
+// SST
+const SST = allVals.reduce((s,x) => s + (x-GM)**2, 0);
+
+// SS_A
+const SS_A = b*n * metals.reduce((s,m) => s + (rowMean[m]-GM)**2, 0);
+
+// SS_B
+const SS_B = a*n * techs.reduce((s,t) => s + (colMean[t]-GM)**2, 0);
+
+// SS_AB
+let SS_AB = 0;
+const cellResidual = {};
+metals.forEach(m => techs.forEach(t => {
+  const r = cellMean[m+'+'+t] - rowMean[m] - colMean[t] + GM;
+  cellResidual[m+'+'+t] = r;
+  SS_AB += n * r**2;
+}));
+
+// SS_Error
+let SS_Error = 0;
+metals.forEach(m => techs.forEach(t => {
+  const cm = cellMean[m+'+'+t];
+  DATA[m][t].forEach(x => { SS_Error += (x-cm)**2; });
+}));
+
+// DF
+const df_A=a-1, df_B=b-1, df_AB=(a-1)*(b-1), df_Error=a*b*(n-1), df_Total=N-1;
+
+// MS
+const MS_A=SS_A/df_A, MS_B=SS_B/df_B, MS_AB=SS_AB/df_AB, MS_Error=SS_Error/df_Error;
+
+// F
+const F_A=MS_A/MS_Error, F_B=MS_B/MS_Error, F_AB=MS_AB/MS_Error;
+
+// Partial eta squared
+const eta_A=SS_A/(SS_A+SS_Error), eta_B=SS_B/(SS_B+SS_Error), eta_AB=SS_AB/(SS_AB+SS_Error);
+
+// F critical
+const Fcrit_1_18 = 4.414;
+const Fcrit_2_18 = 3.555;
+
+// ============================================================
+// DIALOGUE HELPER
+// ============================================================
+function dlg(character, name, text){
+  return `<div class="dialogue-box ${character}"><div class="char-name ${character}">${name}</div><div class="dialogue-text">${text}</div></div>`;
+}
+
+// ============================================================
+// STEPS
+// ============================================================
+const TOTAL_STEPS = 14;
+let currentStep = 0;
+
+function getStepHTML(step){
+  switch(step){
+  // ---- STEP 0: INTRODUÇÃO ----
+  case 0: return `
+<div class="step-title">&#9876; Passo 0 &mdash; A Grande Forja de Asgard</div>
+<p>A Grande Forja de Asgard decidiu testar a qualidade de suas espadas. Dois fatores importam:</p>
+<ul style="margin:12px 0 12px 24px;">
+  <li><strong>Fator A &mdash; Tipo de Metal:</strong> Ferro N&oacute;rdico vs. A&ccedil;o R&uacute;nico</li>
+  <li><strong>Fator B &mdash; T&eacute;cnica de T&ecirc;mpera:</strong> &Aacute;gua, &Oacute;leo, Neve de Jotunheim</li>
+</ul>
+<p>Delineamento: <span class="highlight">2 &times; 3 fatorial</span>, com <span class="highlight">n = 4</span> espadas por combina&ccedil;&atilde;o (N = 24).</p>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','Duas vari&aacute;veis podem afetar a qualidade: o metal E a t&eacute;cnica. Mas ser&aacute; que elas <strong>interagem</strong>? Ser&aacute; que o melhor metal muda dependendo da t&eacute;cnica?')}
+${dlg('thor','&#9889; ThorMento','Ferro ou A&ccedil;o, f&aacute;cil &mdash; o mais caro &eacute; melhor! Pra que complicar?')}
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','Nem sempre, ThorMento. Talvez o melhor metal <em>mude</em> dependendo da t&eacute;cnica de t&ecirc;mpera. &Eacute; exatamente isso que a ANOVA Fatorial descobre.')}
+
+<div class="step-subtitle">Dados de Resist&ecirc;ncia (escala 0&ndash;100)</div>
+<table class="data-table" id="dataTableIntro">
+  <thead>
+    <tr><th></th><th>&#128167; &Aacute;gua</th><th>&#129387; &Oacute;leo</th><th>&#10052; Neve</th></tr>
+  </thead>
+  <tbody>
+    <tr><th style="text-align:left;">&#9874; Ferro N&oacute;rdico</th>
+      <td class="cell-ferro-agua">45, 50, 42, 47</td>
+      <td class="cell-ferro-oleo">55, 58, 52, 55</td>
+      <td class="cell-ferro-neve">40, 38, 44, 42</td></tr>
+    <tr><th style="text-align:left;">&#128737; A&ccedil;o R&uacute;nico</th>
+      <td class="cell-aco-agua">60, 65, 58, 63</td>
+      <td class="cell-aco-oleo">70, 75, 68, 72</td>
+      <td class="cell-aco-neve">65, 62, 68, 61</td></tr>
+  </tbody>
+</table>
+`;
+
+  // ---- STEP 1: INTERAÇÃO ----
+  case 1: return `
+<div class="step-title">&#128200; Passo 1 &mdash; O Conceito de Intera&ccedil;&atilde;o</div>
+<p>A intera&ccedil;&atilde;o &eacute; o conceito <strong>mais importante</strong> da ANOVA Fatorial. Significa que o efeito de um fator <em>depende</em> do n&iacute;vel do outro fator.</p>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','Olhe para o gr&aacute;fico de intera&ccedil;&atilde;o. Se as linhas forem <strong>paralelas</strong>, n&atilde;o h&aacute; intera&ccedil;&atilde;o. Se elas <strong>divergem ou se cruzam</strong>, h&aacute; intera&ccedil;&atilde;o!')}
+
+<canvas id="interactionPlot" class="plot" width="600" height="380"></canvas>
+
+${dlg('thor','&#9889; ThorMento','Se as linhas se cruzam, algo estranho acontece...')}
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','N&atilde;o estranho &mdash; <strong>INTERESSANTE</strong>. O efeito de um fator DEPENDE do n&iacute;vel do outro. A diferen&ccedil;a entre Ferro e A&ccedil;o n&atilde;o &eacute; a mesma para toda t&eacute;cnica.')}
+${dlg('corvo','&#128038; Huginn provoca:','Intera&ccedil;&atilde;o significa que 1 + 1 &ne; 2. Os efeitos combinados n&atilde;o s&atilde;o simplesmente a soma dos efeitos individuais!')}
+
+<p>No nosso gr&aacute;fico, as linhas n&atilde;o s&atilde;o perfeitamente paralelas &mdash; a diferen&ccedil;a entre Ferro e A&ccedil;o &eacute; <strong>maior</strong> na Neve (23 pontos) do que na &Aacute;gua (15.5) ou &Oacute;leo (16.25). Isso sugere uma poss&iacute;vel intera&ccedil;&atilde;o.</p>
+`;
+
+  // ---- STEP 2: HIPÓTESES ----
+  case 2: return `
+<div class="step-title">&#128220; Passo 2 &mdash; Tr&ecirc;s Conjuntos de Hip&oacute;teses</div>
+
+${dlg('corvo','&#128038; Muninn sussurra:','S&atilde;o TR&Ecirc;S testes em um! Efeito principal de A, efeito principal de B, e intera&ccedil;&atilde;o A&times;B.')}
+
+<div class="hyp-box">
+  <h4>Hip&oacute;tese 1 &mdash; Efeito Principal de A (Metal)</h4>
+  <p>H&#8320;: &mu;<sub>Ferro</sub> = &mu;<sub>A&ccedil;o</sub> (n&atilde;o h&aacute; diferen&ccedil;a entre metais)</p>
+  <p>H&#8321;: &mu;<sub>Ferro</sub> &ne; &mu;<sub>A&ccedil;o</sub></p>
+</div>
+
+<div class="hyp-box">
+  <h4>Hip&oacute;tese 2 &mdash; Efeito Principal de B (T&eacute;cnica)</h4>
+  <p>H&#8320;: &mu;<sub>&Aacute;gua</sub> = &mu;<sub>&Oacute;leo</sub> = &mu;<sub>Neve</sub> (n&atilde;o h&aacute; diferen&ccedil;a entre t&eacute;cnicas)</p>
+  <p>H&#8321;: pelo menos uma m&eacute;dia difere</p>
+</div>
+
+<div class="hyp-box">
+  <h4>Hip&oacute;tese 3 &mdash; Intera&ccedil;&atilde;o A &times; B</h4>
+  <p>H&#8320;: N&atilde;o h&aacute; intera&ccedil;&atilde;o (o efeito do metal n&atilde;o depende da t&eacute;cnica)</p>
+  <p>H&#8321;: H&aacute; intera&ccedil;&atilde;o (o efeito do metal depende da t&eacute;cnica)</p>
+</div>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','Na ANOVA Fatorial, testamos tudo de uma vez. &Eacute; eficiente &mdash; e nos d&aacute; informa&ccedil;&otilde;es que um teste simples jamais revelaria.')}
+${dlg('thor','&#9889; ThorMento','Tr&ecirc;s hip&oacute;teses? Eu s&oacute; quero saber se A&ccedil;o &eacute; melhor!')}
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','E a resposta pode ser: <em>depende da t&eacute;cnica</em>. Por isso precisamos da intera&ccedil;&atilde;o, ThorMento.')}
+`;
+
+  // ---- STEP 3: MÉDIAS ----
+  case 3: return `
+<div class="step-title">&#128202; Passo 3 &mdash; M&eacute;dias Marginais e M&eacute;dia Geral</div>
+<p>Calculamos as m&eacute;dias de cada c&eacute;lula, cada linha (metal), cada coluna (t&eacute;cnica) e a m&eacute;dia geral.</p>
+
+<div class="formula">
+  <div class="formula-label">M&eacute;dia Geral (X&#772;)</div>
+  X&#772; = (45+50+42+47+55+58+52+55+40+38+44+42+60+65+58+63+70+75+68+72+65+62+68+61) / 24 = <span class="highlight">${round2(GM)}</span>
+</div>
+
+<table class="data-table">
+  <thead>
+    <tr><th></th><th>&#128167; &Aacute;gua</th><th>&#129387; &Oacute;leo</th><th>&#10052; Neve</th><th style="color:var(--gold)">M&eacute;dia Metal</th></tr>
+  </thead>
+  <tbody>
+    <tr><th style="text-align:left;">&#9874; Ferro</th>
+      <td class="cell-ferro-agua"><strong>${round2(cellMean['Ferro+Água'])}</strong></td>
+      <td class="cell-ferro-oleo"><strong>${round2(cellMean['Ferro+Óleo'])}</strong></td>
+      <td class="cell-ferro-neve"><strong>${round2(cellMean['Ferro+Neve'])}</strong></td>
+      <td style="color:var(--odin-blue);font-weight:bold">${round2(rowMean['Ferro'])}</td></tr>
+    <tr><th style="text-align:left;">&#128737; A&ccedil;o</th>
+      <td class="cell-aco-agua"><strong>${round2(cellMean['Aço+Água'])}</strong></td>
+      <td class="cell-aco-oleo"><strong>${round2(cellMean['Aço+Óleo'])}</strong></td>
+      <td class="cell-aco-neve"><strong>${round2(cellMean['Aço+Neve'])}</strong></td>
+      <td style="color:var(--aco-color);font-weight:bold">${round2(rowMean['Aço'])}</td></tr>
+    <tr class="mean-row"><th style="text-align:left;">M&eacute;dia T&eacute;cnica</th>
+      <td>${round2(colMean['Água'])}</td>
+      <td>${round2(colMean['Óleo'])}</td>
+      <td>${round2(colMean['Neve'])}</td>
+      <td style="color:var(--success);font-size:1.1em">${round2(GM)}</td></tr>
+  </tbody>
+</table>
+
+${dlg('corvo','&#128038; Muninn sussurra:',`A m&eacute;dia geral &eacute; <strong>${round2(GM)}</strong>. As m&eacute;dias marginais &mdash; de linha e coluna &mdash; s&atilde;o as m&eacute;dias que ignoram o outro fator.`)}
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho',`Perceba: A&ccedil;o R&uacute;nico (${round2(rowMean['Aço'])}) supera Ferro N&oacute;rdico (${round2(rowMean['Ferro'])}) por ${round2(rowMean['Aço']-rowMean['Ferro'])} pontos. E &Oacute;leo (${round2(colMean['Óleo'])}) lidera entre as t&eacute;cnicas. Mas ser&aacute; que essa hist&oacute;ria &eacute; t&atilde;o simples?`)}
+`;
+
+  // ---- STEP 4: SST ----
+  case 4: return `
+<div class="step-title">&#127919; Passo 4 &mdash; SST (Soma dos Quadrados Total)</div>
+<div class="formula">
+  <div class="formula-label">F&oacute;rmula</div>
+  SS<sub>T</sub> = &Sigma;(X<sub>ijk</sub> &minus; X&#772;)&sup2;
+</div>
+
+<p>Subtra&iacute;mos a m&eacute;dia geral (<span class="highlight">${round2(GM)}</span>) de cada uma das 24 observa&ccedil;&otilde;es e somamos os quadrados:</p>
+
+<div id="sstAnimation" class="bar-container"></div>
+
+<div class="formula" style="font-size:1.3rem;">
+  SS<sub>T</sub> = <span class="highlight">${round2(SST)}</span>
+</div>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','Essa &eacute; a variabilidade TOTAL. Agora vamos decompor em partes: efeito do metal, efeito da t&eacute;cnica, intera&ccedil;&atilde;o, e erro.')}
+
+<p style="margin-top:14px;">A beleza da ANOVA Fatorial: <span class="highlight">SS<sub>T</sub> = SS<sub>A</sub> + SS<sub>B</sub> + SS<sub>AB</sub> + SS<sub>Erro</sub></span></p>
+`;
+
+  // ---- STEP 5: SS_A ----
+  case 5: return `
+<div class="step-title">&#9874; Passo 5 &mdash; SS<sub>A</sub> (Efeito Principal do Metal)</div>
+<div class="formula">
+  <div class="formula-label">F&oacute;rmula</div>
+  SS<sub>A</sub> = b &times; n &times; &Sigma;(X&#772;<sub>a<sub>i</sub></sub> &minus; X&#772;)&sup2;
+</div>
+
+<p>O efeito principal do Metal <strong>ignora completamente</strong> as t&eacute;cnicas &mdash; olha apenas para as m&eacute;dias de cada metal.</p>
+
+<div class="formula">
+  SS<sub>A</sub> = ${b} &times; ${n} &times; [(${round2(rowMean['Ferro'])} &minus; ${round2(GM)})&sup2; + (${round2(rowMean['Aço'])} &minus; ${round2(GM)})&sup2;]
+</div>
+<div class="formula">
+  = 12 &times; [(${round2(rowMean['Ferro']-GM)})&sup2; + (${round2(rowMean['Aço']-GM)})&sup2;]
+</div>
+<div class="formula">
+  = 12 &times; [${round2((rowMean['Ferro']-GM)**2)} + ${round2((rowMean['Aço']-GM)**2)}]
+</div>
+<div class="formula" style="font-size:1.3rem;">
+  SS<sub>A</sub> = <span class="highlight">${round2(SS_A)}</span>
+</div>
+
+<div id="ssABars" class="bar-container"></div>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho',`O efeito principal de A ignora completamente as t&eacute;cnicas &mdash; olha s&oacute; para os metais. Ferro ${round2(rowMean['Ferro'])} vs. A&ccedil;o ${round2(rowMean['Aço'])} &mdash; uma diferen&ccedil;a bruta de ${round2(rowMean['Aço']-rowMean['Ferro'])} pontos!`)}
+`;
+
+  // ---- STEP 6: SS_B ----
+  case 6: return `
+<div class="step-title">&#128167; Passo 6 &mdash; SS<sub>B</sub> (Efeito Principal da T&eacute;cnica)</div>
+<div class="formula">
+  <div class="formula-label">F&oacute;rmula</div>
+  SS<sub>B</sub> = a &times; n &times; &Sigma;(X&#772;<sub>b<sub>j</sub></sub> &minus; X&#772;)&sup2;
+</div>
+
+<p>Agora ignoramos o metal e olhamos s&oacute; para as t&eacute;cnicas:</p>
+
+<div class="formula">
+  SS<sub>B</sub> = ${a} &times; ${n} &times; [(${round2(colMean['Água'])} &minus; ${round2(GM)})&sup2; + (${round2(colMean['Óleo'])} &minus; ${round2(GM)})&sup2; + (${round2(colMean['Neve'])} &minus; ${round2(GM)})&sup2;]
+</div>
+<div class="formula">
+  = 8 &times; [${round2((colMean['Água']-GM)**2)} + ${round2((colMean['Óleo']-GM)**2)} + ${round2((colMean['Neve']-GM)**2)}]
+</div>
+<div class="formula" style="font-size:1.3rem;">
+  SS<sub>B</sub> = <span class="highlight">${round2(SS_B)}</span>
+</div>
+
+<div id="ssBBars" class="bar-container"></div>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho',`&Oacute;leo (${round2(colMean['Óleo'])}) lidera, seguido de &Aacute;gua (${round2(colMean['Água'])}) e Neve (${round2(colMean['Neve'])}). Mas lembre: isso ignora o tipo de metal.`)}
+`;
+
+  // ---- STEP 7: SS_AB ----
+  case 7: return `
+<div class="step-title">&#10024; Passo 7 &mdash; SS<sub>AB</sub> (Intera&ccedil;&atilde;o) &mdash; O PASSO-CHAVE</div>
+<div class="formula">
+  <div class="formula-label">F&oacute;rmula</div>
+  SS<sub>AB</sub> = n &times; &Sigma;(X&#772;<sub>c&eacute;lula</sub> &minus; X&#772;<sub>linha</sub> &minus; X&#772;<sub>coluna</sub> + X&#772;)&sup2;
+</div>
+
+<p>A intera&ccedil;&atilde;o &eacute; o <strong>res&iacute;duo</strong> &mdash; o que sobra na m&eacute;dia de cada c&eacute;lula depois de remover os efeitos principais.</p>
+
+${dlg('thor','&#9889; ThorMento','Minha cabe&ccedil;a vai explodir!')}
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','&Eacute; simples: intera&ccedil;&atilde;o = o que sobra depois de remover os efeitos principais. Para cada c&eacute;lula: pega a m&eacute;dia da c&eacute;lula, subtrai a m&eacute;dia da linha, subtrai a m&eacute;dia da coluna, e soma de volta a m&eacute;dia geral.')}
+
+<table class="calc-table">
+  <thead>
+    <tr><th>C&eacute;lula</th><th>X&#772;<sub>c&eacute;l</sub></th><th>&minus; X&#772;<sub>linha</sub></th><th>&minus; X&#772;<sub>col</sub></th><th>+ X&#772;</th><th>Res&iacute;duo</th><th>n &times; r&sup2;</th></tr>
+  </thead>
+  <tbody>
+${metals.map(m => techs.map(t => {
+  const key = m+'+'+t;
+  const cm = cellMean[key];
+  const r = cellResidual[key];
+  return `<tr>
+    <td>${m==='Ferro'?'&#9874;':'&#128737;'} ${m} + ${t}</td>
+    <td>${round2(cm)}</td><td>${round2(rowMean[m])}</td><td>${round2(colMean[t])}</td><td>${round2(GM)}</td>
+    <td style="color:var(--gold)">${round4(r)}</td>
+    <td style="color:var(--success)">${round2(n*r**2)}</td>
+  </tr>`;
+}).join('')).join('')}
+  </tbody>
+  <tfoot>
+    <tr class="mean-row"><td colspan="6" style="text-align:right;">SS<sub>AB</sub> =</td><td style="color:var(--success);font-size:1.1em">${round2(SS_AB)}</td></tr>
+  </tfoot>
+</table>
+
+<div class="formula" style="font-size:1.3rem;">
+  SS<sub>AB</sub> = <span class="highlight">${round2(SS_AB)}</span>
+</div>
+
+${dlg('corvo','&#128038; Huginn provoca:',`Compare: SS<sub>A</sub> = ${round2(SS_A)} &eacute; ENORME, SS<sub>B</sub> = ${round2(SS_B)} &eacute; grande, SS<sub>AB</sub> = ${round2(SS_AB)} &eacute; pequeno. Ser&aacute; que a intera&ccedil;&atilde;o ser&aacute; significativa? Depende do erro!`)}
+`;
+
+  // ---- STEP 8: SS_Error ----
+  case 8: return `
+<div class="step-title">&#128293; Passo 8 &mdash; SS<sub>Erro</sub> (Variabilidade Dentro das C&eacute;lulas)</div>
+<div class="formula">
+  <div class="formula-label">F&oacute;rmula</div>
+  SS<sub>Erro</sub> = &Sigma;(X<sub>ijk</sub> &minus; X&#772;<sub>c&eacute;lula</sub>)&sup2;
+</div>
+
+<p>&Eacute; a variabilidade que <strong>n&atilde;o se explica</strong> por nenhum dos fatores &mdash; diferen&ccedil;as entre espadas na mesma condi&ccedil;&atilde;o.</p>
+
+<table class="calc-table">
+  <thead><tr><th>C&eacute;lula</th><th>Valores</th><th>M&eacute;dia</th><th>&Sigma;(X&minus;X&#772;)&sup2;</th></tr></thead>
+  <tbody>
+${metals.map(m => techs.map(t => {
+  const key = m+'+'+t;
+  const cm = cellMean[key];
+  const ss = DATA[m][t].reduce((s,x)=>s+(x-cm)**2,0);
+  return `<tr><td>${m==='Ferro'?'&#9874;':'&#128737;'} ${m}+${t}</td><td>${DATA[m][t].join(', ')}</td><td>${round2(cm)}</td><td style="color:var(--thor-red)">${round2(ss)}</td></tr>`;
+}).join('')).join('')}
+  </tbody>
+  <tfoot><tr class="mean-row"><td colspan="3" style="text-align:right">SS<sub>Erro</sub> =</td><td style="color:var(--thor-red);font-size:1.1em">${round2(SS_Error)}</td></tr></tfoot>
+</table>
+
+<div class="step-subtitle">Verifica&ccedil;&atilde;o: SS<sub>T</sub> = SS<sub>A</sub> + SS<sub>B</sub> + SS<sub>AB</sub> + SS<sub>Erro</sub></div>
+
+<div class="ss-stack" id="ssStack">
+  <div style="background:var(--odin-blue);width:${(SS_A/SST*100).toFixed(1)}%">A</div>
+  <div style="background:var(--gold);width:${(SS_B/SST*100).toFixed(1)}%">B</div>
+  <div style="background:var(--corvo-purple);width:${(SS_AB/SST*100).toFixed(1)}%">AB</div>
+  <div style="background:var(--thor-red);width:${(SS_Error/SST*100).toFixed(1)}%">Erro</div>
+</div>
+<div class="ss-legend">
+  <span><span class="dot" style="background:var(--odin-blue)"></span>SS<sub>A</sub> = ${round2(SS_A)} (${(SS_A/SST*100).toFixed(1)}%)</span>
+  <span><span class="dot" style="background:var(--gold)"></span>SS<sub>B</sub> = ${round2(SS_B)} (${(SS_B/SST*100).toFixed(1)}%)</span>
+  <span><span class="dot" style="background:var(--corvo-purple)"></span>SS<sub>AB</sub> = ${round2(SS_AB)} (${(SS_AB/SST*100).toFixed(1)}%)</span>
+  <span><span class="dot" style="background:var(--thor-red)"></span>SS<sub>Erro</sub> = ${round2(SS_Error)} (${(SS_Error/SST*100).toFixed(1)}%)</span>
+</div>
+
+<div class="formula">
+  ${round2(SS_A)} + ${round2(SS_B)} + ${round2(SS_AB)} + ${round2(SS_Error)} = <span class="highlight">${round2(SS_A+SS_B+SS_AB+SS_Error)}</span> = SS<sub>T</sub> &#10003;
+</div>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho',`Decomposi&ccedil;&atilde;o perfeita! O efeito do metal (SS<sub>A</sub>) domina &mdash; explica ${(SS_A/SST*100).toFixed(1)}% da variabilidade total.`)}
+`;
+
+  // ---- STEP 9: DF ----
+  case 9: return `
+<div class="step-title">&#128290; Passo 9 &mdash; Graus de Liberdade</div>
+<p>Cada fonte de varia&ccedil;&atilde;o tem seus graus de liberdade:</p>
+
+<table class="data-table">
+  <thead><tr><th>Fonte</th><th>F&oacute;rmula</th><th>C&aacute;lculo</th><th>df</th></tr></thead>
+  <tbody>
+    <tr><td>Fator A (Metal)</td><td>a &minus; 1</td><td>2 &minus; 1</td><td class="highlight">${df_A}</td></tr>
+    <tr><td>Fator B (T&eacute;cnica)</td><td>b &minus; 1</td><td>3 &minus; 1</td><td class="highlight">${df_B}</td></tr>
+    <tr><td>Intera&ccedil;&atilde;o A&times;B</td><td>(a&minus;1)(b&minus;1)</td><td>(1)(2)</td><td class="highlight">${df_AB}</td></tr>
+    <tr><td>Erro</td><td>ab(n&minus;1)</td><td>2&times;3&times;3</td><td class="highlight">${df_Error}</td></tr>
+    <tr class="mean-row"><td>Total</td><td>N &minus; 1</td><td>24 &minus; 1</td><td style="color:var(--success)">${df_Total}</td></tr>
+  </tbody>
+</table>
+
+<div class="formula">
+  Verifica&ccedil;&atilde;o: ${df_A} + ${df_B} + ${df_AB} + ${df_Error} = <span class="highlight">${df_A+df_B+df_AB+df_Error}</span> = df<sub>Total</sub> &#10003;
+</div>
+
+${dlg('corvo','&#128038; Muninn sussurra:','Os graus de liberdade do <strong>erro</strong> s&atilde;o calculados como ab(n&minus;1) = 2 &times; 3 &times; (4&minus;1) = 18. S&atilde;o 6 c&eacute;lulas, cada uma com 3 graus de liberdade internos.')}
+`;
+
+  // ---- STEP 10: F RATIOS ----
+  case 10: return `
+<div class="step-title">&#9889; Passo 10 &mdash; Tr&ecirc;s Raz&otilde;es F</div>
+<p>Agora dividimos cada MS pelo MS<sub>Erro</sub> para obter as raz&otilde;es F:</p>
+
+<table class="data-table">
+  <thead><tr><th>Fonte</th><th>SS</th><th>df</th><th>MS = SS/df</th><th>F</th><th>F<sub>cr&iacute;t</sub></th><th>Resultado</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>A (Metal)</td><td>${round2(SS_A)}</td><td>${df_A}</td>
+      <td>${round2(MS_A)}</td><td class="highlight">${round2(F_A)}</td>
+      <td>${Fcrit_1_18}</td>
+      <td style="color:var(--success)">&#10003; p &lt; .001</td>
+    </tr>
+    <tr>
+      <td>B (T&eacute;cnica)</td><td>${round2(SS_B)}</td><td>${df_B}</td>
+      <td>${round2(MS_B)}</td><td class="highlight">${round2(F_B)}</td>
+      <td>${Fcrit_2_18}</td>
+      <td style="color:var(--success)">&#10003; p &lt; .001</td>
+    </tr>
+    <tr>
+      <td>A&times;B</td><td>${round2(SS_AB)}</td><td>${df_AB}</td>
+      <td>${round2(MS_AB)}</td><td class="highlight">${round2(F_AB)}</td>
+      <td>${Fcrit_2_18}</td>
+      <td style="color:${F_AB > Fcrit_2_18 ? 'var(--success)' : 'var(--text-dim)'}">${F_AB > Fcrit_2_18 ? '&#10003; p < .05' : '&#10007; n.s.'}</td>
+    </tr>
+    <tr style="background:var(--bg-panel)"><td>Erro</td><td>${round2(SS_Error)}</td><td>${df_Error}</td><td>${round2(MS_Error)}</td><td colspan="3"></td></tr>
+  </tbody>
+</table>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho',`Os tr&ecirc;s efeitos s&atilde;o significativos! O metal (F = ${round2(F_A)}) domina, a t&eacute;cnica (F = ${round2(F_B)}) &eacute; forte, e a intera&ccedil;&atilde;o (F = ${round2(F_AB)}) tamb&eacute;m ultrapassa o cr&iacute;tico de ${Fcrit_2_18}.`)}
+${dlg('thor','&#9889; ThorMento','A intera&ccedil;&atilde;o mal passou! N&atilde;o importa!')}
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','Importa sim, ThorMento. Significa que a superioridade do A&ccedil;o <em>varia</em> conforme a t&eacute;cnica. N&atilde;o &eacute; constante.')}
+
+<canvas id="fDistPlot" class="plot" width="600" height="300"></canvas>
+`;
+
+  // ---- STEP 11: ANOVA TABLE ----
+  case 11: return `
+<div class="step-title">&#128203; Passo 11 &mdash; Tabela ANOVA Fatorial Completa</div>
+
+<table class="anova-table">
+  <thead>
+    <tr><th>Fonte</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>&eta;&sup2;<sub>p</sub></th><th>Sig.</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:left">Metal (A)</td>
+      <td>${round2(SS_A)}</td><td>${df_A}</td><td>${round2(MS_A)}</td>
+      <td class="highlight">${round2(F_A)}</td><td>${round4(eta_A)}</td>
+      <td class="sig">p &lt; .001</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">T&eacute;cnica (B)</td>
+      <td>${round2(SS_B)}</td><td>${df_B}</td><td>${round2(MS_B)}</td>
+      <td class="highlight">${round2(F_B)}</td><td>${round4(eta_B)}</td>
+      <td class="sig">p &lt; .001</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">A &times; B</td>
+      <td>${round2(SS_AB)}</td><td>${df_AB}</td><td>${round2(MS_AB)}</td>
+      <td class="highlight">${round2(F_AB)}</td><td>${round4(eta_AB)}</td>
+      <td class="sig">p &lt; .05</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">Erro</td>
+      <td>${round2(SS_Error)}</td><td>${df_Error}</td><td>${round2(MS_Error)}</td>
+      <td></td><td></td><td></td>
+    </tr>
+    <tr class="total-row">
+      <td style="text-align:left">Total</td>
+      <td>${round2(SST)}</td><td>${df_Total}</td><td></td><td></td><td></td><td></td>
+    </tr>
+  </tbody>
+</table>
+
+${dlg('corvo','&#128038; Muninn sussurra:',`O &eta;&sup2; parcial indica a propor&ccedil;&atilde;o da vari&acirc;ncia explicada por cada fator <strong>relativa ao erro</strong>. Metal explica ${(eta_A*100).toFixed(1)}% &mdash; efeito massivo!`)}
+
+<div class="step-subtitle">Interpreta&ccedil;&atilde;o dos Tamanhos de Efeito (&eta;&sup2;<sub>p</sub>)</div>
+<table class="data-table" style="max-width:400px;margin:10px auto;">
+  <thead><tr><th>&eta;&sup2;<sub>p</sub></th><th>Magnitude</th></tr></thead>
+  <tbody>
+    <tr><td>.01</td><td>Pequeno</td></tr>
+    <tr><td>.06</td><td>M&eacute;dio</td></tr>
+    <tr><td>.14</td><td>Grande</td></tr>
+  </tbody>
+</table>
+
+<p>Metal: &eta;&sup2;<sub>p</sub> = ${round4(eta_A)} &#8594; <span class="highlight-green">ENORME</span><br>
+T&eacute;cnica: &eta;&sup2;<sub>p</sub> = ${round4(eta_B)} &#8594; <span class="highlight-green">ENORME</span><br>
+Intera&ccedil;&atilde;o: &eta;&sup2;<sub>p</sub> = ${round4(eta_AB)} &#8594; <span class="highlight-green">Grande</span></p>
+`;
+
+  // ---- STEP 12: SIMPLE EFFECTS ----
+  case 12: {
+    const simpleEffects = techs.map(t => {
+      const ferro = cellMean['Ferro+'+t];
+      const aco = cellMean['Aço+'+t];
+      const diff = aco - ferro;
+      const techMean = (ferro+aco)/2;
+      const ss = n*((ferro-techMean)**2 + (aco-techMean)**2);
+      const f = (ss/1)/MS_Error;
+      return {t, ferro, aco, diff, ss, f};
+    });
+
+    return `
+<div class="step-title">&#128269; Passo 12 &mdash; Efeitos Simples</div>
+<p>Quando a intera&ccedil;&atilde;o &eacute; significativa, os efeitos principais contam s&oacute; <strong>parte</strong> da hist&oacute;ria. Precisamos investigar os <em>efeitos simples</em>.</p>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','O efeito do metal depende da t&eacute;cnica? Vamos verificar para cada t&eacute;cnica separadamente.')}
+
+<div class="mini-charts" id="simpleCharts">
+${simpleEffects.map(se => `
+  <div class="mini-chart">
+    <h4>${se.t === 'Água' ? '&#128167;' : se.t === 'Óleo' ? '&#129387;' : '&#10052;'} ${se.t}</h4>
+    <div class="mini-bar-group">
+      <div class="mini-bar" style="height:${se.ferro/75*120}px;background:var(--odin-blue);">
+        <div class="val" style="color:var(--odin-blue)">${round2(se.ferro)}</div>
+      </div>
+      <div class="mini-bar" style="height:${se.aco/75*120}px;background:var(--gold);">
+        <div class="val" style="color:var(--gold)">${round2(se.aco)}</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:0.85rem;">
+      <span style="color:var(--odin-blue)">&#9874; Ferro</span> &nbsp; <span style="color:var(--gold)">&#128737; A&ccedil;o</span>
+    </div>
+    <div style="text-align:center;margin-top:4px;font-size:0.9rem;">
+      &Delta; = <span class="highlight">${round2(se.diff)}</span> &middot; F = <span class="highlight">${round2(se.f)}</span>
+    </div>
+  </div>
+`).join('')}
+</div>
+
+<table class="data-table" style="margin-top:16px;">
+  <thead><tr><th>Efeito Simples</th><th>Ferro</th><th>A&ccedil;o</th><th>&Delta;</th><th>SS</th><th>F(1,18)</th><th>Sig.</th></tr></thead>
+  <tbody>
+${simpleEffects.map(se => `
+    <tr>
+      <td>Metal na ${se.t}</td>
+      <td>${round2(se.ferro)}</td><td>${round2(se.aco)}</td>
+      <td class="highlight">${round2(se.diff)}</td>
+      <td>${round2(se.ss)}</td>
+      <td class="highlight">${round2(se.f)}</td>
+      <td class="sig">p &lt; .001</td>
+    </tr>
+`).join('')}
+  </tbody>
+</table>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho',`Perceba: a diferen&ccedil;a entre metais &eacute; de ${round2(simpleEffects[0].diff)} na &Aacute;gua, ${round2(simpleEffects[1].diff)} no &Oacute;leo, mas pula para <strong>${round2(simpleEffects[2].diff)}</strong> na Neve! O A&ccedil;o R&uacute;nico brilha especialmente com Neve de Jotunheim.`)}
+${dlg('corvo','&#128038; Huginn provoca:','Todos os efeitos simples s&atilde;o significativos &mdash; A&ccedil;o sempre supera Ferro. Mas a <em>magnitude</em> muda. ESSA &eacute; a intera&ccedil;&atilde;o em a&ccedil;&atilde;o.')}
+`;
+  }
+
+  // ---- STEP 13: CONCLUSÃO ----
+  case 13: return `
+<div class="step-title">&#127942; Passo 13 &mdash; Conclus&atilde;o e Relat&oacute;rio APA</div>
+
+<div class="step-subtitle">Relat&oacute;rio em Formato APA</div>
+<div class="apa-box">
+  <div class="apa-label">&#128196; Resultado</div>
+  <p>Uma ANOVA fatorial 2 (Metal: Ferro N&oacute;rdico vs. A&ccedil;o R&uacute;nico) &times; 3 (T&eacute;cnica: &Aacute;gua, &Oacute;leo, Neve) revelou um efeito principal significativo do Metal, <em>F</em>(${df_A}, ${df_Error}) = ${round2(F_A)}, <em>p</em> &lt; .001, &eta;&sup2;<sub>p</sub> = .${Math.round(eta_A*100).toString().padStart(2,'0')}. O efeito principal da T&eacute;cnica tamb&eacute;m foi significativo, <em>F</em>(${df_B}, ${df_Error}) = ${round2(F_B)}, <em>p</em> &lt; .001, &eta;&sup2;<sub>p</sub> = .${Math.round(eta_B*100).toString().padStart(2,'0')}. A intera&ccedil;&atilde;o Metal &times; T&eacute;cnica foi significativa, <em>F</em>(${df_AB}, ${df_Error}) = ${round2(F_AB)}, <em>p</em> &lt; .05, &eta;&sup2;<sub>p</sub> = .${Math.round(eta_AB*100).toString().padStart(2,'0')}.</p>
+  <p style="margin-top:8px;">A an&aacute;lise dos efeitos simples indicou que o A&ccedil;o R&uacute;nico superou o Ferro N&oacute;rdico em todas as t&eacute;cnicas (<em>p</em>s &lt; .001), mas a diferen&ccedil;a foi particularmente pronunciada na t&eacute;cnica de Neve de Jotunheim (&Delta;M = 23.00) comparada a &Aacute;gua (&Delta;M = 15.50) e &Oacute;leo (&Delta;M = 16.25).</p>
+</div>
+
+<canvas id="interactionPlotFinal" class="plot" width="600" height="380"></canvas>
+
+${dlg('odin','&#129497;&#8205;&#9794;&#65039; Odin Dinho','A Grande Forja de Asgard tem sua resposta: A&ccedil;o R&uacute;nico &eacute; superior em TODAS as t&eacute;cnicas, mas sua vantagem sobre Ferro cresce especialmente com Neve de Jotunheim. A intera&ccedil;&atilde;o &eacute; real!')}
+
+<div class="step-subtitle" style="margin-top:24px;">&#128038; Li&ccedil;&atilde;o dos Corvos</div>
+${dlg('corvo','&#128038; Muninn lembra:',`
+<strong>Pontos-chave:</strong><br>
+&#10003; ANOVA Fatorial testa DOIS fatores e sua intera&ccedil;&atilde;o simultaneamente<br>
+&#10003; SS<sub>T</sub> se decompoe em SS<sub>A</sub> + SS<sub>B</sub> + SS<sub>AB</sub> + SS<sub>Erro</sub><br>
+&#10003; S&atilde;o tr&ecirc;s testes F independentes: efeito de A, efeito de B, intera&ccedil;&atilde;o<br>
+&#10003; Quando a intera&ccedil;&atilde;o &eacute; significativa, os efeitos principais n&atilde;o contam a hist&oacute;ria completa<br>
+&#10003; Efeitos simples investigam UM fator fixando o outro<br>
+&#10003; &eta;&sup2; parcial mede tamanho de efeito relativo ao erro
+`)}
+${dlg('corvo','&#128038; Huginn provoca:',`
+<strong>Desafios para voc&ecirc;:</strong><br>
+&#9881; E se adicionarmos um terceiro fator (3-way ANOVA)?<br>
+&#9881; O que acontece se os tamanhos de c&eacute;lula forem desiguais?<br>
+&#9881; Quando a intera&ccedil;&atilde;o n&atilde;o &eacute; significativa, como interpretamos os efeitos principais?<br>
+&#9881; Que testes post-hoc voc&ecirc; usaria para comparar as 3 t&eacute;cnicas?
+`)}
+
+<div class="signature" style="margin-top:30px;border:none;font-size:1rem;color:var(--gold);">
+  &#9876; A Grande Forja de Asgard agradece por acompanhar esta receita estat&iacute;stica! &#9876;
+</div>
+`;
+
+  default: return '<p>Step not found.</p>';
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function renderStep(){
+  const el = document.getElementById('stepContent');
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow
+  el.style.animation = 'fadeIn 0.4s ease';
+  el.innerHTML = getStepHTML(currentStep);
+
+  // Progress
+  const pct = (currentStep / (TOTAL_STEPS-1)) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `Passo ${currentStep} de ${TOTAL_STEPS-1}`;
+  document.getElementById('stepIndicator').textContent = `${currentStep} / ${TOTAL_STEPS-1}`;
+
+  // Buttons
+  document.getElementById('btnPrev').disabled = currentStep === 0;
+  document.getElementById('btnNext').disabled = currentStep === TOTAL_STEPS-1;
+  document.getElementById('btnNext').textContent = currentStep === TOTAL_STEPS-1 ? 'Fim' : 'Próximo ▶';
+
+  // Post-render animations
+  setTimeout(() => {
+    if(currentStep === 1) drawInteractionPlot('interactionPlot');
+    if(currentStep === 4) animateSST();
+    if(currentStep === 5) animateSSA();
+    if(currentStep === 6) animateSSB();
+    if(currentStep === 10) drawFDistPlot();
+    if(currentStep === 13) drawInteractionPlot('interactionPlotFinal');
+  }, 300);
+
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function nextStep(){ if(currentStep < TOTAL_STEPS-1){ currentStep++; renderStep(); }}
+function prevStep(){ if(currentStep > 0){ currentStep--; renderStep(); }}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') nextStep();
+  if(e.key === 'ArrowLeft') prevStep();
+});
+
+// ============================================================
+// INTERACTION PLOT
+// ============================================================
+function drawInteractionPlot(canvasId){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = {t:50, r:30, b:60, l:60};
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#1c2333';
+  ctx.fillRect(0,0,W,H);
+
+  // Y axis
+  const yMin = 30, yMax = 80;
+  const yRange = yMax - yMin;
+  function yPos(v){ return pad.t + ph - ((v-yMin)/yRange)*ph; }
+  function xPos(i){ return pad.l + (i+0.5)/(techs.length) * pw; }
+
+  // Grid lines
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  for(let v = 30; v <= 80; v += 10){
+    ctx.beginPath(); ctx.moveTo(pad.l, yPos(v)); ctx.lineTo(W-pad.r, yPos(v)); ctx.stroke();
+    ctx.fillStyle = '#8b949e'; ctx.font = '13px Patrick Hand';
+    ctx.textAlign = 'right'; ctx.fillText(v, pad.l-8, yPos(v)+4);
+  }
+
+  // X axis labels
+  const techLabels = ['💧 Água', '🫗 Óleo', '❄ Neve'];
+  ctx.textAlign = 'center'; ctx.font = '15px Permanent Marker';
+  techs.forEach((t,i) => {
+    ctx.fillStyle = '#8b949e';
+    ctx.fillText(techLabels[i], xPos(i), H - pad.b + 25);
+  });
+
+  // Title
+  ctx.fillStyle = '#f0c040'; ctx.font = '18px Bangers'; ctx.textAlign = 'center';
+  ctx.fillText('Gráfico de Interação', W/2, 28);
+
+  // Lines - animate
+  const colors = ['#58a6ff', '#f0c040'];
+  const labels = ['⚒ Ferro Nórdico', '🛡 Aço Rúnico'];
+
+  metals.forEach((m, mi) => {
+    const points = techs.map((t,ti) => ({x: xPos(ti), y: yPos(cellMean[m+'+'+t])}));
+
+    ctx.strokeStyle = colors[mi]; ctx.lineWidth = 3;
+    ctx.beginPath();
+    points.forEach((p,i) => { i===0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+    ctx.stroke();
+
+    // Points
+    points.forEach((p,i) => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
+      ctx.fillStyle = colors[mi]; ctx.fill();
+      ctx.fillStyle = '#e6edf3'; ctx.font = '13px Permanent Marker';
+      ctx.textAlign = 'center';
+      ctx.fillText(round2(cellMean[m+'+'+techs[i]]), p.x, p.y - 14);
+    });
+  });
+
+  // Legend
+  const ly = H - 18;
+  ctx.font = '14px Permanent Marker';
+  [0,1].forEach((mi,i) => {
+    const lx = W/2 - 120 + i*200;
+    ctx.fillStyle = colors[mi];
+    ctx.fillRect(lx, ly-8, 16, 4);
+    ctx.fillText(labels[mi], lx + 70, ly);
+  });
+
+  // Y axis label
+  ctx.save(); ctx.translate(16, H/2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle = '#8b949e'; ctx.font = '13px Permanent Marker'; ctx.textAlign = 'center';
+  ctx.fillText('Resistência', 0, 0);
+  ctx.restore();
+}
+
+// ============================================================
+// SST ANIMATION
+// ============================================================
+function animateSST(){
+  const container = document.getElementById('sstAnimation');
+  if(!container) return;
+
+  let cumSum = 0;
+  const items = allVals.map((x,i) => {
+    const dev = x - GM;
+    cumSum += dev*dev;
+    return {x, dev: round2(dev), sq: round2(dev*dev), cum: round2(cumSum)};
+  });
+
+  // Show first 6 and last with "..."
+  let html = '<table class="calc-table"><thead><tr><th>#</th><th>X</th><th>X &minus; X&#772;</th><th>(X &minus; X&#772;)&sup2;</th><th>&Sigma; acumulada</th></tr></thead><tbody>';
+  items.forEach((it,i) => {
+    if(i < 6 || i >= 22){
+      html += `<tr class="fade-in" style="animation-delay:${i*0.05}s">
+        <td>${i+1}</td><td>${it.x}</td><td>${it.dev}</td><td>${it.sq}</td><td style="color:var(--gold)">${it.cum}</td></tr>`;
+    } else if(i === 6){
+      html += `<tr><td colspan="5" style="color:var(--text-dim);text-align:center">... (valores 7 a 22) ...</td></tr>`;
+    }
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// SS_A BARS
+// ============================================================
+function animateSSA(){
+  const container = document.getElementById('ssABars');
+  if(!container) return;
+  const maxDev = Math.max(...metals.map(m => Math.abs(rowMean[m]-GM)));
+
+  container.innerHTML = metals.map((m,i) => {
+    const dev = rowMean[m] - GM;
+    const pct = (Math.abs(dev)/maxDev)*80;
+    const color = i===0 ? 'var(--odin-blue)' : 'var(--gold)';
+    return `<div class="bar-wrapper">
+      <div class="bar-label" style="color:${color}">${m==='Ferro'?'⚒':'🛡'} ${m}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="background:${color};width:0" data-width="${pct}%"></div>
+      </div>
+      <div class="bar-value">${round2(rowMean[m])} (${dev>0?'+':''}${round2(dev)})</div>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    container.querySelectorAll('.bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width;
+    });
+  }, 100);
+}
+
+// ============================================================
+// SS_B BARS
+// ============================================================
+function animateSSB(){
+  const container = document.getElementById('ssBBars');
+  if(!container) return;
+  const maxDev = Math.max(...techs.map(t => Math.abs(colMean[t]-GM)));
+  const icons = {'Água':'💧','Óleo':'🫗','Neve':'❄'};
+
+  container.innerHTML = techs.map((t,i) => {
+    const dev = colMean[t] - GM;
+    const pct = (Math.abs(dev)/maxDev)*80;
+    const colors = ['var(--odin-blue)','var(--gold)','var(--corvo-purple)'];
+    return `<div class="bar-wrapper">
+      <div class="bar-label" style="color:${colors[i]}">${icons[t]} ${t}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="background:${colors[i]};width:0" data-width="${pct}%"></div>
+      </div>
+      <div class="bar-value">${round2(colMean[t])} (${dev>0?'+':''}${round2(dev)})</div>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    container.querySelectorAll('.bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width;
+    });
+  }, 100);
+}
+
+// ============================================================
+// F DISTRIBUTION PLOT
+// ============================================================
+function drawFDistPlot(){
+  const canvas = document.getElementById('fDistPlot');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const pad = {t:40, r:30, b:50, l:50};
+  const pw = W-pad.l-pad.r, ph = H-pad.t-pad.b;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#1c2333'; ctx.fillRect(0,0,W,H);
+
+  // Simple F distribution shape (approximate for df1=2, df2=18)
+  const maxX = 10;
+  function fDensity(x, d1, d2){
+    if(x <= 0) return 0;
+    // approximation using gamma-like shape
+    const mode = d1 > 2 ? (d1-2)/d1 * d2/(d2+2) : 0.3;
+    const peak = 0.7;
+    return peak * Math.pow(x/mode, (d1/2-1)) * Math.exp(-(d1+d2)/2 * Math.log(1 + d1*x/d2) * 0.8);
+  }
+
+  function xPos(v){ return pad.l + (v/maxX)*pw; }
+  function yPos(v){ return pad.t + ph - v*ph*1.2; }
+
+  // Draw curve
+  ctx.strokeStyle = '#8b949e'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for(let x=0; x<=maxX; x+=0.05){
+    const y = fDensity(x, 2, 18);
+    const px = xPos(x), py = yPos(y);
+    x===0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Critical region
+  ctx.fillStyle = 'rgba(248,81,73,0.2)';
+  ctx.beginPath();
+  ctx.moveTo(xPos(Fcrit_2_18), yPos(0));
+  for(let x=Fcrit_2_18; x<=maxX; x+=0.05){
+    ctx.lineTo(xPos(x), yPos(fDensity(x, 2, 18)));
+  }
+  ctx.lineTo(xPos(maxX), yPos(0));
+  ctx.fill();
+
+  // F critical line
+  ctx.strokeStyle = 'var(--thor-red)'; ctx.lineWidth = 1; ctx.setLineDash([5,5]);
+  ctx.beginPath(); ctx.moveTo(xPos(Fcrit_2_18), pad.t); ctx.lineTo(xPos(Fcrit_2_18), pad.t+ph); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // X axis
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t+ph); ctx.lineTo(W-pad.r, pad.t+ph); ctx.stroke();
+  ctx.fillStyle = '#8b949e'; ctx.font = '12px Patrick Hand'; ctx.textAlign = 'center';
+  for(let v=0; v<=maxX; v+=2){
+    ctx.fillText(v, xPos(v), pad.t+ph+18);
+  }
+
+  // Mark F values (only AB since A and B are way off chart)
+  const fAB_x = Math.min(F_AB, maxX-0.5);
+  ctx.fillStyle = 'var(--corvo-purple)';
+  ctx.beginPath(); ctx.arc(xPos(fAB_x), yPos(fDensity(fAB_x, 2, 18))-4, 6, 0, Math.PI*2); ctx.fill();
+  ctx.font = '13px Permanent Marker';
+  ctx.fillText(`F_AB = ${round2(F_AB)}`, xPos(fAB_x), yPos(fDensity(fAB_x, 2, 18))-18);
+
+  // Labels
+  ctx.fillStyle = '#f85149'; ctx.font = '11px Permanent Marker';
+  ctx.fillText(`F_crit = ${Fcrit_2_18}`, xPos(Fcrit_2_18), pad.t - 8);
+
+  ctx.fillStyle = '#e6edf3'; ctx.font = '12px Patrick Hand'; ctx.textAlign = 'center';
+  ctx.fillText('(F_A e F_B estão muito além da escala: 228.02 e 30.78)', W/2, pad.t+ph+38);
+
+  // Title
+  ctx.fillStyle = '#f0c040'; ctx.font = '16px Bangers'; ctx.textAlign = 'center';
+  ctx.fillText('Distribuição F (df₁=2, df₂=18)', W/2, 24);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderStep();
+</script>
+</body>
+</html>

@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANOVA de Medidas Repetidas — O Maravilhoso Livro de Receitas Estatísticas de Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117;
+  --bg-card: #161b22;
+  --bg-panel: #1c2333;
+  --odin-blue: #58a6ff;
+  --thor-red: #f85149;
+  --corvo-purple: #bc8cff;
+  --gold: #f0c040;
+  --silver: #8b949e;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --success: #3fb950;
+  --border: #30363d;
+  --phase1: #f85149;
+  --phase2: #f0c040;
+  --phase3: #3fb950;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.progress-bar {
+  position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+  background: var(--bg-panel); z-index: 1000;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--odin-blue), var(--corvo-purple), var(--gold));
+  transition: width 0.5s ease; border-radius: 0 3px 3px 0;
+}
+.step-indicator {
+  position: fixed; top: 10px; right: 20px; z-index: 1000;
+  font-family: 'Bangers', cursive; font-size: 20px; color: var(--gold);
+  background: var(--bg-panel); padding: 4px 14px; border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.container {
+  max-width: 960px; margin: 0 auto; padding: 30px 20px 100px;
+}
+h1 {
+  font-family: 'Permanent Marker', cursive; font-size: 2.2em;
+  text-align: center; margin: 30px 0 10px;
+  background: linear-gradient(135deg, var(--odin-blue), var(--corvo-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+h2 {
+  font-family: 'Bangers', cursive; font-size: 1.8em; color: var(--gold);
+  margin: 20px 0 14px; letter-spacing: 1px;
+}
+h3 {
+  font-family: 'Bangers', cursive; font-size: 1.3em; color: var(--odin-blue);
+  margin: 16px 0 8px;
+}
+.subtitle {
+  text-align: center; color: var(--text-dim); font-size: 1.1em; margin-bottom: 30px;
+}
+.step { display: none; animation: fadeIn 0.4s ease; }
+.step.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Character dialogues */
+.dialogue {
+  display: flex; gap: 12px; margin: 14px 0; padding: 14px;
+  border-radius: 12px; border-left: 4px solid; animation: slideIn 0.4s ease;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+.dialogue .icon { font-size: 2em; flex-shrink: 0; margin-top: 2px; }
+.dialogue .content { flex: 1; }
+.dialogue .name { font-family: 'Bangers', cursive; font-size: 1.1em; margin-bottom: 2px; }
+.odin { background: rgba(88,166,255,0.08); border-color: var(--odin-blue); }
+.odin .name { color: var(--odin-blue); }
+.thor { background: rgba(248,81,73,0.08); border-color: var(--thor-red); }
+.thor .name { color: var(--thor-red); }
+.corvo { background: rgba(188,140,255,0.08); border-color: var(--corvo-purple); }
+.corvo .name { color: var(--corvo-purple); }
+
+/* Data table */
+table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  background: var(--bg-card); border-radius: 8px; overflow: hidden;
+}
+th, td {
+  padding: 10px 14px; text-align: center; border: 1px solid var(--border);
+}
+th {
+  background: var(--bg-panel); font-family: 'Bangers', cursive;
+  color: var(--gold); font-size: 1.05em;
+}
+td { font-size: 1em; }
+.phase1 { color: var(--phase1); font-weight: bold; }
+.phase2 { color: var(--phase2); font-weight: bold; }
+.phase3 { color: var(--phase3); font-weight: bold; }
+
+/* Cards */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin: 14px 0;
+}
+.card.gold-border { border-color: var(--gold); }
+.card.blue-border { border-color: var(--odin-blue); }
+.card.red-border { border-color: var(--thor-red); }
+
+/* Formula */
+.formula {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px; margin: 12px 0;
+  font-size: 1.15em; text-align: center; font-family: 'Patrick Hand', cursive;
+  color: var(--gold); overflow-x: auto;
+}
+.formula .big { font-size: 1.3em; }
+
+/* Calculation steps */
+.calc-step {
+  background: var(--bg-panel); border-radius: 8px; padding: 12px 16px;
+  margin: 8px 0; border-left: 3px solid var(--odin-blue);
+  font-family: monospace, 'Patrick Hand'; font-size: 0.95em;
+  overflow-x: auto; white-space: nowrap;
+}
+.calc-step .result { color: var(--gold); font-weight: bold; }
+.calc-step .label { color: var(--odin-blue); }
+
+/* Chart containers */
+.chart-container {
+  background: var(--bg-card); border-radius: 12px; padding: 16px;
+  margin: 16px 0; border: 1px solid var(--border); overflow-x: auto;
+}
+svg text { font-family: 'Patrick Hand', cursive; }
+
+/* Animated highlight */
+.highlight { color: var(--gold); font-weight: bold; }
+.highlight-blue { color: var(--odin-blue); font-weight: bold; }
+.highlight-red { color: var(--thor-red); font-weight: bold; }
+.highlight-green { color: var(--success); font-weight: bold; }
+.highlight-purple { color: var(--corvo-purple); font-weight: bold; }
+
+/* APA box */
+.apa-box {
+  background: rgba(240,192,64,0.08); border: 2px solid var(--gold);
+  border-radius: 12px; padding: 18px; margin: 16px 0;
+  font-style: italic; font-size: 1.05em; text-align: center;
+}
+
+/* Stacked bar */
+.stacked-bar {
+  display: flex; height: 44px; border-radius: 8px; overflow: hidden;
+  margin: 12px 0; font-family: 'Bangers', cursive; font-size: 0.95em;
+}
+.stacked-bar div {
+  display: flex; align-items: center; justify-content: center;
+  transition: width 1s ease;
+}
+
+/* Navigation */
+.nav {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background: var(--bg-panel); border-top: 1px solid var(--border);
+  padding: 12px 20px; display: flex; justify-content: center; gap: 16px;
+  z-index: 1000;
+}
+.nav button {
+  font-family: 'Bangers', cursive; font-size: 1.2em; padding: 10px 30px;
+  border: 2px solid var(--border); border-radius: 10px;
+  cursor: pointer; transition: all 0.2s; color: var(--text);
+  background: var(--bg-card);
+}
+.nav button:hover:not(:disabled) {
+  border-color: var(--gold); background: rgba(240,192,64,0.1);
+  transform: translateY(-2px);
+}
+.nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav button.primary {
+  background: linear-gradient(135deg, var(--odin-blue), var(--corvo-purple));
+  border-color: transparent; color: #fff;
+}
+.nav button.primary:hover:not(:disabled) {
+  transform: translateY(-2px); box-shadow: 0 4px 15px rgba(88,166,255,0.3);
+}
+
+/* Hypothesis box */
+.hyp-box {
+  display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin: 14px 0;
+}
+.hyp-card {
+  flex: 1; min-width: 250px; max-width: 400px; padding: 18px;
+  border-radius: 12px; text-align: center;
+}
+.hyp-card.h0 { background: rgba(139,148,158,0.1); border: 2px solid var(--silver); }
+.hyp-card.h1 { background: rgba(63,185,80,0.1); border: 2px solid var(--success); }
+
+/* Comparison visual */
+.comparison {
+  display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0;
+}
+.comparison > div {
+  flex: 1; min-width: 280px; padding: 16px; border-radius: 12px;
+  border: 2px solid var(--border);
+}
+.comparison .vs-between { border-color: var(--thor-red); background: rgba(248,81,73,0.05); }
+.comparison .vs-within { border-color: var(--success); background: rgba(63,185,80,0.05); }
+
+/* Sphericity pairs */
+.sphere-pairs {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 14px 0;
+}
+.sphere-pair {
+  background: var(--bg-panel); border-radius: 10px; padding: 14px 18px;
+  border: 1px solid var(--border); text-align: center; min-width: 180px;
+}
+
+/* Post-hoc cards */
+.posthoc-cards {
+  display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin: 14px 0;
+}
+.posthoc-card {
+  background: var(--bg-card); border-radius: 12px; padding: 16px;
+  border: 2px solid var(--border); min-width: 240px; text-align: center; flex: 1;
+}
+.posthoc-card.sig { border-color: var(--success); }
+
+.signature {
+  text-align: center; color: var(--text-dim); font-size: 0.9em;
+  margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  h1 { font-size: 1.6em; }
+  h2 { font-size: 1.4em; }
+  .formula { font-size: 1em; }
+  .calc-step { font-size: 0.85em; }
+  .nav button { padding: 8px 18px; font-size: 1em; }
+  .container { padding: 20px 12px 90px; }
+  body { font-size: 16px; }
+}
+
+/* Animate numbers */
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: popIn 0.5s ease forwards; }
+
+/* Line chart */
+.warrior-line { fill: none; stroke-width: 2.5; opacity: 0.85; }
+.warrior-dot { r: 5; stroke: var(--bg-dark); stroke-width: 2; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="step-indicator" id="stepIndicator">0 / 14</div>
+
+<div class="container">
+
+<!-- ===================== STEP 0: INTRODUCTION ===================== -->
+<div class="step active" id="step0">
+<h1>⚔️ ANOVA de Medidas Repetidas</h1>
+<p class="subtitle">Quando o mesmo guerreiro enfrenta todas as provações</p>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Hoje, o mesmo guerreiro é medido em <span class="highlight">TRÊS momentos diferentes</span>. Isso é mais poderoso — cada guerreiro serve como seu próprio controle.
+  </div>
+</div>
+
+<div class="dialogue thor">
+  <div class="icon">⚡</div>
+  <div class="content">
+    <div class="name">ThorMento</div>
+    Tanto faz, é só ANOVA de novo! Roda aí e pronto!
+  </div>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Não! Aqui <span class="highlight-green">removemos a variação individual</span> entre guerreiros. Isso <span class="highlight">aumenta o poder do teste</span>. Cada viking é comparado consigo mesmo.
+  </div>
+</div>
+
+<h3>🏹 O Cenário</h3>
+<p>Seis guerreiros viking foram testados em três fases de treinamento na arena de Asgard. A medida é o <span class="highlight">número de acertos com arco em 20 tentativas</span>.</p>
+
+<table>
+  <tr><th>Guerreiro ⚔️</th><th class="phase1">Fase 1<br><small>Antes</small></th><th class="phase2">Fase 2<br><small>1 Mês</small></th><th class="phase3">Fase 3<br><small>3 Meses</small></th><th>Média</th></tr>
+  <tr><td>Bjorn</td><td class="phase1">8</td><td class="phase2">12</td><td class="phase3">15</td><td>11.67</td></tr>
+  <tr><td>Ragnar</td><td class="phase1">10</td><td class="phase2">14</td><td class="phase3">16</td><td>13.33</td></tr>
+  <tr><td>Lagertha</td><td class="phase1">6</td><td class="phase2">10</td><td class="phase3">13</td><td>9.67</td></tr>
+  <tr><td>Ivar</td><td class="phase1">9</td><td class="phase2">11</td><td class="phase3">14</td><td>11.33</td></tr>
+  <tr><td>Floki</td><td class="phase1">7</td><td class="phase2">13</td><td class="phase3">17</td><td>12.33</td></tr>
+  <tr><td>Sigurd</td><td class="phase1">12</td><td class="phase2">15</td><td class="phase3">18</td><td>15.00</td></tr>
+  <tr style="background:var(--bg-panel)"><th>Média</th><th class="phase1">8.67</th><th class="phase2">12.50</th><th class="phase3">15.50</th><th style="color:var(--gold)">12.22</th></tr>
+</table>
+
+<div class="chart-container">
+  <h3 style="text-align:center;">Trajetória dos Guerreiros</h3>
+  <svg id="lineChart0" viewBox="0 0 600 300" width="100%"></svg>
+</div>
+</div>
+
+<!-- ===================== STEP 1: BETWEEN vs WITHIN ===================== -->
+<div class="step" id="step1">
+<h2>Passo 1 — Between vs. Within Subjects</h2>
+
+<div class="comparison">
+  <div class="vs-between">
+    <h3 style="color:var(--thor-red)">❌ ANOVA Independente (Between)</h3>
+    <p>Cada guerreiro participa de <span class="highlight-red">UMA SÓ</span> fase.</p>
+    <p>Precisaríamos de <span class="highlight-red">18 guerreiros</span> (6 por grupo).</p>
+    <p>Diferenças individuais viram <strong>ruído</strong> — infla o erro.</p>
+    <div class="formula" style="font-size:0.95em;">SS<sub>Within</sub> = SS<sub>Sujeitos</sub> + SS<sub>Erro</sub><br><small style="color:var(--thor-red)">Tudo junto = erro GRANDE</small></div>
+  </div>
+  <div class="vs-within">
+    <h3 style="color:var(--success)">✅ Medidas Repetidas (Within)</h3>
+    <p>O <span class="highlight-green">MESMO</span> guerreiro participa de TODAS as fases.</p>
+    <p>Bastam <span class="highlight-green">6 guerreiros</span>.</p>
+    <p>Diferenças individuais são <strong>isoladas e removidas</strong>!</p>
+    <div class="formula" style="font-size:0.95em;">SS<sub>Within</sub> = SS<sub>Sujeitos</sub> + SS<sub>Erro</sub><br><small style="color:var(--success)">Separamos! Erro fica PEQUENO</small></div>
+  </div>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Muninn sussurra:</div>
+    Na ANOVA independente, a variação entre pessoas vai para o SS<sub>Within</sub>. Na medidas repetidas, podemos <span class="highlight-purple">REMOVÊ-LA</span> — e o que sobra como erro é muito menor.
+  </div>
+</div>
+
+<div class="card">
+  <h3>🔑 A Mágica</h3>
+  <p>Sigurd é naturalmente melhor que Lagertha (15.00 vs 9.67 de média). Na ANOVA independente, essa diferença vira <span class="highlight-red">erro</span>. Na medidas repetidas, <span class="highlight-green">isolamos essa variação</span> — e ficamos só com o efeito puro do treinamento.</p>
+</div>
+</div>
+
+<!-- ===================== STEP 2: PRESSUPOSTOS ===================== -->
+<div class="step" id="step2">
+<h2>Passo 2 — Pressupostos</h2>
+
+<div class="card blue-border">
+  <h3>📋 Pressupostos da ANOVA RM</h3>
+  <p><span class="highlight-blue">1. Normalidade</span> — Os dados em cada condição seguem distribuição normal</p>
+  <p><span class="highlight-blue">2. Ausência de outliers extremos</span> — Nenhum guerreiro com valor absurdamente discrepante</p>
+  <p><span class="highlight-blue">3. Medidas repetidas do mesmo sujeito</span> — Cada observação está vinculada ao indivíduo</p>
+  <p><span class="highlight" style="font-size:1.1em;">4. ✨ ESFERICIDADE ✨</span> — O pressuposto NOVO e exclusivo da RM-ANOVA</p>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Muninn sussurra:</div>
+    <strong>Esfericidade</strong> — As variâncias das <em>diferenças</em> entre TODOS os pares de condições devem ser aproximadamente iguais.
+  </div>
+</div>
+
+<h3>As 3 diferenças pareadas:</h3>
+<div class="sphere-pairs">
+  <div class="sphere-pair">
+    <div style="color:var(--phase2)">Fase 2 − Fase 1</div>
+    <div style="font-size:0.9em; color:var(--text-dim);">[4, 4, 4, 2, 6, 3]</div>
+    <div class="highlight">Var = 1.77</div>
+  </div>
+  <div class="sphere-pair">
+    <div style="color:var(--phase3)">Fase 3 − Fase 1</div>
+    <div style="font-size:0.9em; color:var(--text-dim);">[7, 6, 7, 5, 10, 6]</div>
+    <div class="highlight">Var = 2.97</div>
+  </div>
+  <div class="sphere-pair">
+    <div style="color:var(--success)">Fase 3 − Fase 2</div>
+    <div style="font-size:0.9em; color:var(--text-dim);">[3, 2, 3, 3, 4, 3]</div>
+    <div class="highlight">Var = 0.40</div>
+  </div>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Huginn provoca:</div>
+    Esfericidade é como dizer que a mudança entre <em>qualquer par</em> de fases é igualmente "estável". Olha essas variâncias — 1.77, 2.97 e 0.40. Parecem iguais pra você? 🤨 Voltamos nisso no Passo 11.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 3: HIPÓTESES ===================== -->
+<div class="step" id="step3">
+<h2>Passo 3 — Hipóteses</h2>
+
+<div class="hyp-box">
+  <div class="hyp-card h0">
+    <h3 style="color:var(--silver)">H₀ (Hipótese Nula)</h3>
+    <div class="formula" style="border:none; background:transparent;">μ₁ = μ₂ = μ₃</div>
+    <p>As médias de acertos são <span class="highlight-red">iguais</span> nas três fases. O treinamento NÃO fez diferença.</p>
+  </div>
+  <div class="hyp-card h1">
+    <h3 style="color:var(--success)">H₁ (Hipótese Alternativa)</h3>
+    <div class="formula" style="border:none; background:transparent;">Pelo menos uma μ difere</div>
+    <p>Pelo menos uma fase tem média <span class="highlight-green">diferente</span>. O treinamento SIM afetou a performance.</p>
+  </div>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Queremos saber se o treinamento na arena de Asgard <span class="highlight">REALMENTE melhorou</span> a performance dos guerreiros — ou se as diferenças são apenas acaso.
+  </div>
+</div>
+
+<div class="dialogue thor">
+  <div class="icon">⚡</div>
+  <div class="content">
+    <div class="name">ThorMento</div>
+    É óbvio que melhorou — olha os números subindo! Pra que testar?!
+  </div>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Porque "olhômetro" não é método, ThorMento. Precisamos de evidência estatística — o olho engana, a matemática não.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 4: GRAND MEAN ===================== -->
+<div class="step" id="step4">
+<h2>Passo 4 — Média Geral (Grand Mean)</h2>
+
+<div class="formula">
+  <span class="big">X̄<sub>grand</sub></span> = Soma de TODOS os valores / N total
+</div>
+
+<div class="calc-step">
+<span class="label">Soma =</span> (8+12+15) + (10+14+16) + (6+10+13) + (9+11+14) + (7+13+17) + (12+15+18)
+</div>
+<div class="calc-step">
+<span class="label">Soma =</span> 35 + 40 + 29 + 34 + 37 + 45 = <span class="result">220</span>
+</div>
+<div class="calc-step">
+<span class="label">X̄<sub>grand</sub> =</span> 220 / 18 = <span class="result" style="font-size:1.3em;">12.2222</span>
+</div>
+
+<div class="chart-container">
+  <h3 style="text-align:center;">Médias por Fase e Média Geral</h3>
+  <svg id="meanChart4" viewBox="0 0 500 220" width="100%"></svg>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Muninn sussurra:</div>
+    A média geral é o <span class="highlight-purple">ponto de referência</span> — todas as somas de quadrados medem desvios a partir dela. Guarde: <span class="highlight">X̄ = 12.22</span>.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 5: SST ===================== -->
+<div class="step" id="step5">
+<h2>Passo 5 — SS<sub>Total</sub> (Variação Total)</h2>
+
+<div class="formula">
+  SS<sub>T</sub> = Σ(X<sub>ij</sub> − X̄<sub>grand</sub>)²
+</div>
+
+<p>Cada uma das 18 observações desvia da média geral. Elevamos ao quadrado e somamos:</p>
+
+<div class="card" style="overflow-x:auto;">
+<table style="font-size:0.9em;">
+  <tr><th>Guerreiro</th><th class="phase1">F1 dev²</th><th class="phase2">F2 dev²</th><th class="phase3">F3 dev²</th><th>Soma</th></tr>
+  <tr><td>Bjorn</td><td>17.83</td><td>0.05</td><td>7.72</td><td>25.59</td></tr>
+  <tr><td>Ragnar</td><td>4.94</td><td>3.16</td><td>14.27</td><td>22.37</td></tr>
+  <tr><td>Lagertha</td><td>38.72</td><td>4.94</td><td>0.60</td><td>44.26</td></tr>
+  <tr><td>Ivar</td><td>10.38</td><td>1.49</td><td>3.16</td><td>15.04</td></tr>
+  <tr><td>Floki</td><td>27.27</td><td>0.60</td><td>22.83</td><td>50.70</td></tr>
+  <tr><td>Sigurd</td><td>0.05</td><td>7.72</td><td>33.38</td><td>41.15</td></tr>
+</table>
+</div>
+
+<div class="calc-step">
+<span class="label">SS<sub>T</sub> =</span> 25.59 + 22.37 + 44.26 + 15.04 + 50.70 + 41.15 = <span class="result" style="font-size:1.3em;">199.11</span>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Essa é a variação <span class="highlight">TOTAL</span> nos dados. Agora vamos decompô-la em três pedaços: tratamento, sujeitos e erro.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 6: SSB ===================== -->
+<div class="step" id="step6">
+<h2>Passo 6 — SS<sub>Between</sub> (Variação Entre Fases)</h2>
+
+<div class="formula">
+  SS<sub>B</sub> = n × Σ(X̄<sub>j</sub> − X̄<sub>grand</sub>)² &nbsp;&nbsp; (n = 6 guerreiros)
+</div>
+
+<p>Cada média de fase desvia da média geral:</p>
+
+<div class="calc-step">
+<span class="label">Fase 1:</span> 6 × (8.6667 − 12.2222)² = 6 × (−3.5556)² = 6 × 12.6420 = <span class="result">75.85</span>
+</div>
+<div class="calc-step">
+<span class="label">Fase 2:</span> 6 × (12.5000 − 12.2222)² = 6 × (0.2778)² = 6 × 0.0772 = <span class="result">0.46</span>
+</div>
+<div class="calc-step">
+<span class="label">Fase 3:</span> 6 × (15.5000 − 12.2222)² = 6 × (3.2778)² = 6 × 10.7439 = <span class="result">64.46</span>
+</div>
+<div class="calc-step" style="border-color:var(--gold);">
+<span class="label">SS<sub>B</sub> =</span> 75.85 + 0.46 + 64.46 = <span class="result" style="font-size:1.3em;">140.78</span>
+</div>
+
+<div class="chart-container">
+  <h3 style="text-align:center;">Desvios das Médias de Fase</h3>
+  <svg id="ssbChart" viewBox="0 0 500 200" width="100%"></svg>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Essa é a variação explicada pelo <span class="highlight">treinamento</span>. Note como Fase 1 e Fase 3 contribuem quase tudo — são as que mais se afastam da média geral.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 7: SS_SUBJECTS ===================== -->
+<div class="step" id="step7">
+<h2>Passo 7 — SS<sub>Sujeitos</sub> (A Mágica!) 🎯</h2>
+
+<div class="formula">
+  SS<sub>Sujeitos</sub> = k × Σ(X̄<sub>i</sub> − X̄<sub>grand</sub>)² &nbsp;&nbsp; (k = 3 fases)
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    <span class="highlight">AQUI está a mágica das medidas repetidas!</span> Isolamos a diferença entre os guerreiros. Sigurd é melhor que Lagertha? Tudo bem — removemos isso do erro.
+  </div>
+</div>
+
+<div class="calc-step">
+<span class="label">Bjorn:</span> 3 × (11.6667 − 12.2222)² = 3 × 0.3086 = <span class="result">0.93</span>
+</div>
+<div class="calc-step">
+<span class="label">Ragnar:</span> 3 × (13.3333 − 12.2222)² = 3 × 1.2346 = <span class="result">3.70</span>
+</div>
+<div class="calc-step">
+<span class="label">Lagertha:</span> 3 × (9.6667 − 12.2222)² = 3 × 6.5309 = <span class="result">19.59</span>
+</div>
+<div class="calc-step">
+<span class="label">Ivar:</span> 3 × (11.3333 − 12.2222)² = 3 × 0.7901 = <span class="result">2.37</span>
+</div>
+<div class="calc-step">
+<span class="label">Floki:</span> 3 × (12.3333 − 12.2222)² = 3 × 0.0123 = <span class="result">0.04</span>
+</div>
+<div class="calc-step">
+<span class="label">Sigurd:</span> 3 × (15.0000 − 12.2222)² = 3 × 7.7160 = <span class="result">23.15</span>
+</div>
+<div class="calc-step" style="border-color:var(--gold);">
+<span class="label">SS<sub>Sujeitos</sub> =</span> 0.93 + 3.70 + 19.59 + 2.37 + 0.04 + 23.15 = <span class="result" style="font-size:1.3em;">49.78</span>
+</div>
+
+<div class="dialogue thor">
+  <div class="icon">⚡</div>
+  <div class="content">
+    <div class="name">ThorMento</div>
+    Isso é batota! Tá removendo variação do erro?!
+  </div>
+</div>
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Isso é <span class="highlight-green">eficiência estatística</span>. Cada guerreiro é seu próprio controle — o que importa é a MUDANÇA dentro de cada um, não quem é melhor que quem.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 8: SS_ERROR ===================== -->
+<div class="step" id="step8">
+<h2>Passo 8 — SS<sub>Erro</sub> (O Resíduo)</h2>
+
+<div class="formula">
+  SS<sub>Erro</sub> = SS<sub>T</sub> − SS<sub>B</sub> − SS<sub>Sujeitos</sub>
+</div>
+
+<div class="calc-step" style="border-color:var(--gold);">
+<span class="label">SS<sub>Erro</sub> =</span> 199.11 − 140.78 − 49.78 = <span class="result" style="font-size:1.3em;">8.56</span>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    O erro é o que sobra <span class="highlight">DEPOIS</span> de remover o efeito do tratamento E as diferenças individuais. Olha como é pequeno: apenas <span class="highlight-green">8.56</span> de 199.11!
+  </div>
+</div>
+
+<h3>Decomposição da Variação Total</h3>
+<div class="stacked-bar">
+  <div style="width:70.7%; background:var(--odin-blue); color:#000;">SS<sub>B</sub> = 140.78 (70.7%)</div>
+  <div style="width:25.0%; background:var(--corvo-purple); color:#000;">SS<sub>Suj</sub> = 49.78 (25.0%)</div>
+  <div style="width:4.3%; background:var(--thor-red); color:#fff; font-size:0.8em;">4.3%</div>
+</div>
+<p style="text-align:center; color:var(--text-dim); font-size:0.9em;">
+  <span style="color:var(--odin-blue);">■</span> Tratamento &nbsp;
+  <span style="color:var(--corvo-purple);">■</span> Sujeitos &nbsp;
+  <span style="color:var(--thor-red);">■</span> Erro
+</p>
+
+<div class="card red-border">
+  <h3 style="color:var(--thor-red);">⚠️ Comparação: e se fosse ANOVA independente?</h3>
+  <p>Na ANOVA independente, SS<sub>Sujeitos</sub> ficaria <strong>dentro do erro</strong>:</p>
+  <div class="calc-step">
+    <span class="label">SS<sub>Within</sub> (independente) =</span> SS<sub>Sujeitos</sub> + SS<sub>Erro</sub> = 49.78 + 8.56 = <span class="result" style="color:var(--thor-red);">58.33</span>
+  </div>
+  <p>O erro seria <span class="highlight-red">quase 7 vezes maior</span>! (58.33 vs 8.56). Isso daria um F muito menor e poder estatístico muito mais fraco.</p>
+</div>
+</div>
+
+<!-- ===================== STEP 9: DEGREES OF FREEDOM ===================== -->
+<div class="step" id="step9">
+<h2>Passo 9 — Graus de Liberdade</h2>
+
+<div class="formula">
+  df<sub>total</sub> = N − 1 = 18 − 1 = <span class="big" style="color:var(--gold);">17</span>
+</div>
+
+<div class="card">
+  <div class="calc-step">
+    <span class="label">df<sub>tratamento</sub> =</span> k − 1 = 3 − 1 = <span class="result">2</span>
+    <span style="color:var(--text-dim); margin-left:10px;">(fases menos 1)</span>
+  </div>
+  <div class="calc-step">
+    <span class="label">df<sub>sujeitos</sub> =</span> n − 1 = 6 − 1 = <span class="result">5</span>
+    <span style="color:var(--text-dim); margin-left:10px;">(guerreiros menos 1)</span>
+  </div>
+  <div class="calc-step">
+    <span class="label">df<sub>erro</sub> =</span> (k−1)(n−1) = 2 × 5 = <span class="result">10</span>
+    <span style="color:var(--text-dim); margin-left:10px;">(produto dos anteriores)</span>
+  </div>
+</div>
+
+<h3>Verificação:</h3>
+<div class="calc-step" style="border-color:var(--gold);">
+  <span class="label">df<sub>trat</sub> + df<sub>suj</sub> + df<sub>erro</sub> =</span> 2 + 5 + 10 = <span class="result">17</span> ✓ = df<sub>total</sub>
+</div>
+
+<div class="chart-container">
+  <h3 style="text-align:center;">Decomposição dos gl</h3>
+  <div class="stacked-bar" style="height:50px;">
+    <div style="width:11.8%; background:var(--odin-blue); color:#000; font-size:1.1em;">2</div>
+    <div style="width:29.4%; background:var(--corvo-purple); color:#000; font-size:1.1em;">5</div>
+    <div style="width:58.8%; background:var(--gold); color:#000; font-size:1.1em;">10</div>
+  </div>
+  <p style="text-align:center; color:var(--text-dim); font-size:0.9em;">
+    <span style="color:var(--odin-blue);">■</span> Tratamento (2) &nbsp;
+    <span style="color:var(--corvo-purple);">■</span> Sujeitos (5) &nbsp;
+    <span style="color:var(--gold);">■</span> Erro (10)
+  </p>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Muninn sussurra:</div>
+    O df<sub>erro</sub> na RM é (k−1)(n−1). Na ANOVA independente seria N−k = 15. Aqui perdemos 5 gl para estimar os efeitos dos sujeitos — mas ganhamos muito em redução do SS<sub>erro</sub>.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 10: MS AND F ===================== -->
+<div class="step" id="step10">
+<h2>Passo 10 — Quadrados Médios e Razão F</h2>
+
+<div class="formula">
+  MS = SS / df &nbsp;&nbsp;&nbsp; F = MS<sub>tratamento</sub> / MS<sub>erro</sub>
+</div>
+
+<div class="calc-step">
+  <span class="label">MS<sub>tratamento</sub> =</span> SS<sub>B</sub> / df<sub>trat</sub> = 140.78 / 2 = <span class="result">70.39</span>
+</div>
+<div class="calc-step">
+  <span class="label">MS<sub>erro</sub> =</span> SS<sub>erro</sub> / df<sub>erro</sub> = 8.56 / 10 = <span class="result">0.856</span>
+</div>
+<div class="calc-step" style="border-color:var(--gold); border-width:3px;">
+  <span class="label" style="font-size:1.2em;">F =</span> 70.39 / 0.856 = <span class="result" style="font-size:1.5em; color:var(--gold);">82.27</span>
+</div>
+
+<div class="card gold-border">
+  <h3 style="text-align:center; color:var(--gold);">⚔️ O Veredicto</h3>
+  <p style="text-align:center; font-size:1.2em;">
+    F<sub>calculado</sub> = <span class="highlight" style="font-size:1.4em;">82.27</span> &nbsp;&nbsp; vs &nbsp;&nbsp;
+    F<sub>crítico</sub>(2, 10; α=0.05) = <span class="highlight-red">4.10</span>
+  </p>
+  <p style="text-align:center; font-size:1.1em; margin-top:8px;">
+    <span class="highlight-green">82.27 ≫ 4.10 → Rejeitamos H₀!</span>
+  </p>
+  <p style="text-align:center; color:var(--text-dim);">p < 0.001</p>
+</div>
+
+<div class="chart-container">
+  <h3 style="text-align:center;">Distribuição F(2, 10)</h3>
+  <svg id="fDistChart" viewBox="0 0 560 220" width="100%"></svg>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Um F de <span class="highlight">82.27</span> é devastador! O treinamento na arena fez diferença ENORME na pontaria dos guerreiros.
+  </div>
+</div>
+
+<div class="dialogue thor">
+  <div class="icon">⚡</div>
+  <div class="content">
+    <div class="name">ThorMento</div>
+    ... tá bom, dessa vez a matemática ganhou.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 11: MAUCHLY ===================== -->
+<div class="step" id="step11">
+<h2>Passo 11 — Teste de Esfericidade de Mauchly</h2>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Muninn sussurra:</div>
+    O teste de Mauchly verifica se as variâncias das diferenças pareadas são iguais. Se a esfericidade é violada, os gl precisam de <span class="highlight-purple">correção</span>.
+  </div>
+</div>
+
+<h3>Variâncias das diferenças pareadas (revisão):</h3>
+<div class="sphere-pairs">
+  <div class="sphere-pair">
+    <div style="color:var(--phase2)">Fase 2 − Fase 1</div>
+    <div class="highlight">Var = 1.77</div>
+  </div>
+  <div class="sphere-pair">
+    <div style="color:var(--phase3)">Fase 3 − Fase 1</div>
+    <div class="highlight">Var = 2.97</div>
+  </div>
+  <div class="sphere-pair">
+    <div style="color:var(--success)">Fase 3 − Fase 2</div>
+    <div class="highlight">Var = 0.40</div>
+  </div>
+</div>
+
+<div class="card red-border">
+  <h3 style="color:var(--thor-red);">⚠️ Variâncias desiguais!</h3>
+  <p>As variâncias vão de 0.40 a 2.97 — diferença de mais de 7x. Isso sugere possível violação de esfericidade.</p>
+</div>
+
+<h3>Correção de Greenhouse-Geisser (ε)</h3>
+<p>Quando a esfericidade é violada, multiplicamos os gl por um fator ε (epsilon) que varia entre 1/(k−1) e 1.</p>
+
+<div class="calc-step">
+  <span class="label">ε<sub>GG</sub> =</span> <span class="result">0.571</span>
+  <span style="color:var(--text-dim); margin-left:10px;">(calculado via matriz de covariância)</span>
+</div>
+
+<div class="card blue-border">
+  <h3>Graus de liberdade corrigidos:</h3>
+  <div class="calc-step">
+    <span class="label">df<sub>trat</sub> corrigido =</span> ε × df<sub>trat</sub> = 0.571 × 2 = <span class="result">1.14</span>
+  </div>
+  <div class="calc-step">
+    <span class="label">df<sub>erro</sub> corrigido =</span> ε × df<sub>erro</sub> = 0.571 × 10 = <span class="result">5.71</span>
+  </div>
+  <div class="calc-step">
+    <span class="label">F (mesmo) =</span> <span class="result">82.27</span>
+    <span style="color:var(--text-dim); margin-left:10px;">(o F não muda, só os gl)</span>
+  </div>
+  <div class="calc-step" style="border-color:var(--gold);">
+    <span class="label">p corrigido =</span> <span class="result">0.000114</span>
+    <span style="color:var(--text-dim); margin-left:10px;">(continua altamente significativo!)</span>
+  </div>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    Quando a esfericidade falha, multiplicamos os gl por ε — isso torna o teste mais <span class="highlight">conservador</span>. Mas com F = 82.27, nem a correção mais severa muda o resultado.
+  </div>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Huginn provoca:</div>
+    Na prática, SEMPRE reporte a correção de Greenhouse-Geisser (ou Huynh-Feldt se ε > 0.75). Softwares como SPSS e jamovi fazem isso automaticamente. Não invente desculpas para ignorar!
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 12: ANOVA TABLE ===================== -->
+<div class="step" id="step12">
+<h2>Passo 12 — Tabela ANOVA RM Completa</h2>
+
+<table>
+  <tr>
+    <th>Fonte</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
+  </tr>
+  <tr style="background:rgba(88,166,255,0.1);">
+    <td style="text-align:left; font-weight:bold; color:var(--odin-blue);">Tratamento (Fases)</td>
+    <td>140.78</td><td>2</td><td>70.39</td>
+    <td style="color:var(--gold); font-weight:bold; font-size:1.1em;">82.27</td>
+    <td style="color:var(--success); font-weight:bold;">< .001</td>
+  </tr>
+  <tr style="background:rgba(188,140,255,0.1);">
+    <td style="text-align:left; color:var(--corvo-purple);">Sujeitos (Guerreiros)</td>
+    <td>49.78</td><td>5</td><td>9.96</td><td>—</td><td>—</td>
+  </tr>
+  <tr>
+    <td style="text-align:left; color:var(--text-dim);">Erro</td>
+    <td>8.56</td><td>10</td><td>0.856</td><td>—</td><td>—</td>
+  </tr>
+  <tr style="background:var(--bg-panel); font-weight:bold;">
+    <td style="text-align:left;">Total</td>
+    <td>199.11</td><td>17</td><td>—</td><td>—</td><td>—</td>
+  </tr>
+</table>
+
+<h3>Tamanho de Efeito</h3>
+<div class="formula">
+  η²<sub>parcial</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>Erro</sub>) = 140.78 / (140.78 + 8.56) = <span class="big" style="color:var(--gold);">0.943</span>
+</div>
+
+<div class="card gold-border">
+  <p style="text-align:center; font-size:1.2em;">
+    <span class="highlight">94.3%</span> da variância (após remover diferenças individuais) é explicada pelo treinamento!
+  </p>
+  <p style="text-align:center; color:var(--text-dim);">Cohen: pequeno = .01, médio = .06, grande = .14 → Este é <span class="highlight-green">MASSIVO</span></p>
+</div>
+
+<div class="apa-box">
+  <strong>Formato APA:</strong><br>
+  <em>F</em>(2, 10) = 82.27, <em>p</em> < .001, η²<sub>p</sub> = .94<br>
+  <small>Com correção Greenhouse-Geisser: <em>F</em>(1.14, 5.71) = 82.27, <em>p</em> < .001</small>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    A tabela está completa. Note que NÃO testamos o efeito dos sujeitos — não nos interessa se Sigurd é melhor que Lagertha. Só queremos <span class="highlight">remover essa fonte de variação</span>.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 13: POST-HOC ===================== -->
+<div class="step" id="step13">
+<h2>Passo 13 — Comparações Post-hoc (Bonferroni)</h2>
+
+<p>A ANOVA disse que as fases diferem — mas <span class="highlight">QUAIS</span> fases? Usamos testes t pareados com correção de Bonferroni:</p>
+
+<div class="formula">
+  α<sub>ajustado</sub> = 0.05 / 3 comparações = <span class="big">0.0167</span>
+</div>
+
+<div class="posthoc-cards">
+  <div class="posthoc-card sig">
+    <h3 style="color:var(--phase1);">Fase 1 vs Fase 2</h3>
+    <p>8.67 → 12.50</p>
+    <p style="font-size:1.3em;">Δ = <span class="highlight">+3.83</span></p>
+    <p><em>t</em>(5) = −7.06</p>
+    <p><em>p</em> = .0009</p>
+    <p style="color:var(--success); font-weight:bold;">✅ Significativo!</p>
+    <small>p < .0167</small>
+  </div>
+  <div class="posthoc-card sig">
+    <h3 style="color:var(--phase1);">Fase 1 vs Fase 3</h3>
+    <p>8.67 → 15.50</p>
+    <p style="font-size:1.3em;">Δ = <span class="highlight">+6.83</span></p>
+    <p><em>t</em>(5) = −9.72</p>
+    <p><em>p</em> = .0002</p>
+    <p style="color:var(--success); font-weight:bold;">✅ Significativo!</p>
+    <small>p < .0167</small>
+  </div>
+  <div class="posthoc-card sig">
+    <h3 style="color:var(--phase2);">Fase 2 vs Fase 3</h3>
+    <p>12.50 → 15.50</p>
+    <p style="font-size:1.3em;">Δ = <span class="highlight">+3.00</span></p>
+    <p><em>t</em>(5) = −11.62</p>
+    <p><em>p</em> < .0001</p>
+    <p style="color:var(--success); font-weight:bold;">✅ Significativo!</p>
+    <small>p < .0167</small>
+  </div>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    <span class="highlight-green">Todas</span> as diferenças são significativas! Os guerreiros melhoraram de cada fase para a seguinte — e o ganho acumulado (Fase 1 → 3) é o maior de todos.
+  </div>
+</div>
+
+<div class="dialogue corvo">
+  <div class="icon">🐦‍⬛</div>
+  <div class="content">
+    <div class="name">Huginn provoca:</div>
+    Sem a correção de Bonferroni, você testaria cada par a α = .05 e inflaria a taxa de erro familiar. Três testes × 5% = ~15% de chance de encontrar algo por acaso. Bonferroni corta isso para 5% no máximo.
+  </div>
+</div>
+</div>
+
+<!-- ===================== STEP 14: CONCLUSION ===================== -->
+<div class="step" id="step14">
+<h2>Passo 14 — Conclusão e Relatório</h2>
+
+<div class="apa-box" style="text-align:left; font-style:normal;">
+  <h3 style="text-align:center; color:var(--gold);">📜 Relatório APA</h3>
+  <p style="margin-top:10px;">
+    Uma ANOVA de medidas repetidas com um fator mostrou que o treinamento na arena de Asgard teve efeito significativo sobre o número de acertos com arco,
+    <em>F</em>(2, 10) = 82.27, <em>p</em> < .001, η²<sub>p</sub> = .94.
+    Com a correção de Greenhouse-Geisser (ε = .57), o resultado permanece significativo,
+    <em>F</em>(1.14, 5.71) = 82.27, <em>p</em> < .001.
+  </p>
+  <p style="margin-top:8px;">
+    Comparações post-hoc com correção de Bonferroni revelaram diferenças significativas entre todas as fases:
+    Fase 1 (<em>M</em> = 8.67) vs. Fase 2 (<em>M</em> = 12.50), <em>t</em>(5) = −7.06, <em>p</em> = .001;
+    Fase 1 vs. Fase 3 (<em>M</em> = 15.50), <em>t</em>(5) = −9.72, <em>p</em> < .001;
+    Fase 2 vs. Fase 3, <em>t</em>(5) = −11.62, <em>p</em> < .001.
+  </p>
+</div>
+
+<div class="card" style="border-color:var(--corvo-purple);">
+  <h3 style="color:var(--corvo-purple);">🐦‍⬛ Lição dos Corvos</h3>
+  <div class="dialogue corvo" style="margin:8px 0;">
+    <div class="icon">🐦‍⬛</div>
+    <div class="content">
+      <div class="name">Muninn lembra:</div>
+      <ul style="margin-top:6px;">
+        <li>Medidas repetidas = mesmo sujeito em TODAS as condições</li>
+        <li>Vantagem: remove variação entre sujeitos → erro menor → F maior → mais poder</li>
+        <li>Pressuposto extra: esfericidade (variâncias das diferenças iguais)</li>
+        <li>Correção GG quando esfericidade é violada: multiplicar gl por ε</li>
+        <li>Post-hoc: testes t pareados com Bonferroni</li>
+        <li>Reportar: F(df₁, df₂) = valor, p, η²<sub>p</sub></li>
+      </ul>
+    </div>
+  </div>
+  <div class="dialogue corvo" style="margin:8px 0;">
+    <div class="icon">🐦‍⬛</div>
+    <div class="content">
+      <div class="name">Huginn provoca:</div>
+      <ul style="margin-top:6px;">
+        <li>Quando NÃO usar RM-ANOVA? Quando há mortalidade experimental (sujeitos que desistem entre fases)</li>
+        <li>Cuidado com efeitos de prática e fadiga — a ordem das condições importa!</li>
+        <li>Com mais de 2 fatores within, considere modelos mistos (mixed ANOVA)</li>
+        <li>η²<sub>p</sub> = .94 é absurdamente grande — pergunte-se se o delineamento não está inflando o efeito</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card gold-border">
+  <h3 style="color:var(--gold);">📊 Resumo Executivo</h3>
+  <table style="font-size:0.95em;">
+    <tr><th>Item</th><th>Valor</th></tr>
+    <tr><td>Design</td><td>Within-subjects, 1 fator (3 níveis)</td></tr>
+    <tr><td>N</td><td>6 guerreiros × 3 fases = 18 obs.</td></tr>
+    <tr><td>F</td><td>82.27</td></tr>
+    <tr><td>df</td><td>(2, 10); GG corrigido: (1.14, 5.71)</td></tr>
+    <tr><td>p</td><td>< .001</td></tr>
+    <tr><td>η²<sub>p</sub></td><td>.94 (grande)</td></tr>
+    <tr><td>GG ε</td><td>.571</td></tr>
+    <tr><td>Post-hoc</td><td>Todas as 3 comparações significativas (Bonferroni)</td></tr>
+    <tr><td>Conclusão</td><td style="color:var(--success);">O treinamento MELHOROU significativamente a pontaria</td></tr>
+  </table>
+</div>
+
+<div class="dialogue odin">
+  <div class="icon">🧙‍♂️</div>
+  <div class="content">
+    <div class="name">Odin Dinho</div>
+    E assim, guerreiro, você dominou a ANOVA de Medidas Repetidas — a técnica que transforma cada viking em seu próprio grupo controle. <span class="highlight">Que os dados estejam ao seu favor!</span> ⚔️
+  </div>
+</div>
+
+<div class="signature">
+  Prof. Dr. Leonardo Vils · PPGA · UNINOVE · MTPQI · 2026
+</div>
+</div>
+
+</div><!-- /container -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button id="btnPrev" onclick="go(-1)" disabled>◄ Voltar</button>
+  <button id="btnNext" class="primary" onclick="go(1)">Próximo ►</button>
+</div>
+
+<script>
+// ==================== NAVIGATION ====================
+const TOTAL_STEPS = 15; // steps 0-14
+let current = 0;
+
+function go(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= TOTAL_STEPS) return;
+  document.getElementById('step' + current).classList.remove('active');
+  current = next;
+  const el = document.getElementById('step' + current);
+  el.classList.remove('active');
+  void el.offsetWidth; // trigger reflow for animation
+  el.classList.add('active');
+  updateNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  drawCharts();
+}
+
+function updateNav() {
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').disabled = current === TOTAL_STEPS - 1;
+  document.getElementById('btnNext').textContent = current === TOTAL_STEPS - 1 ? '✅ Fim' : 'Próximo ►';
+  document.getElementById('progressFill').style.width = (current / (TOTAL_STEPS - 1) * 100) + '%';
+  document.getElementById('stepIndicator').textContent = current + ' / ' + (TOTAL_STEPS - 1);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+});
+
+// ==================== CHARTS ====================
+const warriors = ['Bjorn','Ragnar','Lagertha','Ivar','Floki','Sigurd'];
+const data = [[8,12,15],[10,14,16],[6,10,13],[9,11,14],[7,13,17],[12,15,18]];
+const phaseMeans = [8.6667, 12.5, 15.5];
+const grandMean = 12.2222;
+const wColors = ['#58a6ff','#f85149','#bc8cff','#f0c040','#3fb950','#ff7b72'];
+
+function drawCharts() {
+  if (current === 0) drawLineChart();
+  if (current === 4) drawMeanChart();
+  if (current === 6) drawSSBChart();
+  if (current === 10) drawFDist();
+}
+
+function drawLineChart() {
+  const svg = document.getElementById('lineChart0');
+  if (!svg || svg.dataset.drawn) return;
+  svg.dataset.drawn = '1';
+  const W = 600, H = 300, pad = {l:60,r:120,t:20,b:40};
+  const xScale = i => pad.l + i * ((W - pad.l - pad.r) / 2);
+  const yScale = v => pad.t + (H - pad.t - pad.b) * (1 - (v - 4) / 16);
+  let html = '';
+  // Grid
+  for (let v = 5; v <= 20; v += 5) {
+    const y = yScale(v);
+    html += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="var(--border)" stroke-dasharray="4"/>`;
+    html += `<text x="${pad.l-8}" y="${y+5}" fill="var(--text-dim)" font-size="13" text-anchor="end">${v}</text>`;
+  }
+  // X labels
+  ['Fase 1','Fase 2','Fase 3'].forEach((l,i) => {
+    html += `<text x="${xScale(i)}" y="${H-8}" fill="var(--text-dim)" font-size="14" text-anchor="middle">${l}</text>`;
+  });
+  // Lines + dots
+  data.forEach((d,wi) => {
+    const pts = d.map((v,j) => `${xScale(j)},${yScale(v)}`).join(' ');
+    html += `<polyline points="${pts}" fill="none" stroke="${wColors[wi]}" stroke-width="2.5" opacity="0.8"/>`;
+    d.forEach((v,j) => {
+      html += `<circle cx="${xScale(j)}" cy="${yScale(v)}" r="5" fill="${wColors[wi]}" stroke="var(--bg-dark)" stroke-width="2"/>`;
+    });
+    html += `<text x="${xScale(2)+12}" y="${yScale(d[2])+5}" fill="${wColors[wi]}" font-size="13">${warriors[wi]}</text>`;
+  });
+  // Grand mean line
+  const gmy = yScale(grandMean);
+  html += `<line x1="${pad.l}" y1="${gmy}" x2="${W-pad.r}" y2="${gmy}" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="6,3"/>`;
+  html += `<text x="${W-pad.r+5}" y="${gmy+4}" fill="var(--gold)" font-size="12">X̄=12.22</text>`;
+  svg.innerHTML = html;
+}
+
+function drawMeanChart() {
+  const svg = document.getElementById('meanChart4');
+  if (!svg || svg.dataset.drawn) return;
+  svg.dataset.drawn = '1';
+  const W = 500, H = 220, pad = {l:50,r:30,t:20,b:40};
+  const xScale = i => pad.l + 60 + i * 130;
+  const yScale = v => pad.t + (H - pad.t - pad.b) * (1 - (v - 5) / 14);
+  const colors = ['var(--phase1)','var(--phase2)','var(--phase3)'];
+  let html = '';
+  // Grid
+  for (let v = 6; v <= 18; v += 3) {
+    const y = yScale(v);
+    html += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="var(--border)" stroke-dasharray="3"/>`;
+    html += `<text x="${pad.l-8}" y="${y+5}" fill="var(--text-dim)" font-size="12" text-anchor="end">${v}</text>`;
+  }
+  // Bars
+  phaseMeans.forEach((m,i) => {
+    const x = xScale(i);
+    const y = yScale(m);
+    const h = yScale(5) - y;
+    html += `<rect x="${x-25}" y="${y}" width="50" height="${h}" fill="${colors[i]}" opacity="0.7" rx="4"/>`;
+    html += `<text x="${x}" y="${y-8}" fill="${colors[i]}" font-size="15" text-anchor="middle" font-weight="bold">${m.toFixed(2)}</text>`;
+    html += `<text x="${x}" y="${H-8}" fill="var(--text-dim)" font-size="13" text-anchor="middle">Fase ${i+1}</text>`;
+  });
+  // Grand mean line
+  const gmy = yScale(grandMean);
+  html += `<line x1="${pad.l}" y1="${gmy}" x2="${W-pad.r}" y2="${gmy}" stroke="var(--gold)" stroke-width="2" stroke-dasharray="6,3"/>`;
+  html += `<text x="${W-pad.r-5}" y="${gmy-6}" fill="var(--gold)" font-size="13" text-anchor="end">X̄ = 12.22</text>`;
+  svg.innerHTML = html;
+}
+
+function drawSSBChart() {
+  const svg = document.getElementById('ssbChart');
+  if (!svg || svg.dataset.drawn) return;
+  svg.dataset.drawn = '1';
+  const W = 500, H = 200, pad = {l:50,r:30,t:30,b:40};
+  const xScale = i => pad.l + 60 + i * 130;
+  const yScale = v => pad.t + (H - pad.t - pad.b) * (1 - (v - 5) / 14);
+  const colors = ['var(--phase1)','var(--phase2)','var(--phase3)'];
+  let html = '';
+  const gmy = yScale(grandMean);
+  html += `<line x1="${pad.l}" y1="${gmy}" x2="${W-pad.r}" y2="${gmy}" stroke="var(--gold)" stroke-width="2" stroke-dasharray="6,3"/>`;
+  html += `<text x="${W-pad.r-5}" y="${gmy-6}" fill="var(--gold)" font-size="12" text-anchor="end">X̄ = 12.22</text>`;
+  phaseMeans.forEach((m,i) => {
+    const x = xScale(i);
+    const y1 = gmy;
+    const y2 = yScale(m);
+    html += `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${colors[i]}" stroke-width="3"/>`;
+    html += `<circle cx="${x}" cy="${y2}" r="8" fill="${colors[i]}" stroke="var(--bg-dark)" stroke-width="2"/>`;
+    html += `<text x="${x}" y="${y2 < y1 ? y2 - 14 : y2 + 20}" fill="${colors[i]}" font-size="14" text-anchor="middle" font-weight="bold">${m.toFixed(2)}</text>`;
+    const dev = m - grandMean;
+    const ssVal = (6 * dev * dev).toFixed(2);
+    html += `<text x="${x}" y="${H - 8}" fill="var(--text-dim)" font-size="12" text-anchor="middle">6×(${dev >= 0 ? '+' : ''}${dev.toFixed(2)})² = ${ssVal}</text>`;
+  });
+  svg.innerHTML = html;
+}
+
+function drawFDist() {
+  const svg = document.getElementById('fDistChart');
+  if (!svg || svg.dataset.drawn) return;
+  svg.dataset.drawn = '1';
+  const W = 560, H = 220, pad = {l:40,r:20,t:20,b:50};
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+  // F distribution curve approximation F(2,10)
+  function fPdf(x, d1, d2) {
+    if (x <= 0) return 0;
+    const B = (d1/2) * Math.log(d1) + (d2/2) * Math.log(d2) - lnBeta(d1/2, d2/2);
+    const v = B + (d1/2 - 1) * Math.log(x) - ((d1 + d2)/2) * Math.log(d1 * x + d2);
+    return Math.exp(v);
+  }
+  function lnBeta(a, b) {
+    return lnGamma(a) + lnGamma(b) - lnGamma(a + b);
+  }
+  function lnGamma(z) {
+    // Stirling approx for integer/half-integer
+    const g = 7; const c = [0.99999999999980993,676.5203681218851,-1259.1392167224028,
+      771.32342877765313,-176.61502916214059,12.507343278686905,
+      -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+    if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+    z -= 1;
+    let x = c[0];
+    for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+    const t = z + g + 0.5;
+    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+  }
+  const maxX = 12;
+  const nPts = 200;
+  let maxY = 0;
+  const pts = [];
+  for (let i = 0; i <= nPts; i++) {
+    const x = (i / nPts) * maxX;
+    const y = fPdf(x, 2, 10);
+    pts.push([x, y]);
+    if (y > maxY) maxY = y;
+  }
+  maxY *= 1.15;
+  const sx = x => pad.l + (x / maxX) * pw;
+  const sy = y => pad.t + ph - (y / maxY) * ph;
+  let html = '';
+  // Axis
+  html += `<line x1="${pad.l}" y1="${pad.t+ph}" x2="${pad.l+pw}" y2="${pad.t+ph}" stroke="var(--text-dim)" stroke-width="1"/>`;
+  for (let x = 0; x <= maxX; x += 2) {
+    html += `<text x="${sx(x)}" y="${H-10}" fill="var(--text-dim)" font-size="12" text-anchor="middle">${x}</text>`;
+  }
+  // Rejection region (F > 4.10)
+  let rejectPath = `M${sx(4.10)},${sy(0)}`;
+  for (let i = 0; i <= nPts; i++) {
+    const x = pts[i][0];
+    if (x >= 4.10) rejectPath += ` L${sx(x)},${sy(pts[i][1])}`;
+  }
+  rejectPath += ` L${sx(maxX)},${sy(0)} Z`;
+  html += `<path d="${rejectPath}" fill="var(--thor-red)" opacity="0.25"/>`;
+  // Curve
+  let curvePath = `M${sx(0.01)},${sy(fPdf(0.01,2,10))}`;
+  pts.forEach(([x,y]) => { if (x > 0) curvePath += ` L${sx(x)},${sy(y)}`; });
+  html += `<path d="${curvePath}" fill="none" stroke="var(--odin-blue)" stroke-width="2.5"/>`;
+  // F critical line
+  html += `<line x1="${sx(4.10)}" y1="${pad.t}" x2="${sx(4.10)}" y2="${sy(0)}" stroke="var(--thor-red)" stroke-width="1.5" stroke-dasharray="5"/>`;
+  html += `<text x="${sx(4.10)}" y="${pad.t+15}" fill="var(--thor-red)" font-size="12" text-anchor="middle">F<tspan font-size="9" dy="3">crit</tspan><tspan dy="-3"> = 4.10</tspan></text>`;
+  // F observed (off chart to the right, show arrow)
+  const fObs = Math.min(82.27, maxX - 0.5);
+  html += `<line x1="${sx(maxX-1)}" y1="${sy(0)-2}" x2="${sx(maxX)}" y2="${sy(0)-2}" stroke="var(--gold)" stroke-width="3" marker-end="url(#arrowGold)"/>`;
+  html += `<text x="${sx(maxX-2)}" y="${sy(0)-12}" fill="var(--gold)" font-size="14" text-anchor="middle" font-weight="bold">F = 82.27 →</text>`;
+  html += `<defs><marker id="arrowGold" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--gold)"/></marker></defs>`;
+  // Labels
+  html += `<text x="${sx(6)}" y="${pad.t+35}" fill="var(--thor-red)" font-size="12" opacity="0.8">Região de rejeição (α=.05)</text>`;
+  svg.innerHTML = html;
+}
+
+// Initial draw
+updateNav();
+setTimeout(drawCharts, 100);
+</script>
+</body>
+</html>

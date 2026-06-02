@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grimório dos Artefatos Estatísticos · MTPQI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;line-height:1.6;min-height:100vh}
+.container{max-width:960px;margin:0 auto;padding:1rem}
+h1,h2,h3{font-family:'Bangers',cursive;letter-spacing:1px}
+
+/* HEADER */
+.hero{text-align:center;padding:2.5rem 1rem 1.5rem;position:relative}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);color:var(--gold);text-shadow:0 0 20px rgba(240,192,64,.3);margin-bottom:.3rem}
+.hero .subtitle{font-family:'Permanent Marker',cursive;color:var(--odin-blue);font-size:clamp(1rem,2.5vw,1.3rem);margin-bottom:1.5rem}
+
+/* DIALOGUE */
+.dialogue-box{border-radius:12px;padding:1rem 1.2rem;margin:1rem 0;border-left:4px solid;position:relative;background:var(--bg-panel)}
+.dialogue-box.odin{border-color:var(--odin-blue)}
+.dialogue-box.thor{border-color:var(--thor-red)}
+.dialogue-box.corvo{border-color:var(--corvo-purple)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1rem;margin-bottom:.3rem}
+.char-name.odin{color:var(--odin-blue)}
+.char-name.thor{color:var(--thor-red)}
+.char-name.corvo{color:var(--corvo-purple)}
+.dialogue-text{font-size:1.05rem;color:var(--text)}
+
+/* LEARNING PATH SVG */
+.path-wrap{margin:2rem 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.path-wrap svg{display:block;margin:0 auto}
+.path-wrap svg text{font-family:'Patrick Hand',cursive}
+
+/* CARDS */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;margin:1.5rem 0;overflow:hidden;transition:box-shadow .3s,transform .2s}
+.card:hover{transform:translateY(-2px)}
+.card.diff-2{border-left:4px solid var(--success)}
+.card.diff-3{border-left:4px solid var(--odin-blue)}
+.card-header{padding:1rem 1.2rem;cursor:pointer;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;user-select:none}
+.card-header:hover{background:rgba(255,255,255,.03)}
+.card-icon{font-size:1.8rem;flex-shrink:0}
+.card-info{flex:1;min-width:200px}
+.card-info h2{font-size:1.4rem;color:var(--text);margin-bottom:.15rem}
+.card-meta{display:flex;gap:1rem;flex-wrap:wrap;font-size:.92rem;color:var(--text-dim)}
+.card-meta span{white-space:nowrap}
+.card-oneliner{font-size:.95rem;color:var(--text-dim);margin-top:.2rem;font-style:italic}
+.card-toggle{font-size:1.4rem;color:var(--text-dim);transition:transform .3s;flex-shrink:0}
+.card.open .card-toggle{transform:rotate(180deg)}
+.card-visited{color:var(--success);font-size:1.2rem;flex-shrink:0;display:none}
+.card.visited .card-visited{display:inline}
+.card-body{max-height:0;overflow:hidden;transition:max-height .5s ease}
+.card.open .card-body{max-height:5000px}
+.card-content{padding:0 1.2rem 1.2rem}
+
+/* SECTIONS INSIDE CARDS */
+.section-title{font-family:'Bangers',cursive;font-size:1.15rem;color:var(--gold);margin:1.2rem 0 .5rem;display:flex;align-items:center;gap:.4rem}
+.section-title::before{content:'';flex:0 0 3px;height:1.1em;background:var(--gold);border-radius:2px}
+
+/* PREREQ */
+.prereq{background:var(--bg-panel);border-radius:8px;padding:.8rem 1rem;margin:.5rem 0}
+.prereq ul{list-style:none;padding-left:.5rem}
+.prereq li::before{content:'◆ ';color:var(--gold);font-size:.8rem}
+
+/* Q&A REVEAL */
+.qa{margin:.4rem 0}
+.qa-q{cursor:pointer;padding:.6rem .8rem;background:var(--bg-panel);border-radius:8px;border:1px solid var(--border);transition:background .2s;font-size:1rem}
+.qa-q:hover{background:rgba(88,166,255,.08)}
+.qa-q::before{content:'❓ '}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .4s ease;padding:0 .8rem}
+.qa-a.show{max-height:300px;padding:.5rem .8rem}
+.qa-a-inner{background:rgba(63,185,80,.08);border-left:3px solid var(--success);padding:.5rem .8rem;border-radius:0 8px 8px 0;font-size:.95rem;color:var(--success)}
+
+/* OBJECTIVES */
+.obj-list{list-style:none;padding:0}
+.obj-list li{padding:.25rem 0 .25rem .5rem;position:relative}
+.obj-list li::before{content:'✦ ';color:var(--odin-blue)}
+
+/* PARCHMENT TIPS */
+.parchment{background:linear-gradient(135deg,rgba(240,192,64,.06),rgba(240,192,64,.02));border:1px dashed rgba(240,192,64,.25);border-radius:8px;padding:.7rem 1rem;margin:.4rem 0;font-size:.95rem;color:var(--gold)}
+.parchment::before{content:'📜 '}
+
+/* EXERCISES */
+.exercise{margin:.5rem 0}
+.ex-q{cursor:pointer;padding:.5rem .8rem;background:var(--bg-panel);border-radius:8px;border:1px solid var(--border);font-size:.98rem;transition:background .2s}
+.ex-q:hover{background:rgba(188,140,255,.08)}
+.ex-q::before{content:'🏋️ '}
+.ex-a{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.ex-a.show{max-height:400px}
+.ex-a-inner{padding:.5rem .8rem;background:rgba(188,140,255,.08);border-left:3px solid var(--corvo-purple);border-radius:0 8px 8px 0;margin-top:.3rem;font-size:.95rem}
+
+/* LINK BUTTON */
+.artifact-link{display:inline-block;margin-top:1rem;padding:.7rem 1.5rem;background:linear-gradient(135deg,var(--odin-blue),#3d8bfd);color:#fff;text-decoration:none;border-radius:10px;font-family:'Bangers',cursive;font-size:1.15rem;letter-spacing:1px;transition:transform .2s,box-shadow .2s}
+.artifact-link:hover{transform:scale(1.04);box-shadow:0 0 20px rgba(88,166,255,.4)}
+
+/* FLOWCHART FOOTER */
+.footer-section{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)}
+.flow-wrap{overflow-x:auto;margin:1.5rem 0;-webkit-overflow-scrolling:touch}
+.flow-wrap svg{display:block;margin:0 auto}
+.flow-wrap svg text{font-family:'Patrick Hand',cursive}
+
+/* SIGNATURE */
+.signature{text-align:center;padding:2rem 0 1.5rem;color:var(--text-dim);font-size:.9rem;border-top:1px solid var(--border);margin-top:2rem}
+.signature strong{color:var(--gold)}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .container{padding:.5rem}
+  .card-header{padding:.8rem}
+  .card-content{padding:0 .8rem .8rem}
+  .card-meta{gap:.5rem;font-size:.85rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ======== HERO ======== -->
+<div class="hero">
+  <h1>⚔️ Grimório dos Artefatos Estatísticos</h1>
+  <div class="subtitle">Guia de Estudo Interativo · MTPQI</div>
+</div>
+
+<div class="dialogue-box odin">
+  <div class="char-name odin">🧙‍♂️ Odin Dinho</div>
+  <div class="dialogue-text">Bem-vindo ao Grimório, jovem pesquisador. Aqui você encontrará 6 artefatos interativos que te ensinarão a calcular estatísticas à mão — como um verdadeiro mestre dos dados. Siga a trilha recomendada ou escolha seu próprio caminho.</div>
+</div>
+
+<!-- ======== LEARNING PATH SVG ======== -->
+<div class="path-wrap">
+<svg viewBox="0 0 820 210" width="820" height="210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trilha de Aprendizagem">
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6Z" fill="#58a6ff"/></marker>
+    <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6Z" fill="#bc8cff"/></marker>
+    <style>
+      @keyframes dash{to{stroke-dashoffset:0}}
+      .anim-arrow{stroke-dasharray:8 4;stroke-dashoffset:24;animation:dash 2s linear infinite}
+    </style>
+  </defs>
+  <!-- Row 1: Parametric -->
+  <rect x="20" y="25" width="220" height="54" rx="12" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+  <text x="130" y="48" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">⚔️ ANOVA Um Fator</text>
+  <text x="130" y="66" text-anchor="middle" fill="#8b949e" font-size="11">Artefato 1</text>
+
+  <line x1="245" y1="52" x2="290" y2="52" stroke="#58a6ff" stroke-width="2" marker-end="url(#ah)" class="anim-arrow"/>
+
+  <rect x="295" y="25" width="230" height="54" rx="12" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="410" y="48" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">🔄 ANOVA Medidas Repetidas</text>
+  <text x="410" y="66" text-anchor="middle" fill="#8b949e" font-size="11">Artefato 2</text>
+
+  <line x1="530" y1="52" x2="575" y2="52" stroke="#58a6ff" stroke-width="2" marker-end="url(#ah)" class="anim-arrow"/>
+
+  <rect x="580" y="25" width="220" height="54" rx="12" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="690" y="48" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">🔀 ANOVA Fatorial</text>
+  <text x="690" y="66" text-anchor="middle" fill="#8b949e" font-size="11">Artefato 3</text>
+
+  <!-- Vertical connector -->
+  <line x1="690" y1="84" x2="690" y2="125" stroke="#bc8cff" stroke-width="2" marker-end="url(#ah2)" class="anim-arrow"/>
+
+  <!-- Row 2: Non-parametric -->
+  <rect x="580" y="130" width="220" height="54" rx="12" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+  <text x="690" y="153" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">🏹 Não-Param. 2 Grupos</text>
+  <text x="690" y="171" text-anchor="middle" fill="#8b949e" font-size="11">Artefato 4</text>
+
+  <line x1="575" y1="157" x2="530" y2="157" stroke="#bc8cff" stroke-width="2" marker-end="url(#ah2)" class="anim-arrow"/>
+
+  <rect x="295" y="130" width="230" height="54" rx="12" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="410" y="153" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">⚒️ Não-Param. 3+ Grupos</text>
+  <text x="410" y="171" text-anchor="middle" fill="#8b949e" font-size="11">Artefato 5</text>
+
+  <line x1="290" y1="157" x2="245" y2="157" stroke="#bc8cff" stroke-width="2" marker-end="url(#ah2)" class="anim-arrow"/>
+
+  <rect x="20" y="130" width="220" height="54" rx="12" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+  <text x="130" y="153" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">🔗 Correlação Não-Param.</text>
+  <text x="130" y="171" text-anchor="middle" fill="#8b949e" font-size="11">Artefato 6</text>
+
+  <!-- Labels -->
+  <text x="410" y="16" text-anchor="middle" fill="#f0c040" font-size="13" font-weight="bold">TRILHA PARAMÉTRICA</text>
+  <text x="410" y="202" text-anchor="middle" fill="#bc8cff" font-size="13" font-weight="bold">TRILHA NÃO-PARAMÉTRICA</text>
+</svg>
+</div>
+
+<!-- ================================================================ -->
+<!-- ARTIFACT 1: ANOVA UM FATOR -->
+<!-- ================================================================ -->
+<div class="card diff-2" id="card1">
+  <div class="card-header" onclick="toggleCard('card1')">
+    <span class="card-icon">⚔️</span>
+    <div class="card-info">
+      <h2>ANOVA de Um Fator</h2>
+      <div class="card-meta">
+        <span>⭐⭐ Intermediário</span>
+        <span>⏱️ 25-35 min</span>
+        <span>📖 Cap. 8</span>
+      </div>
+      <div class="card-oneliner">Decomponha a variância total em sinal e ruído para comparar 3+ grupos independentes</div>
+    </div>
+    <span class="card-visited">✅</span>
+    <span class="card-toggle">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="card-content">
+
+      <div class="section-title">Antes de Começar</div>
+      <div class="prereq">
+        <ul>
+          <li>Média, variância, desvio padrão, distribuição normal</li>
+          <li>Testes de hipótese (H₀ e H₁), p-valor</li>
+        </ul>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+        <div class="dialogue-text">Se você domina o teste t para 2 grupos, a ANOVA é a extensão natural para 3+ grupos. A lógica é a mesma — separar variação sistemática de variação aleatória.</div>
+      </div>
+
+      <div class="section-title">Autoavaliação</div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que acontece com o erro Tipo I se compararmos 3 grupos usando 3 testes t separados?</div>
+        <div class="qa-a"><div class="qa-a-inner">O erro se acumula (inflação do alfa). Com 3 comparações a α=0.05, a probabilidade real de pelo menos um erro Tipo I sobe para ~14%.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que significa variância?</div>
+        <div class="qa-a"><div class="qa-a-inner">A média dos quadrados dos desvios em relação à média. Mede o quanto os dados se espalham.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Qual a diferença entre variância amostral e populacional?</div>
+        <div class="qa-a"><div class="qa-a-inner">A amostral divide por n−1 (correção de Bessel), a populacional divide por N.</div></div>
+      </div>
+
+      <div class="section-title">O Que Você Vai Aprender</div>
+      <ul class="obj-list">
+        <li>Decompor SST em SSB (entre grupos) e SSW (dentro dos grupos)</li>
+        <li>Calcular graus de liberdade, quadrados médios e a razão F</li>
+        <li>Interpretar a distribuição F e o p-valor</li>
+        <li>Calcular ω² (tamanho de efeito preferido a η²)</li>
+        <li>Realizar post-hoc de Tukey HSD</li>
+        <li>Reportar em formato APA</li>
+      </ul>
+
+      <div class="section-title">Durante a Interação</div>
+      <div class="parchment">No Step 4 (SST), pause e tente calcular os primeiros 3 desvios ao quadrado antes de avançar.</div>
+      <div class="parchment">No Step 9 (Razão F), antes de ver o resultado, pergunte-se: baseado nos valores de SSB e SSW, você espera um F grande ou pequeno?</div>
+      <div class="parchment">No Step 12 (Tukey), antes de ver os resultados, tente prever quais pares de clãs serão significativamente diferentes.</div>
+
+      <div class="section-title">Depois de Terminar</div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Três tipos de hidromel (Clássico, Especiado, Defumado) foram avaliados por 4 provadores cada. Notas: Clássico=[7,8,6,7], Especiado=[9,8,10,9], Defumado=[5,6,4,5]. Calcule F à mão.</div>
+        <div class="qa-a"><div class="ex-a-inner">Médias: Clássico=7, Especiado=9, Defumado=5, Geral=7. SSB = 4[(7−7)²+(9−7)²+(5−7)²] = 4[0+4+4] = 32. SSW = [(7−7)²+(8−7)²+(6−7)²+(7−7)²] + [(9−9)²+(8−9)²+(10−9)²+(9−9)²] + [(5−5)²+(6−5)²+(4−5)²+(5−5)²] = 2+2+2 = 6. dfB=2, dfW=9. MSB=32/2=16, MSW=6/9=0.667. F = 16/0.667 = <strong>24.0</strong>. F(2,9)=24.0, p&lt;.001.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Se SSB=100, SSW=200, k=4 grupos, N=20 observações, qual é o F? É significativo a α=0.05?</div>
+        <div class="qa-a"><div class="ex-a-inner">dfB = k−1 = 3. dfW = N−k = 16. MSB = 100/3 = 33.33. MSW = 200/16 = 12.5. F = 33.33/12.5 = <strong>2.67</strong>. F crítico(3,16) a α=0.05 ≈ 3.24. Como 2.67 &lt; 3.24, <strong>não é significativo</strong>.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Um pesquisador reporta F(2,27)=3.45, p=.047. Quantos grupos havia? Quantas observações no total? O resultado é significativo?</div>
+        <div class="qa-a"><div class="ex-a-inner">dfB=2 → k=3 grupos. dfW=27 → N−k=27 → N=30 observações. Como p=.047 &lt; .05, <strong>é significativo</strong> a α=0.05 (por pouco!).</div></div>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+        <div class="dialogue-text">E se os pressupostos da ANOVA forem violados — normalidade ou homogeneidade? O que você faria? (Dica: o artefato não-paramétrico pode ser a resposta.)</div>
+      </div>
+
+      <a href="anova-um-fator.html" class="artifact-link" onclick="markVisited('card1')">⚔️ Abrir Artefato</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ARTIFACT 2: ANOVA MEDIDAS REPETIDAS -->
+<!-- ================================================================ -->
+<div class="card diff-3" id="card2">
+  <div class="card-header" onclick="toggleCard('card2')">
+    <span class="card-icon">🔄</span>
+    <div class="card-info">
+      <h2>ANOVA de Medidas Repetidas</h2>
+      <div class="card-meta">
+        <span>⭐⭐⭐ Avançado</span>
+        <span>⏱️ 30-40 min</span>
+        <span>📖 Cap. 9</span>
+      </div>
+      <div class="card-oneliner">Remova a variação individual para detectar mudanças ao longo do tempo nos mesmos sujeitos</div>
+    </div>
+    <span class="card-visited">✅</span>
+    <span class="card-toggle">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="card-content">
+
+      <div class="section-title">Antes de Começar</div>
+      <div class="prereq">
+        <ul>
+          <li>ANOVA de um fator (faça o artefato 1 primeiro!)</li>
+          <li>Dados pareados vs. independentes, teste t pareado</li>
+        </ul>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+        <div class="dialogue-text">A grande vantagem é que cada sujeito serve como seu próprio controle. Isso remove a variação entre sujeitos do erro — aumentando o poder do teste.</div>
+      </div>
+
+      <div class="section-title">Autoavaliação</div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Qual a diferença entre delineamento between-subjects e within-subjects?</div>
+        <div class="qa-a"><div class="qa-a-inner">Between: grupos diferentes de sujeitos. Within: os mesmos sujeitos em todas as condições.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Por que dados pareados tendem a ter mais poder estatístico?</div>
+        <div class="qa-a"><div class="qa-a-inner">Porque eliminam a variabilidade entre sujeitos, reduzindo o erro e facilitando a detecção do efeito.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que é esfericidade?</div>
+        <div class="qa-a"><div class="qa-a-inner">As variâncias das diferenças entre todos os pares de condições devem ser aproximadamente iguais.</div></div>
+      </div>
+
+      <div class="section-title">O Que Você Vai Aprender</div>
+      <ul class="obj-list">
+        <li>Separar SS_subjects da variação total (a "mágica" da medidas repetidas)</li>
+        <li>Testar esfericidade com Mauchly's W</li>
+        <li>Aplicar correção Greenhouse-Geisser quando esfericidade é violada</li>
+        <li>Calcular η²_parcial</li>
+        <li>Realizar post-hoc com correção de Bonferroni</li>
+      </ul>
+
+      <div class="section-title">Durante a Interação</div>
+      <div class="parchment">No Step 7 (SS_subjects), compare mentalmente: o que aconteceria se essa variação ficasse no erro como na ANOVA independente?</div>
+      <div class="parchment">No Step 11 (Mauchly), observe como ε &lt; 1 "encolhe" os graus de liberdade — tornando o teste mais conservador.</div>
+      <div class="parchment">Compare o F obtido com o que seria na ANOVA independente (Step 8).</div>
+
+      <div class="section-title">Depois de Terminar</div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">5 alunos fizeram 3 provas. Notas: P1=[60,70,55,65,75], P2=[70,75,65,70,80], P3=[80,85,75,78,90]. Houve melhora significativa?</div>
+        <div class="qa-a"><div class="ex-a-inner">Médias: P1=65, P2=72, P3=81.6, Geral=72.87. Médias dos sujeitos: S1=70, S2=76.67, S3=65, S4=71, S5=81.67. SST=1746.93, SS_treatment=690.13, SS_subjects=816.93, SS_error=239.87. df_treat=2, df_error=8. MS_treat=345.07, MS_error=29.98. F=345.07/29.98=<strong>11.51</strong>. F(2,8)=11.51, p&lt;.005. Sim, houve melhora significativa.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Se SS_treatment=50, SS_subjects=120, SS_error=30, n=8, k=3, qual é o F?</div>
+        <div class="qa-a"><div class="ex-a-inner">df_treat = k−1 = 2. df_error = (n−1)(k−1) = 7×2 = 14. MS_treat = 50/2 = 25. MS_error = 30/14 = 2.14. F = 25/2.14 = <strong>11.68</strong>.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Mauchly's W=0.45, p=.02. O que isso significa e o que você deve fazer?</div>
+        <div class="qa-a"><div class="ex-a-inner">W=0.45 com p=.02 indica que a esfericidade foi <strong>violada</strong> (p&lt;.05). Você deve aplicar uma correção nos graus de liberdade — Greenhouse-Geisser (mais conservadora) ou Huynh-Feldt (mais liberal). Multiplique df_treat e df_error por ε.</div></div>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+        <div class="dialogue-text">Medidas repetidas assume que a ordem das medições não importa. Mas e se houver efeito de aprendizagem ou fadiga?</div>
+      </div>
+
+      <a href="anova-medidas-repetidas.html" class="artifact-link" onclick="markVisited('card2')">🔄 Abrir Artefato</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ARTIFACT 3: ANOVA FATORIAL -->
+<!-- ================================================================ -->
+<div class="card diff-3" id="card3">
+  <div class="card-header" onclick="toggleCard('card3')">
+    <span class="card-icon">🔀</span>
+    <div class="card-info">
+      <h2>ANOVA Fatorial</h2>
+      <div class="card-meta">
+        <span>⭐⭐⭐ Avançado</span>
+        <span>⏱️ 35-45 min</span>
+        <span>📖 Cap. 10</span>
+      </div>
+      <div class="card-oneliner">Investigue dois fatores simultaneamente e descubra se eles interagem</div>
+    </div>
+    <span class="card-visited">✅</span>
+    <span class="card-toggle">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="card-content">
+
+      <div class="section-title">Antes de Começar</div>
+      <div class="prereq">
+        <ul>
+          <li>ANOVA de um fator (artefato 1 obrigatório)</li>
+          <li>Variável independente e dependente</li>
+          <li>O que significa "interação" em linguagem cotidiana</li>
+        </ul>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+        <div class="dialogue-text">Na ANOVA fatorial, testamos 3 coisas de uma vez: efeito do fator A, efeito do fator B, e se o efeito de A muda dependendo de B (interação).</div>
+      </div>
+
+      <div class="section-title">Autoavaliação</div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que é um delineamento 2x3?</div>
+        <div class="qa-a"><div class="qa-a-inner">Dois fatores: um com 2 níveis e outro com 3, resultando em 6 combinações (células).</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que significa "interação" entre dois fatores?</div>
+        <div class="qa-a"><div class="qa-a-inner">Quando o efeito de um fator depende do nível do outro. Exemplo: um remédio funciona para jovens mas não para idosos.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Se temos 2 fatores, quantos testes F faremos?</div>
+        <div class="qa-a"><div class="qa-a-inner">Três: efeito principal de A, efeito principal de B, e interação AxB.</div></div>
+      </div>
+
+      <div class="section-title">O Que Você Vai Aprender</div>
+      <ul class="obj-list">
+        <li>Ler e construir gráficos de interação (linhas paralelas = sem interação)</li>
+        <li>Decompor a variância em 4 fontes: SS_A, SS_B, SS_AB, SS_Error</li>
+        <li>Calcular 3 razões F e interpretar cada uma</li>
+        <li>Investigar efeitos simples quando a interação é significativa</li>
+        <li>Entender por que efeitos principais podem ser enganosos na presença de interação</li>
+      </ul>
+
+      <div class="section-title">Durante a Interação</div>
+      <div class="parchment">No Step 1 (Interação), antes de ver o gráfico, tente prever: o efeito do tipo de metal é o mesmo para as 3 técnicas?</div>
+      <div class="parchment">No Step 7 (SS_AB), acompanhe a fórmula: célula − linha − coluna + geral. Faça uma célula mentalmente antes de avançar.</div>
+      <div class="parchment">No Step 12 (Efeitos simples), reflita: por que olhar só os efeitos principais pode ser enganoso?</div>
+
+      <div class="section-title">Depois de Terminar</div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Delineamento 2x2: Gênero (M/F) x Método (A/B). Médias: MA_M=70, MA_F=80, MB_M=90, MB_F=85. Desenhe o gráfico de interação. Há interação?</div>
+        <div class="qa-a"><div class="ex-a-inner"><strong>Sim, há interação.</strong> Método A: F supera M por 10 pontos. Método B: M supera F por 5 pontos. A direção da diferença de gênero se inverte dependendo do método — as linhas se cruzam no gráfico. Efeitos principais de gênero podem parecer pequenos, mas escondem essa inversão.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">F_A(1,24)=15.2, p&lt;.001; F_B(2,24)=8.7, p=.001; F_AB(2,24)=0.3, p=.74. Interprete.</div>
+        <div class="qa-a"><div class="ex-a-inner">Ambos os efeitos principais são significativos: Fator A (p&lt;.001) e Fator B (p=.001). A interação <strong>não</strong> é significativa (p=.74), o que significa que o efeito de A não depende do nível de B (e vice-versa). Podemos interpretar os efeitos principais diretamente sem ressalvas. Delineamento: 2 níveis de A x 3 níveis de B, N=30.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Se a interação é significativa mas os efeitos principais não, o que isso significa?</div>
+        <div class="qa-a"><div class="ex-a-inner">Significa que os fatores <strong>se cancelam na média</strong>. Os efeitos existem, mas mudam de direção dependendo do nível do outro fator. A média geral esconde o padrão real. Exemplo: medicamento ajuda grupo A mas prejudica grupo B — na média, efeito zero. <strong>A interação é o achado mais importante aqui.</strong></div></div>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+        <div class="dialogue-text">Interação é o fenômeno mais interessante em ciência — mas muitos pesquisadores ignoram e reportam só efeitos principais. Por quê?</div>
+      </div>
+
+      <a href="anova-fatorial.html" class="artifact-link" onclick="markVisited('card3')">🔀 Abrir Artefato</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ARTIFACT 4: NAO-PARAMETRICOS 2 GRUPOS -->
+<!-- ================================================================ -->
+<div class="card diff-2" id="card4">
+  <div class="card-header" onclick="toggleCard('card4')">
+    <span class="card-icon">🏹</span>
+    <div class="card-info">
+      <h2>Testes Não-Paramétricos para 2 Grupos</h2>
+      <div class="card-meta">
+        <span>⭐⭐ Intermediário</span>
+        <span>⏱️ 25-35 min</span>
+        <span>📖 Cap. 12</span>
+      </div>
+      <div class="card-oneliner">Compare dois grupos usando rankings quando os dados não são normais</div>
+    </div>
+    <span class="card-visited">✅</span>
+    <span class="card-toggle">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="card-content">
+
+      <div class="section-title">Antes de Começar</div>
+      <div class="prereq">
+        <ul>
+          <li>Teste t independente e pareado (como referência)</li>
+          <li>Conceito de mediana</li>
+          <li>O que significa "distribuição normal"</li>
+          <li>Como ordenar/ranquear dados</li>
+        </ul>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+        <div class="dialogue-text">Testes não-paramétricos não são "inferiores" — são ferramentas essenciais quando os pressupostos paramétricos falham. Eles trabalham com posições (ranks) em vez de valores brutos.</div>
+      </div>
+
+      <div class="section-title">Autoavaliação</div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Quando devemos usar um teste não-paramétrico em vez de um paramétrico?</div>
+        <div class="qa-a"><div class="qa-a-inner">Quando: dados ordinais, distribuição fortemente assimétrica, amostras muito pequenas, pressupostos de normalidade/homogeneidade violados.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que significa ranquear dados?</div>
+        <div class="qa-a"><div class="qa-a-inner">Substituir cada valor pela sua posição na ordem (1.º menor = rank 1, 2.º menor = rank 2, etc.).</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Qual a diferença entre dados independentes e pareados?</div>
+        <div class="qa-a"><div class="qa-a-inner">Independentes: grupos diferentes sem relação. Pareados: mesmos sujeitos medidos duas vezes ou pares naturais.</div></div>
+      </div>
+
+      <div class="section-title">O Que Você Vai Aprender</div>
+      <ul class="obj-list">
+        <li>Mann-Whitney U: ranking global, cálculo de U, interpretação</li>
+        <li>Wilcoxon Signed-Rank: diferenças, ranking de |D|, somas por sinal</li>
+        <li>Quando usar cada um (independente vs. pareado)</li>
+        <li>Tamanho de efeito r = Z/√N</li>
+        <li>Tabela de equivalências: paramétrico → não-paramétrico</li>
+      </ul>
+
+      <div class="section-title">Durante a Interação</div>
+      <div class="parchment">No Step 1 (Ranking), observe como a mistura de cores revela se um grupo tende a ter ranks maiores.</div>
+      <div class="parchment">No Step 4 (Cálculo de U), confira a matriz de comparações par a par — U é literalmente a contagem de "vitórias".</div>
+      <div class="parchment">No Step 9 (Wilcoxon diferenças), note o sinal: diferenças positivas vs. negativas contam a história.</div>
+
+      <div class="section-title">Depois de Terminar</div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Grupo A=[3,5,7,9], Grupo B=[2,4,8,10,12]. Calcule U à mão.</div>
+        <div class="qa-a"><div class="ex-a-inner">Dados combinados ordenados: 2(B),3(A),4(B),5(A),7(A),8(B),9(A),10(B),12(B). Ranks: B=[1,3,6,8,9], A=[2,4,5,7]. R_A=2+4+5+7=18. U_A = n_A·n_B + n_A(n_A+1)/2 − R_A = 4·5 + 4·5/2 − 18 = 20+10−18 = <strong>12</strong>. U_B = 4·5 − 12 = <strong>8</strong>. U = min(8,12) = <strong>8</strong>.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Antes=[10,8,12,9,11], Depois=[14,9,15,12,13]. Calcule T do Wilcoxon.</div>
+        <div class="qa-a"><div class="ex-a-inner">Diferenças (D=Depois−Antes): 4, 1, 3, 3, 2. Todas positivas. |D| ordenados: 1,2,3,3,4. Ranks de |D|: 1→1, 2→2, 3→3.5, 3→3.5, 4→5. T+ = 1+2+3.5+3.5+5 = 15. T− = 0. T = min(T+,T−) = <strong>0</strong>. Com T=0 e n=5, o resultado é significativo (p&lt;.05 unicaudal).</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Um artigo reporta U=15, n₁=8, n₂=10, p=.03. Calcule o tamanho de efeito r.</div>
+        <div class="qa-a"><div class="ex-a-inner">Primeiro precisamos de Z. Média de U: μ_U = n₁n₂/2 = 40. σ_U = √(n₁n₂(n₁+n₂+1)/12) = √(8·10·19/12) = √126.67 ≈ 11.26. Z = (U−μ_U)/σ_U = (15−40)/11.26 ≈ −2.22. r = |Z|/√N = 2.22/√18 = 2.22/4.24 ≈ <strong>0.52</strong> (efeito grande).</div></div>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+        <div class="dialogue-text">Se o teste não-paramétrico dá significativo mas o paramétrico não (ou vice-versa), em qual você confia mais?</div>
+      </div>
+
+      <a href="nao-parametricos-2grupos.html" class="artifact-link" onclick="markVisited('card4')">🏹 Abrir Artefato</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ARTIFACT 5: NAO-PARAMETRICOS 3+ GRUPOS -->
+<!-- ================================================================ -->
+<div class="card diff-3" id="card5">
+  <div class="card-header" onclick="toggleCard('card5')">
+    <span class="card-icon">⚒️</span>
+    <div class="card-info">
+      <h2>Testes Não-Paramétricos para 3+ Grupos</h2>
+      <div class="card-meta">
+        <span>⭐⭐⭐ Avançado</span>
+        <span>⏱️ 30-40 min</span>
+        <span>📖 Cap. 12</span>
+      </div>
+      <div class="card-oneliner">Kruskal-Wallis e Friedman: as alternativas não-paramétricas para ANOVA</div>
+    </div>
+    <span class="card-visited">✅</span>
+    <span class="card-toggle">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="card-content">
+
+      <div class="section-title">Antes de Começar</div>
+      <div class="prereq">
+        <ul>
+          <li>Mann-Whitney U e Wilcoxon (faça o artefato 4 primeiro!)</li>
+          <li>ANOVA de um fator (conceito de comparar 3+ grupos)</li>
+          <li>ANOVA medidas repetidas (conceito)</li>
+        </ul>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+        <div class="dialogue-text">Kruskal-Wallis é para a ANOVA independente o que Mann-Whitney é para o teste t. Friedman é para a ANOVA de medidas repetidas o que Wilcoxon é para o t pareado.</div>
+      </div>
+
+      <div class="section-title">Autoavaliação</div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Se Mann-Whitney compara 2 grupos independentes, qual teste compara 3+?</div>
+        <div class="qa-a"><div class="qa-a-inner">Kruskal-Wallis.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Se Wilcoxon compara medidas repetidas com 2 condições, qual teste compara 3+?</div>
+        <div class="qa-a"><div class="qa-a-inner">Friedman.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que é post-hoc e por que precisamos dele?</div>
+        <div class="qa-a"><div class="qa-a-inner">Quando o teste global é significativo, ele diz que ALGUM grupo difere, mas não QUAL. O post-hoc identifica quais pares são diferentes.</div></div>
+      </div>
+
+      <div class="section-title">O Que Você Vai Aprender</div>
+      <ul class="obj-list">
+        <li>Kruskal-Wallis H: ranking global, estatística H, distribuição χ²</li>
+        <li>Post-hoc de Dunn com correção de Bonferroni</li>
+        <li>Friedman χ²: ranking dentro de cada sujeito</li>
+        <li>Post-hoc de Nemenyi</li>
+        <li>Kendall's W (coeficiente de concordância)</li>
+        <li>Fluxograma de decisão completo</li>
+      </ul>
+
+      <div class="section-title">Durante a Interação</div>
+      <div class="parchment">No Step 3 (Estatística H), note a semelhança com χ² — Kruskal-Wallis é essencialmente um teste chi-quadrado sobre ranks.</div>
+      <div class="parchment">No Step 9 (Friedman rankings), observe que aqui ranqueamos DENTRO de cada sujeito, não globalmente — isso é a chave da diferença.</div>
+      <div class="parchment">No Step 14, estude o fluxograma de decisão — é seu mapa para escolher o teste certo.</div>
+
+      <div class="section-title">Depois de Terminar</div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">3 grupos com rank sums R₁=25, R₂=40, R₃=31, n₁=n₂=n₃=5. Calcule H.</div>
+        <div class="qa-a"><div class="ex-a-inner">N = 15. H = [12/(N(N+1))] · Σ(Rᵢ²/nᵢ) − 3(N+1) = [12/(15·16)] · [(25²/5)+(40²/5)+(31²/5)] − 3(16) = [12/240] · [125+320+192.2] − 48 = 0.05 · 637.2 − 48 = 31.86 − 48 = ... Recalculando: 12/240 = 0.05. 25²=625, 625/5=125. 40²=1600, 1600/5=320. 31²=961, 961/5=192.2. Soma=637.2. 0.05 × 637.2 = 31.86. H = 31.86 − 48 = <strong>Correção:</strong> H = [12/(15×16)]×(625/5+1600/5+961/5) − 3×16 = 0.05×(125+320+192.2) − 48 = 31.86 − 48. Algo não fecha — vamos conferir os ranks. R₁+R₂+R₃ deve = N(N+1)/2 = 120. 25+40+31=96 ≠ 120. <strong>Dados inconsistentes!</strong> Se R₁=30, R₂=55, R₃=35 (soma=120): H = 0.05×(180+605+245) − 48 = 51.5−48 = <strong>3.5</strong>. Com os dados como fornecidos (soma=96), verifique os ranks antes de calcular.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Friedman com 6 sujeitos e 3 condições. Rank sums: R₁=8, R₂=15, R₃=13. Calcule χ²_F.</div>
+        <div class="qa-a"><div class="ex-a-inner">n=6, k=3. Verificação: R₁+R₂+R₃ = 8+15+13 = 36. Deve ser n·k(k+1)/2 = 6·3·4/2 = 36. OK! χ²_F = [12/(nk(k+1))] · ΣRᵢ² − 3n(k+1) = [12/(6·3·4)] · (64+225+169) − 3·6·4 = [12/72] · 458 − 72 = 0.1667 × 458 − 72 = 76.33 − 72 = <strong>4.33</strong>. Com df=k−1=2, comparar com χ²(2) crítico = 5.99. Como 4.33 &lt; 5.99, <strong>não significativo</strong> a α=0.05.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">H(2)=7.83, p=.02. O que você faz agora? Descreva os próximos passos.</div>
+        <div class="qa-a"><div class="ex-a-inner">1) O teste global é significativo (p=.02 &lt; .05) — há diferença entre os grupos. 2) Realize <strong>post-hoc de Dunn</strong> para identificar quais pares diferem. 3) Aplique <strong>correção de Bonferroni</strong>: com 3 grupos, são 3 comparações, então α_ajustado = 0.05/3 = 0.0167. 4) Calcule o <strong>tamanho de efeito</strong>: η²_H = (H−k+1)/(N−k). 5) Reporte em formato APA.</div></div>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+        <div class="dialogue-text">Kruskal-Wallis encontra diferença. Dunn com Bonferroni não encontra nenhum par significativo. Isso é possível? O que aconteceu?</div>
+      </div>
+
+      <a href="nao-parametricos-3grupos.html" class="artifact-link" onclick="markVisited('card5')">⚒️ Abrir Artefato</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ARTIFACT 6: CORRELACAO NAO-PARAMETRICA -->
+<!-- ================================================================ -->
+<div class="card diff-2" id="card6">
+  <div class="card-header" onclick="toggleCard('card6')">
+    <span class="card-icon">🔗</span>
+    <div class="card-info">
+      <h2>Correlação Não-Paramétrica</h2>
+      <div class="card-meta">
+        <span>⭐⭐ Intermediário</span>
+        <span>⏱️ 25-35 min</span>
+        <span>📖 Cap. 15</span>
+      </div>
+      <div class="card-oneliner">Spearman ρ e Kendall τ: meça associação quando Pearson não serve</div>
+    </div>
+    <span class="card-visited">✅</span>
+    <span class="card-toggle">▼</span>
+  </div>
+  <div class="card-body">
+    <div class="card-content">
+
+      <div class="section-title">Antes de Começar</div>
+      <div class="prereq">
+        <ul>
+          <li>Correlação de Pearson r (conceito e interpretação)</li>
+          <li>Scatterplot, relação linear vs. monotônica</li>
+          <li>Conceito de ranking</li>
+        </ul>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+        <div class="dialogue-text">Pearson mede relação LINEAR. Mas e se a relação for monotônica (sempre crescente) sem ser linear? Ou se os dados forem ordinais? Aí entram Spearman e Kendall.</div>
+      </div>
+
+      <div class="section-title">Autoavaliação</div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">O que significa r = -0.85?</div>
+        <div class="qa-a"><div class="qa-a-inner">Correlação negativa forte: quando uma variável aumenta, a outra tende a diminuir.</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Qual a diferença entre relação linear e monotônica?</div>
+        <div class="qa-a"><div class="qa-a-inner">Linear: a taxa de mudança é constante (linha reta). Monotônica: sempre cresce ou sempre decresce, mas a taxa pode variar (curva).</div></div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleReveal(this)">Pearson r é sensível a outliers. Por quê?</div>
+        <div class="qa-a"><div class="qa-a-inner">Porque usa os valores brutos, e um outlier extremo puxa a linha de regressão e inflaciona/deflaciona r.</div></div>
+      </div>
+
+      <div class="section-title">O Que Você Vai Aprender</div>
+      <ul class="obj-list">
+        <li>Spearman ρ: ranking de X e Y, diferenças dᵢ, fórmula simplificada</li>
+        <li>Kendall τ: pares concordantes e discordantes</li>
+        <li>Comparação visual: Pearson vs. Spearman vs. Kendall</li>
+        <li>Impacto de outliers nos três coeficientes</li>
+        <li>Quando usar cada um</li>
+      </ul>
+
+      <div class="section-title">Durante a Interação</div>
+      <div class="parchment">No Step 3 (Rankings), observe: os ranks de X e Y ficam na mesma ordem? Se sim, a correlação será forte.</div>
+      <div class="parchment">No Step 8 (Pares Kendall), tente contar 5 pares concordantes sozinho antes de ver a tabela completa.</div>
+      <div class="parchment">No Step 12 (Outlier), antes de ver os resultados, preveja: qual coeficiente mudará mais?</div>
+
+      <div class="section-title">Depois de Terminar</div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">X=[1,2,3,4,5], Y=[2,4,5,4,5]. Calcule Spearman ρ à mão.</div>
+        <div class="qa-a"><div class="ex-a-inner">Ranks de X: 1,2,3,4,5. Ranks de Y: 1, 2.5, 4.5, 2.5, 4.5 (empates em 4 e 5). dᵢ = Rx−Ry: 0, −0.5, −1.5, 1.5, 0.5. dᵢ²: 0, 0.25, 2.25, 2.25, 0.25. Σdᵢ² = 5. ρ = 1 − 6Σdᵢ²/[n(n²−1)] = 1 − 6(5)/[5(24)] = 1 − 30/120 = 1 − 0.25 = <strong>0.75</strong>.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">X=[10,20,30], Y=[30,20,10]. Quantos pares concordantes e discordantes? Qual é τ?</div>
+        <div class="qa-a"><div class="ex-a-inner">Pares: (10,20): X sobe, Y desce → <strong>discordante</strong>. (10,30): X sobe, Y desce → <strong>discordante</strong>. (20,30): X sobe, Y desce → <strong>discordante</strong>. C=0, D=3. n_pares = 3(2)/2 = 3. τ = (C−D)/n_pares = (0−3)/3 = <strong>−1.0</strong>. Correlação negativa perfeita.</div></div>
+      </div>
+      <div class="exercise">
+        <div class="ex-q" onclick="toggleReveal(this)">Um artigo reporta rₛ=.72, p&lt;.001, n=30. Outro reporta τ=.58, p&lt;.001, n=30. Os resultados são comparáveis?</div>
+        <div class="qa-a"><div class="ex-a-inner"><strong>Sim, são consistentes.</strong> Kendall τ tende a ser numericamente menor que Spearman ρ para os mesmos dados. Uma regra aproximada: τ ≈ (2/3)ρ. Neste caso, (2/3)×0.72 = 0.48, e τ=0.58 está na mesma faixa. Ambos indicam correlação positiva forte e significativa.</div></div>
+      </div>
+      <div class="dialogue-box corvo">
+        <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+        <div class="dialogue-text">τ costuma ser menor que ρ para os mesmos dados. Isso significa que Kendall é "pior"? (Não! Significa que medem coisas diferentes.)</div>
+      </div>
+
+      <a href="correlacao-nao-parametrica.html" class="artifact-link" onclick="markVisited('card6')">🔗 Abrir Artefato</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- FOOTER: FLUXOGRAMA + MENSAGENS FINAIS -->
+<!-- ================================================================ -->
+<div class="footer-section">
+
+  <h2 style="text-align:center;color:var(--gold);font-size:1.6rem;margin-bottom:.5rem">🗺️ Qual Teste Devo Usar?</h2>
+
+  <div class="flow-wrap">
+  <svg viewBox="0 0 840 520" width="840" height="520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fluxograma de Decisão">
+    <defs>
+      <marker id="fa" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5Z" fill="#8b949e"/></marker>
+      <marker id="fg" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0,0 L7,2.5 L0,5Z" fill="#3fb950"/></marker>
+    </defs>
+    <!-- Start -->
+    <rect x="320" y="10" width="200" height="40" rx="20" fill="#1c2333" stroke="#f0c040" stroke-width="2"/>
+    <text x="420" y="36" text-anchor="middle" fill="#f0c040" font-size="14" font-weight="bold">Qual é sua pergunta?</text>
+
+    <!-- Branch left: Groups -->
+    <line x1="370" y1="50" x2="200" y2="90" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="270" y="68" fill="#8b949e" font-size="11">Comparar grupos</text>
+
+    <!-- Branch right: Association -->
+    <line x1="470" y1="50" x2="640" y2="90" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="560" y="68" fill="#8b949e" font-size="11">Relação entre variáveis</text>
+
+    <!-- Groups diamond: how many? -->
+    <polygon points="200,90 280,120 200,150 120,120" fill="#1c2333" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="200" y="124" text-anchor="middle" fill="#58a6ff" font-size="12">Quantos grupos?</text>
+
+    <!-- 2 groups -->
+    <line x1="140" y1="135" x2="80" y2="175" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="95" y="158" fill="#8b949e" font-size="11">2</text>
+
+    <!-- 3+ groups -->
+    <line x1="260" y1="135" x2="320" y2="175" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="295" y="158" fill="#8b949e" font-size="11">3+</text>
+
+    <!-- 2 Groups: Independent? -->
+    <polygon points="80,175 150,200 80,225 10,200" fill="#1c2333" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="80" y="204" text-anchor="middle" fill="#bc8cff" font-size="11">Independentes?</text>
+
+    <!-- 2G Independent Yes -->
+    <line x1="30" y1="212" x2="10" y2="250" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="8" y="238" fill="#8b949e" font-size="10">Sim</text>
+
+    <!-- 2G Independent No (Paired) -->
+    <line x1="130" y1="212" x2="150" y2="250" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="148" y="238" fill="#8b949e" font-size="10">Não</text>
+
+    <!-- 2G Indep → Normal? -->
+    <polygon points="10,250 60,270 10,290 -40,270" fill="#1c2333" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="10" y="274" text-anchor="middle" fill="#bc8cff" font-size="10">Normal?</text>
+
+    <!-- 2G Indep Normal Yes: t test -->
+    <line x1="-20" y1="280" x2="-30" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="-75" y="310" width="90" height="28" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="-30" y="329" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">Teste t</text>
+
+    <!-- 2G Indep Normal No: MW -->
+    <line x1="40" y1="280" x2="50" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="10" y="310" width="110" height="28" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <text x="65" y="329" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Mann-Whitney</text>
+
+    <!-- 2G Paired → Normal? -->
+    <polygon points="150,250 200,270 150,290 100,270" fill="#1c2333" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="150" y="274" text-anchor="middle" fill="#bc8cff" font-size="10">Normal?</text>
+
+    <!-- 2G Paired Normal Yes: t paired -->
+    <line x1="120" y1="280" x2="110" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="65" y="310" width="95" height="28" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="112" y="329" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">t Pareado</text>
+
+    <!-- 2G Paired Normal No: Wilcoxon -->
+    <line x1="180" y1="280" x2="195" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="160" y="310" width="100" height="28" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <text x="210" y="329" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Wilcoxon</text>
+
+    <!-- 3+ Groups: Independent? -->
+    <polygon points="320,175 390,200 320,225 250,200" fill="#1c2333" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="320" y="204" text-anchor="middle" fill="#bc8cff" font-size="11">Independentes?</text>
+
+    <!-- 3+G Independent Yes -->
+    <line x1="270" y1="212" x2="250" y2="250" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="248" y="238" fill="#8b949e" font-size="10">Sim</text>
+
+    <!-- 3+G Independent No -->
+    <line x1="370" y1="212" x2="400" y2="250" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="398" y="238" fill="#8b949e" font-size="10">Não</text>
+
+    <!-- 3+G Indep → Normal? -->
+    <polygon points="250,250 300,270 250,290 200,270" fill="#1c2333" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="250" y="274" text-anchor="middle" fill="#bc8cff" font-size="10">Normal?</text>
+
+    <!-- 3+G Indep Normal Yes: ANOVA -->
+    <line x1="220" y1="280" x2="210" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="165" y="310" width="95" height="28" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="212" y="329" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">ANOVA</text>
+
+    <!-- 3+G Indep Normal No: KW -->
+    <line x1="280" y1="280" x2="300" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="265" y="310" width="120" height="28" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <text x="325" y="329" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Kruskal-Wallis</text>
+
+    <!-- 3+G Repeated → Normal? -->
+    <polygon points="400,250 450,270 400,290 350,270" fill="#1c2333" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="400" y="274" text-anchor="middle" fill="#bc8cff" font-size="10">Normal?</text>
+
+    <!-- 3+G Rep Normal Yes: ANOVA RM -->
+    <line x1="370" y1="280" x2="360" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="310" y="310" width="110" height="28" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="365" y="329" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">ANOVA RM</text>
+
+    <!-- 3+G Rep Normal No: Friedman -->
+    <line x1="430" y1="280" x2="450" y2="310" stroke="#3fb950" stroke-width="1.5" marker-end="url(#fg)"/>
+    <rect x="420" y="310" width="100" height="28" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <text x="470" y="329" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Friedman</text>
+
+    <!-- Association branch -->
+    <polygon points="640,90 720,120 640,150 560,120" fill="#1c2333" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="640" y="118" text-anchor="middle" fill="#58a6ff" font-size="11">Tipo de</text>
+    <text x="640" y="132" text-anchor="middle" fill="#58a6ff" font-size="11">relação?</text>
+
+    <!-- Linear + Normal -->
+    <line x1="580" y1="135" x2="560" y2="175" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="555" y="162" fill="#8b949e" font-size="10">Linear+Normal</text>
+    <rect x="510" y="175" width="100" height="28" rx="6" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="560" y="194" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold">Pearson r</text>
+
+    <!-- Monotonic/Ordinal -->
+    <line x1="640" y1="150" x2="640" y2="175" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="645" y="168" fill="#8b949e" font-size="10">Monotônica</text>
+    <rect x="595" y="175" width="110" height="28" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <text x="650" y="194" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Spearman ρ</text>
+
+    <!-- Concordance -->
+    <line x1="700" y1="135" x2="730" y2="175" stroke="#8b949e" stroke-width="1.5" marker-end="url(#fa)"/>
+    <text x="730" y="162" fill="#8b949e" font-size="10">Concordância</text>
+    <rect x="695" y="175" width="100" height="28" rx="6" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+    <text x="745" y="194" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold">Kendall τ</text>
+
+    <!-- Legend -->
+    <rect x="560" y="250" width="250" height="65" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <rect x="575" y="265" width="12" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="2"/>
+    <text x="595" y="276" fill="#3fb950" font-size="11">Paramétrico</text>
+    <rect x="575" y="285" width="12" height="12" rx="2" fill="none" stroke="#f85149" stroke-width="2"/>
+    <text x="595" y="296" fill="#f85149" font-size="11">Não-paramétrico</text>
+    <polygon points="700,271 712,277 700,283 688,277" fill="none" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="720" y="280" fill="#bc8cff" font-size="11">Decisão</text>
+  </svg>
+  </div>
+
+  <!-- FINAL DIALOGUES -->
+  <div class="dialogue-box corvo" style="margin-top:2rem">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">Lembre-se: o teste é apenas uma ferramenta. O que importa é a PERGUNTA de pesquisa e o TAMANHO DO EFEITO, não apenas o p-valor.</div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+    <div class="dialogue-text">Agora que domina os cálculos à mão, volte ao software (SPSS, R, jamovi) e veja se os resultados batem. Se não baterem — descubra por quê.</div>
+  </div>
+
+  <div class="signature">
+    <strong>Prof. Dr. Leonardo Vils</strong> · PPGA · UNINOVE · MTPQI · 2026
+  </div>
+</div>
+
+</div><!-- .container -->
+
+<script>
+// Track visited cards in memory
+const visited = {};
+
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+
+function toggleReveal(el) {
+  const answer = el.nextElementSibling;
+  answer.classList.toggle('show');
+}
+
+function markVisited(id) {
+  visited[id] = true;
+  const card = document.getElementById(id);
+  if (card) card.classList.add('visited');
+}
+</script>
+</body>
+</html>

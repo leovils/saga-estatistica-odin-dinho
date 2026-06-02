@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testes Não-Paramétricos para 3+ Grupos — Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117; --bg-card: #161b22; --bg-panel: #1c2333;
+  --odin-blue: #58a6ff; --thor-red: #f85149; --corvo-purple: #bc8cff;
+  --gold: #f0c040; --silver: #8b949e; --text: #e6edf3; --text-dim: #8b949e;
+  --success: #3fb950; --border: #30363d;
+  --birka-color: #58a6ff; --hedeby-color: #f85149; --kaupang-color: #3fb950;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Patrick Hand', cursive;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 18px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+/* PROGRESS BAR */
+.progress-bar {
+  position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+  background: var(--bg-panel); z-index: 1000;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--odin-blue), var(--corvo-purple), var(--gold));
+  transition: width 0.5s ease; border-radius: 0 3px 3px 0;
+}
+
+/* HEADER */
+.header {
+  text-align: center; padding: 30px 0 10px;
+}
+.header h1 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  background: linear-gradient(135deg, var(--odin-blue), var(--corvo-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .subtitle {
+  font-family: 'Patrick Hand', cursive;
+  color: var(--silver); font-size: 1.1rem; margin-top: 6px;
+}
+
+/* STEP INDICATOR */
+.step-indicator {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 6px;
+  margin: 16px 0 20px;
+}
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg-panel); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; cursor: pointer; transition: all 0.3s;
+  color: var(--text-dim);
+}
+.step-dot.active { border-color: var(--odin-blue); background: var(--odin-blue); color: #fff; transform: scale(1.15); }
+.step-dot.completed { border-color: var(--success); background: var(--success); color: #fff; }
+.step-dot.part-b { border-color: var(--corvo-purple); }
+.step-dot.part-b.active { background: var(--corvo-purple); border-color: var(--corvo-purple); }
+
+/* SLIDES */
+.slide {
+  display: none; opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+.slide.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; margin: 16px 0;
+}
+.card h2 {
+  font-family: 'Bangers', cursive; font-size: 1.6rem;
+  color: var(--gold); margin-bottom: 12px; letter-spacing: 1px;
+}
+.card h3 {
+  font-family: 'Bangers', cursive; font-size: 1.3rem;
+  color: var(--odin-blue); margin: 14px 0 8px;
+}
+
+/* DIALOGUE BOXES */
+.dialogue-box {
+  border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  border-left: 4px solid; position: relative;
+}
+.dialogue-box.odin { background: rgba(88,166,255,0.08); border-color: var(--odin-blue); }
+.dialogue-box.thor { background: rgba(248,81,73,0.08); border-color: var(--thor-red); }
+.dialogue-box.corvo { background: rgba(188,140,255,0.08); border-color: var(--corvo-purple); }
+.char-name {
+  font-family: 'Bangers', cursive; font-size: 1.05rem; margin-bottom: 4px;
+}
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+.dialogue-text { font-size: 1rem; line-height: 1.5; }
+
+/* TABLES */
+.data-table {
+  width: 100%; border-collapse: collapse; margin: 14px 0;
+  font-size: 0.95rem;
+}
+.data-table th {
+  background: var(--bg-panel); color: var(--gold);
+  font-family: 'Bangers', cursive; letter-spacing: 0.5px;
+  padding: 10px 12px; text-align: center; border: 1px solid var(--border);
+}
+.data-table td {
+  padding: 8px 12px; text-align: center; border: 1px solid var(--border);
+  transition: all 0.4s;
+}
+.data-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+/* COLOR CLASSES */
+.birka { color: var(--birka-color); }
+.hedeby { color: var(--hedeby-color); }
+.kaupang { color: var(--kaupang-color); }
+.birka-bg { background: rgba(88,166,255,0.15) !important; }
+.hedeby-bg { background: rgba(248,81,73,0.15) !important; }
+.kaupang-bg { background: rgba(59,185,80,0.15) !important; }
+
+/* FORMULA BOX */
+.formula-box {
+  background: var(--bg-panel); border: 1px solid var(--gold);
+  border-radius: 8px; padding: 16px 20px; margin: 14px 0;
+  text-align: center; font-size: 1.15rem; overflow-x: auto;
+}
+.formula-box .formula { color: var(--gold); font-family: monospace; font-size: 1.1rem; }
+.formula-box .calc-step {
+  color: var(--text-dim); font-size: 0.95rem; margin-top: 6px;
+}
+
+/* NUMBER LINE / RANK BAR */
+.rank-visual {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  margin: 14px 0;
+}
+.rank-item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 6px 10px; border-radius: 8px; background: var(--bg-panel);
+  border: 1px solid var(--border); min-width: 52px;
+  opacity: 0; animation: popIn 0.3s ease forwards;
+}
+.rank-item .rank-num { font-family: 'Bangers', cursive; font-size: 0.85rem; color: var(--silver); }
+.rank-item .rank-val { font-size: 1.1rem; font-weight: bold; }
+@keyframes popIn { from { opacity:0; transform: scale(0.7); } to { opacity:1; transform: scale(1); } }
+
+/* BAR CHART */
+.bar-chart {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 30px; height: 200px; margin: 20px 0; padding: 0 20px;
+}
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; }
+.bar {
+  width: 70px; border-radius: 6px 6px 0 0;
+  transition: height 1s ease; position: relative;
+}
+.bar .bar-label {
+  position: absolute; top: -26px; width: 100%; text-align: center;
+  font-family: 'Bangers', cursive; font-size: 1.1rem;
+}
+.bar-name { margin-top: 8px; font-family: 'Bangers', cursive; font-size: 1rem; }
+
+/* CHI-SQUARED VISUAL */
+.chi2-visual {
+  position: relative; height: 180px; margin: 20px 0;
+  background: var(--bg-panel); border-radius: 10px;
+  border: 1px solid var(--border); overflow: hidden;
+}
+.chi2-curve { width: 100%; height: 100%; }
+
+/* COMPARISON CARDS */
+.comparison-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px; margin: 14px 0;
+}
+.comp-card {
+  background: var(--bg-panel); border-radius: 10px; padding: 16px;
+  border: 2px solid var(--border); text-align: center;
+  transition: border-color 0.4s;
+}
+.comp-card.significant { border-color: var(--success); }
+.comp-card.not-significant { border-color: var(--thor-red); }
+.comp-card h4 { font-family: 'Bangers', cursive; font-size: 1.15rem; color: var(--gold); margin-bottom: 8px; }
+.comp-card .verdict {
+  font-family: 'Bangers', cursive; font-size: 1.1rem;
+  padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 8px;
+}
+.comp-card .verdict.sig { background: rgba(59,185,80,0.2); color: var(--success); }
+.comp-card .verdict.ns { background: rgba(248,81,73,0.2); color: var(--thor-red); }
+
+/* ANIMATE BUTTON */
+.animate-btn {
+  display: inline-block; padding: 10px 24px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--odin-blue), var(--corvo-purple));
+  color: #fff; border: none; font-family: 'Bangers', cursive;
+  font-size: 1.1rem; cursor: pointer; letter-spacing: 1px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 10px 0;
+}
+.animate-btn:hover { transform: scale(1.05); box-shadow: 0 4px 20px rgba(88,166,255,0.3); }
+.animate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* NAVIGATION */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0; margin-top: 10px;
+}
+.nav-btn {
+  padding: 12px 28px; border-radius: 8px; border: 2px solid var(--border);
+  background: var(--bg-card); color: var(--text); font-family: 'Bangers', cursive;
+  font-size: 1.1rem; cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+}
+.nav-btn:hover:not(:disabled) { border-color: var(--odin-blue); background: var(--bg-panel); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.next { background: linear-gradient(135deg, var(--odin-blue), var(--corvo-purple)); border: none; }
+.nav-btn.next:hover:not(:disabled) { box-shadow: 0 4px 20px rgba(88,166,255,0.3); }
+.step-counter { color: var(--silver); font-size: 1rem; }
+
+/* APA BOX */
+.apa-box {
+  background: var(--bg-panel); border: 2px solid var(--gold);
+  border-radius: 10px; padding: 20px; margin: 14px 0;
+  text-align: center;
+}
+.apa-box .apa-result {
+  font-family: 'Courier New', monospace; font-size: 1.15rem;
+  color: var(--gold); margin: 8px 0; line-height: 1.7;
+}
+
+/* DECISION FLOWCHART */
+.flowchart {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  margin: 20px 0;
+}
+.flow-node {
+  background: var(--bg-panel); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 24px; text-align: center;
+  max-width: 320px; width: 100%;
+  transition: all 0.4s;
+}
+.flow-node.decision { border-radius: 10px; border-color: var(--gold); background: rgba(240,192,64,0.08); }
+.flow-node.test { border-color: var(--odin-blue); background: rgba(88,166,255,0.1); }
+.flow-arrow { font-size: 1.5rem; color: var(--silver); }
+.flow-branches { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+
+/* PART DIVIDER */
+.part-divider {
+  text-align: center; padding: 20px 0; margin: 10px 0;
+}
+.part-divider h2 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  color: var(--corvo-purple);
+}
+
+/* SIGNATURE */
+.signature {
+  text-align: center; padding: 30px 0 20px;
+  color: var(--text-dim); font-size: 0.9rem;
+  border-top: 1px solid var(--border); margin-top: 20px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .container { padding: 12px; }
+  .card { padding: 16px; }
+  .bar-chart { height: 160px; gap: 16px; }
+  .bar { width: 50px; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .step-dot { width: 24px; height: 24px; font-size: 0.6rem; }
+}
+
+/* Highlight animation */
+.highlight-flash {
+  animation: flash 0.6s ease;
+}
+@keyframes flash {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(240,192,64,0.25); }
+}
+
+/* Tie rank highlight */
+.tie-rank { background: rgba(240,192,64,0.2) !important; border: 1px dashed var(--gold) !important; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="container">
+  <div class="header">
+    <h1>🛡️ Testes Não-Paramétricos para 3+ Grupos</h1>
+    <div class="subtitle">Kruskal-Wallis &amp; Friedman — Cálculo passo a passo</div>
+  </div>
+
+  <div class="step-indicator" id="stepIndicator"></div>
+
+  <div id="slidesContainer"></div>
+
+  <div class="nav-bar">
+    <button class="nav-btn prev" id="btnPrev" onclick="prevStep()">◀ Voltar</button>
+    <span class="step-counter" id="stepCounter"></span>
+    <button class="nav-btn next" id="btnNext" onclick="nextStep()">Avançar ▶</button>
+  </div>
+
+  <div class="signature">Prof. Dr. Leonardo Vils · PPGA · UNINOVE · MTPQI · 2026</div>
+</div>
+
+<script>
+// ========== DATA ==========
+const birka = [45,38,52,41,60,35];
+const hedeby = [30,25,33,28,22];
+const kaupang = [48,55,42,50,58];
+const allVals = [
+  ...birka.map(v=>({v,g:'Birka'})),
+  ...hedeby.map(v=>({v,g:'Hedeby'})),
+  ...kaupang.map(v=>({v,g:'Kaupang'}))
+];
+const sorted = [...allVals].sort((a,b)=>a.v-b.v);
+const N = 16;
+
+// Ranks (no ties in this dataset)
+sorted.forEach((item,i)=> item.rank = i+1);
+const rankMap = {};
+sorted.forEach(item => { if(!rankMap[item.g]) rankMap[item.g]=[]; rankMap[item.g].push({v:item.v, r:item.rank}); });
+
+const R_birka=60, R_hedeby=15, R_kaupang=61;
+const n_b=6, n_h=5, n_k=5;
+const H_val = 10.2882;
+const p_kw = 0.0058;
+const eta2 = 0.6376;
+const meanR_b=10.0, meanR_h=3.0, meanR_k=12.2;
+
+// Friedman data
+const smiths = ['Thor','Brokkr','Eitri','Sindri','Wayland','Völundr','Regin'];
+const fData = [[7,5,9],[6,8,7],[4,6,8],[8,4,9],[5,7,6],[3,5,8],[6,6,7]];
+const fRanks = [[2,1,3],[1,3,2],[1,2,3],[2,1,3],[1,3,2],[1,2,3],[1.5,1.5,3]];
+const R_mart=9.5, R_big=13.5, R_run=19.0;
+const chi2_F=6.5, p_fried=0.0388, W_kendall=0.4643;
+
+// ========== DIALOGUE HELPER ==========
+function dlg(character, name, text) {
+  return `<div class="dialogue-box ${character}"><div class="char-name ${character}">${name}</div><div class="dialogue-text">${text}</div></div>`;
+}
+
+// ========== GROUP COLOR HELPER ==========
+function gc(group) {
+  if(group==='Birka') return 'birka';
+  if(group==='Hedeby') return 'hedeby';
+  return 'kaupang';
+}
+function gcBg(group) { return gc(group)+'-bg'; }
+
+// ========== SLIDES CONTENT ==========
+const slides = [];
+
+// --- STEP 0: Introdução ---
+slides.push({
+  title: 'Introdução', partB: false,
+  html: `
+  <div class="card">
+    <h2>⚔️ Passo 0 — Quando a ANOVA não serve</h2>
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Quando temos <strong>3 ou mais grupos independentes</strong> e os dados não satisfazem os pressupostos da ANOVA — normalidade, homocedasticidade — recorremos ao <strong>Kruskal-Wallis</strong>.')}
+    ${dlg('thor','⚡ ThorMento','ANOVA serve pra tudo! Mete um F-test e pronto!')}
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Não quando os dados são <strong>ordinais</strong> ou fortemente assimétricos, ThorMento. Forçar a ANOVA é como forjar espada com ferro frio — o resultado quebra na primeira batalha.')}
+
+    <h3>Mapa Paramétrico → Não-Paramétrico</h3>
+    <table class="data-table">
+      <tr><th>Situação</th><th>Paramétrico</th><th>Não-Paramétrico</th></tr>
+      <tr><td>2 grupos independentes</td><td>Teste t</td><td>Mann-Whitney U</td></tr>
+      <tr><td>2 grupos pareados</td><td>Teste t pareado</td><td>Wilcoxon Signed-Rank</td></tr>
+      <tr><td style="color:var(--gold);font-weight:bold">3+ grupos independentes</td><td>ANOVA</td><td style="color:var(--gold);font-weight:bold">Kruskal-Wallis ← hoje</td></tr>
+      <tr><td style="color:var(--corvo-purple);font-weight:bold">3+ medidas repetidas</td><td>ANOVA MR</td><td style="color:var(--corvo-purple);font-weight:bold">Friedman ← hoje</td></tr>
+    </table>
+
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','Kruskal-Wallis é a extensão do Mann-Whitney para 3+ grupos. Em vez de comparar medianas diretamente, ele compara <em>distribuições de ranks</em>.')}
+  </div>`
+});
+
+// --- STEP 1: Ranking ---
+slides.push({
+  title: 'Ranking Global', partB: false,
+  html: `
+  <div class="card">
+    <h2>📊 Passo 1 — Ranking de Todos os Dados</h2>
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Três aldeias viking — <span class="birka">Birka</span> (n=6), <span class="hedeby">Hedeby</span> (n=5) e <span class="kaupang">Kaupang</span> (n=5) — competem na colheita de cevada. Juntamos todos os 16 valores e atribuímos ranks de 1 a 16.')}
+
+    <h3>Dados Originais</h3>
+    <table class="data-table">
+      <tr><th class="birka">Birka</th><th class="hedeby">Hedeby</th><th class="kaupang">Kaupang</th></tr>
+      <tr><td class="birka">45, 38, 52, 41, 60, 35</td><td class="hedeby">30, 25, 33, 28, 22</td><td class="kaupang">48, 55, 42, 50, 58</td></tr>
+    </table>
+
+    <h3>Clique para animar o ranking</h3>
+    <button class="animate-btn" id="btnRank" onclick="animateRanking()">🎲 Ordenar e Rankear</button>
+    <div class="rank-visual" id="rankVisual"></div>
+
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','Se houvesse empates, usaríamos a <strong>média dos ranks</strong>. Ex: dois valores iguais nos postos 5 e 6 receberiam ambos rank 5.5. Neste caso, não há empates!')}
+  </div>`
+});
+
+// --- STEP 2: Rank Sums ---
+slides.push({
+  title: 'Soma dos Ranks', partB: false,
+  html: `
+  <div class="card">
+    <h2>📐 Passo 2 — Soma dos Ranks por Grupo</h2>
+
+    <table class="data-table">
+      <tr><th>Aldeia</th><th>Valores</th><th>Ranks</th><th>Soma (Rⱼ)</th></tr>
+      <tr class="birka-bg"><td class="birka"><strong>Birka</strong></td><td>45, 38, 52, 41, 60, 35</td><td>10, 7, 13, 8, 16, 6</td><td><strong>60</strong></td></tr>
+      <tr class="hedeby-bg"><td class="hedeby"><strong>Hedeby</strong></td><td>30, 25, 33, 28, 22</td><td>4, 2, 5, 3, 1</td><td><strong>15</strong></td></tr>
+      <tr class="kaupang-bg"><td class="kaupang"><strong>Kaupang</strong></td><td>48, 55, 42, 50, 58</td><td>11, 14, 9, 12, 15</td><td><strong>61</strong></td></tr>
+    </table>
+
+    <div class="formula-box">
+      <div class="formula">Verificação: ΣR = N(N+1)/2 = 16 × 17 / 2 = 136</div>
+      <div class="calc-step">60 + 15 + 61 = <strong style="color:var(--success)">136 ✓</strong></div>
+    </div>
+
+    <button class="animate-btn" onclick="animateBars()">📊 Ver Barras dos Rank Sums</button>
+    <div class="bar-chart" id="barChart1">
+      <div class="bar-wrapper">
+        <div class="bar" id="bar_birka" style="height:0;background:var(--birka-color)">
+          <div class="bar-label birka">60</div>
+        </div>
+        <div class="bar-name birka">Birka</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar" id="bar_hedeby" style="height:0;background:var(--hedeby-color)">
+          <div class="bar-label hedeby">15</div>
+        </div>
+        <div class="bar-name hedeby">Hedeby</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar" id="bar_kaupang" style="height:0;background:var(--kaupang-color)">
+          <div class="bar-label kaupang">61</div>
+        </div>
+        <div class="bar-name kaupang">Kaupang</div>
+      </div>
+    </div>
+
+    ${dlg('corvo','🐦‍⬛ Huginn provoca:','Hedeby ficou com a menor soma de ranks — seus colheiteiros estão entre os piores. Será que o teste vai confirmar a diferença?')}
+  </div>`
+});
+
+// --- STEP 3: H Statistic ---
+slides.push({
+  title: 'Estatística H', partB: false,
+  html: `
+  <div class="card">
+    <h2>🔥 Passo 3 — Estatística H de Kruskal-Wallis</h2>
+
+    <div class="formula-box">
+      <div class="formula">H = [12 / N(N+1)] × Σ(Rⱼ² / nⱼ) − 3(N+1)</div>
+    </div>
+
+    <button class="animate-btn" id="btnCalcH" onclick="animateH()">🧮 Calcular H passo a passo</button>
+    <div id="hCalcSteps"></div>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','H segue aproximadamente uma distribuição <strong>χ²</strong> com <em>df = k − 1 = 2</em> graus de liberdade. Quanto maior H, maior a evidência de que os grupos diferem.')}
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','A lógica do Kruskal-Wallis: se os grupos fossem iguais, seus ranks médios seriam próximos. H mede o quanto os rank sums se afastam do esperado.')}
+  </div>`
+});
+
+// --- STEP 4: Significance ---
+slides.push({
+  title: 'Significância', partB: false,
+  html: `
+  <div class="card">
+    <h2>🎯 Passo 4 — Significância e Tamanho de Efeito</h2>
+
+    <div class="formula-box">
+      <div class="formula">H = 10.29 &nbsp;|&nbsp; χ²<sub>crítico</sub>(2, α=0.05) = 5.99</div>
+      <div class="calc-step" style="color:var(--success)">10.29 > 5.99 → <strong>Rejeita H₀!</strong></div>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula">p = 0.0058</div>
+      <div class="calc-step">p < 0.05 → Há diferença significativa entre as aldeias</div>
+    </div>
+
+    <h3>Tamanho de Efeito: η²<sub>H</sub></h3>
+    <div class="formula-box">
+      <div class="formula">η²<sub>H</sub> = (H − k + 1) / (N − k)</div>
+      <div class="calc-step">= (10.29 − 3 + 1) / (16 − 3) = 8.29 / 13 = <strong style="color:var(--gold)">0.64</strong></div>
+    </div>
+
+    <table class="data-table">
+      <tr><th>η²<sub>H</sub></th><th>Interpretação</th></tr>
+      <tr><td>0.01 – 0.06</td><td>Pequeno</td></tr>
+      <tr><td>0.06 – 0.14</td><td>Médio</td></tr>
+      <tr style="background:rgba(240,192,64,0.15)"><td><strong>≥ 0.14</strong></td><td><strong style="color:var(--gold)">Grande ← 0.64!</strong></td></tr>
+    </table>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Efeito grande! A diferença na colheita entre aldeias é substancial. Entretanto, H nos diz que <em>existe</em> diferença — não <em>entre quais</em> aldeias. Para isso, precisamos do post-hoc.')}
+    ${dlg('thor','⚡ ThorMento','Significativo! Pronto, acabou!')}
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Calma, ThorMento. Saber que existe diferença sem identificar <em>onde</em> ela está é como saber que um inimigo invadiu Asgard sem saber por qual portão.')}
+  </div>`
+});
+
+// --- STEP 5: Dunn Post-hoc ---
+slides.push({
+  title: 'Post-hoc Dunn', partB: false,
+  html: `
+  <div class="card">
+    <h2>⚔️ Passo 5 — Post-hoc de Dunn</h2>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Quando H é significativo, fazemos comparações par a par com o <strong>teste de Dunn</strong>, ajustando o α com <strong>Bonferroni</strong>.')}
+
+    <div class="formula-box">
+      <div class="formula">z = |R̄ᵢ − R̄ⱼ| / SE</div>
+      <div class="calc-step">SE = √[ N(N+1)/12 × (1/nᵢ + 1/nⱼ) ]</div>
+      <div class="calc-step">α<sub>Bonferroni</sub> = 0.05 / 3 = 0.0167</div>
+    </div>
+
+    <h3>Ranks Médios</h3>
+    <table class="data-table">
+      <tr><th>Aldeia</th><th>R̄</th></tr>
+      <tr class="birka-bg"><td class="birka">Birka</td><td>10.00</td></tr>
+      <tr class="hedeby-bg"><td class="hedeby">Hedeby</td><td>3.00</td></tr>
+      <tr class="kaupang-bg"><td class="kaupang">Kaupang</td><td>12.20</td></tr>
+    </table>
+
+    <h3>Comparações Par a Par</h3>
+    <button class="animate-btn" onclick="animateDunn()">⚔️ Executar Post-hoc</button>
+    <div class="comparison-grid" id="dunnGrid">
+      <div class="comp-card" id="dunn1" style="opacity:0.3">
+        <h4>Birka vs Hedeby</h4>
+        <div>|10.00 − 3.00| = 7.00</div>
+        <div>SE = 2.88</div>
+        <div style="color:var(--gold)">z = 2.43</div>
+        <div>p = 0.0152</div>
+        <div class="verdict sig">✅ Significativo (p < 0.0167)</div>
+      </div>
+      <div class="comp-card" id="dunn2" style="opacity:0.3">
+        <h4>Birka vs Kaupang</h4>
+        <div>|10.00 − 12.20| = 2.20</div>
+        <div>SE = 2.88</div>
+        <div style="color:var(--gold)">z = 0.76</div>
+        <div>p = 0.4454</div>
+        <div class="verdict ns">❌ Não significativo</div>
+      </div>
+      <div class="comp-card" id="dunn3" style="opacity:0.3">
+        <h4>Hedeby vs Kaupang</h4>
+        <div>|3.00 − 12.20| = 9.20</div>
+        <div>SE = 3.01</div>
+        <div style="color:var(--gold)">z = 3.06</div>
+        <div>p = 0.0022</div>
+        <div class="verdict sig">✅ Significativo (p < 0.0167)</div>
+      </div>
+    </div>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Hedeby difere de Birka e de Kaupang. Por outro lado, Birka e Kaupang não diferem entre si. Hedeby é a aldeia com colheita significativamente inferior.')}
+  </div>`
+});
+
+// --- STEP 6: APA KW ---
+slides.push({
+  title: 'Resultado APA (KW)', partB: false,
+  html: `
+  <div class="card">
+    <h2>📝 Passo 6 — Resultado em Formato APA</h2>
+
+    <div class="apa-box">
+      <h3 style="color:var(--gold);font-family:'Bangers',cursive;font-size:1.3rem">Kruskal-Wallis</h3>
+      <div class="apa-result">
+        <em>H</em>(2) = 10.29, <em>p</em> = .006, η²<sub>H</sub> = .64
+      </div>
+    </div>
+
+    <div class="apa-box" style="border-color:var(--odin-blue)">
+      <h3 style="color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.1rem">Post-hoc de Dunn (Bonferroni)</h3>
+      <div class="apa-result" style="font-size:1rem">
+        Birka vs. Hedeby: <em>z</em> = 2.43, <em>p</em> = .015*<br>
+        Birka vs. Kaupang: <em>z</em> = 0.76, <em>p</em> = .445<br>
+        Hedeby vs. Kaupang: <em>z</em> = 3.06, <em>p</em> = .002*
+      </div>
+    </div>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','A colheita de cevada diferiu significativamente entre as aldeias, <em>H</em>(2) = 10.29, <em>p</em> = .006, com tamanho de efeito grande (η²<sub>H</sub> = .64). Comparações post-hoc de Dunn com correção de Bonferroni revelaram que Hedeby (<em>R̄</em> = 3.00) produziu significativamente menos que Birka (<em>R̄</em> = 10.00, <em>p</em> = .015) e Kaupang (<em>R̄</em> = 12.20, <em>p</em> = .002).')}
+    ${dlg('corvo','🐦‍⬛ Huginn provoca:','E se você tivesse rodado ANOVA nestes dados ordinais, ThorMento? Os ranks não são normais — o F-test estaria comprometido.')}
+    ${dlg('thor','⚡ ThorMento','...tá, tá bom. Desta vez o velho barbudo tem razão.')}
+  </div>`
+});
+
+// --- STEP 7: Transition to Friedman ---
+slides.push({
+  title: 'Medidas Repetidas', partB: true,
+  html: `
+  <div class="card">
+    <div class="part-divider">
+      <h2>🔨 Parte B — Teste de Friedman</h2>
+    </div>
+    <h2>🔄 Passo 7 — E Quando os Mesmos Sujeitos São Medidos 3+ Vezes?</h2>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Kruskal-Wallis é para grupos <strong>independentes</strong>. Entretanto, quando os <strong>mesmos sujeitos</strong> são medidos em 3+ condições e os dados são ordinais, usamos o <strong>teste de Friedman</strong>.')}
+
+    <table class="data-table">
+      <tr><th>Situação</th><th>Independente</th><th>Pareado/Repetido</th></tr>
+      <tr><td>2 grupos</td><td>Mann-Whitney</td><td>Wilcoxon</td></tr>
+      <tr><td style="color:var(--corvo-purple);font-weight:bold">3+ grupos</td><td>Kruskal-Wallis</td><td style="color:var(--corvo-purple);font-weight:bold">Friedman ← agora</td></tr>
+    </table>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Novo cenário: 7 ferreiros de Asgard avaliaram a qualidade de espadas forjadas com 3 técnicas diferentes, numa escala ordinal de 1 a 10. Cada ferreiro testou as 3 técnicas.')}
+
+    <h3>Dados dos Ferreiros</h3>
+    <table class="data-table">
+      <tr><th>Ferreiro</th><th>🔨 Martelo</th><th>⚒️ Bigorna Dupla</th><th>🔥 Forja Rúnica</th></tr>
+      <tr><td>Thor</td><td>7</td><td>5</td><td>9</td></tr>
+      <tr><td>Brokkr</td><td>6</td><td>8</td><td>7</td></tr>
+      <tr><td>Eitri</td><td>4</td><td>6</td><td>8</td></tr>
+      <tr><td>Sindri</td><td>8</td><td>4</td><td>9</td></tr>
+      <tr><td>Wayland</td><td>5</td><td>7</td><td>6</td></tr>
+      <tr><td>Völundr</td><td>3</td><td>5</td><td>8</td></tr>
+      <tr><td>Regin</td><td>6</td><td>6</td><td>7</td></tr>
+    </table>
+
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','A diferença fundamental: no Friedman, ranqueamos <strong>dentro de cada sujeito</strong> (linha), não globalmente como no Kruskal-Wallis.')}
+  </div>`
+});
+
+// --- STEP 8: Friedman Concept ---
+slides.push({
+  title: 'Conceito Friedman', partB: true,
+  html: `
+  <div class="card">
+    <h2>🧠 Passo 8 — O Conceito do Friedman</h2>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','O Friedman é a alternativa não-paramétrica da <strong>ANOVA de Medidas Repetidas</strong>. Cada sujeito ranqueia as k condições do pior ao melhor. Depois somamos os ranks por condição.')}
+
+    <h3>A Lógica</h3>
+    <div class="formula-box">
+      <div class="calc-step" style="color:var(--text);font-size:1.05rem">
+        1. Para cada ferreiro → rank as 3 técnicas (1 = pior, 3 = melhor)<br>
+        2. Some os ranks de cada técnica → R<sub>Martelo</sub>, R<sub>Bigorna</sub>, R<sub>Rúnica</sub><br>
+        3. Se as técnicas fossem iguais, cada soma seria próxima de n × (k+1)/2<br>
+        4. A estatística χ²<sub>F</sub> mede o desvio dessas somas em relação ao esperado
+      </div>
+    </div>
+
+    ${dlg('thor','⚡ ThorMento','Espera — se eu rankear dentro de cada linha, um ferreiro generoso que deu notas altas pra tudo não inflaciona o resultado?')}
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Exatamente! Essa é a beleza do Friedman. Ao rankear <em>dentro</em> de cada sujeito, eliminamos diferenças de nível entre avaliadores. Um ferreiro exigente e um generoso contribuem igualmente — o que importa é a <strong>ordem relativa</strong> das técnicas para cada um.')}
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','Com k = 3 condições, os ranks possíveis por sujeito são 1, 2 e 3. Empates recebem a média dos ranks — Regin deu nota 6 para Martelo e Bigorna, então ambos recebem rank 1.5.')}
+  </div>`
+});
+
+// --- STEP 9: Ranking within subjects ---
+slides.push({
+  title: 'Ranking Intra-Sujeito', partB: true,
+  html: `
+  <div class="card">
+    <h2>🎲 Passo 9 — Ranking Dentro de Cada Ferreiro</h2>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','Agora ranqueamos as 3 técnicas <strong>dentro de cada linha</strong>. O menor valor recebe rank 1, o maior recebe rank 3.')}
+
+    <button class="animate-btn" id="btnFriedRank" onclick="animateFriedmanRanks()">🎲 Rankear Linha a Linha</button>
+
+    <table class="data-table" id="friedmanTable">
+      <tr><th>Ferreiro</th><th>🔨 Martelo</th><th>⚒️ Bigorna</th><th>🔥 Rúnica</th></tr>
+      <tr id="fr0"><td>Thor</td><td>7</td><td>5</td><td>9</td></tr>
+      <tr id="fr1"><td>Brokkr</td><td>6</td><td>8</td><td>7</td></tr>
+      <tr id="fr2"><td>Eitri</td><td>4</td><td>6</td><td>8</td></tr>
+      <tr id="fr3"><td>Sindri</td><td>8</td><td>4</td><td>9</td></tr>
+      <tr id="fr4"><td>Wayland</td><td>5</td><td>7</td><td>6</td></tr>
+      <tr id="fr5"><td>Völundr</td><td>3</td><td>5</td><td>8</td></tr>
+      <tr id="fr6"><td>Regin</td><td>6</td><td>6</td><td>7</td></tr>
+    </table>
+
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','Observe Regin: Martelo = 6 e Bigorna = 6 (empate). Ambos recebem rank (1+2)/2 = <strong>1.5</strong>. Forja Rúnica = 7 recebe rank 3.')}
+  </div>`
+});
+
+// --- STEP 10: Rank Sums Friedman ---
+slides.push({
+  title: 'Soma Ranks (Friedman)', partB: true,
+  html: `
+  <div class="card">
+    <h2>📐 Passo 10 — Soma dos Ranks por Técnica</h2>
+
+    <table class="data-table">
+      <tr><th>Ferreiro</th><th>🔨 Martelo</th><th>⚒️ Bigorna</th><th>🔥 Rúnica</th></tr>
+      <tr><td>Thor</td><td>2</td><td>1</td><td>3</td></tr>
+      <tr><td>Brokkr</td><td>1</td><td>3</td><td>2</td></tr>
+      <tr><td>Eitri</td><td>1</td><td>2</td><td>3</td></tr>
+      <tr><td>Sindri</td><td>2</td><td>1</td><td>3</td></tr>
+      <tr><td>Wayland</td><td>1</td><td>3</td><td>2</td></tr>
+      <tr><td>Völundr</td><td>1</td><td>2</td><td>3</td></tr>
+      <tr><td>Regin</td><td class="tie-rank">1.5</td><td class="tie-rank">1.5</td><td>3</td></tr>
+      <tr style="background:var(--bg-panel);font-weight:bold">
+        <td style="color:var(--gold)">Rⱼ =</td>
+        <td style="color:var(--gold)">9.5</td>
+        <td style="color:var(--gold)">13.5</td>
+        <td style="color:var(--gold)">19.0</td>
+      </tr>
+    </table>
+
+    <div class="formula-box">
+      <div class="formula">Verificação: ΣRⱼ = n × k(k+1)/2 = 7 × 3×4/2 = 42</div>
+      <div class="calc-step">9.5 + 13.5 + 19.0 = <strong style="color:var(--success)">42.0 ✓</strong></div>
+    </div>
+
+    <button class="animate-btn" onclick="animateFriedBars()">📊 Ver Barras dos Rank Sums</button>
+    <div class="bar-chart" id="barChart2">
+      <div class="bar-wrapper">
+        <div class="bar" id="bar_mart" style="height:0;background:var(--thor-red)">
+          <div class="bar-label" style="color:var(--thor-red)">9.5</div>
+        </div>
+        <div class="bar-name" style="color:var(--thor-red)">🔨 Martelo</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar" id="bar_big" style="height:0;background:var(--silver)">
+          <div class="bar-label" style="color:var(--silver)">13.5</div>
+        </div>
+        <div class="bar-name" style="color:var(--silver)">⚒️ Bigorna</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar" id="bar_run" style="height:0;background:var(--gold)">
+          <div class="bar-label" style="color:var(--gold)">19.0</div>
+        </div>
+        <div class="bar-name" style="color:var(--gold)">🔥 Rúnica</div>
+      </div>
+    </div>
+
+    ${dlg('corvo','🐦‍⬛ Huginn provoca:','A Forja Rúnica lidera com folga! Será que a diferença é estatisticamente significativa?')}
+  </div>`
+});
+
+// --- STEP 11: Friedman Statistic ---
+slides.push({
+  title: 'Estatística χ²_F', partB: true,
+  html: `
+  <div class="card">
+    <h2>🔥 Passo 11 — Estatística χ²<sub>F</sub> de Friedman</h2>
+
+    <div class="formula-box">
+      <div class="formula">χ²<sub>F</sub> = [12 / nk(k+1)] × ΣRⱼ² − 3n(k+1)</div>
+    </div>
+
+    <button class="animate-btn" id="btnCalcF" onclick="animateFriedman()">🧮 Calcular χ²<sub>F</sub> passo a passo</button>
+    <div id="fCalcSteps"></div>
+
+    <h3 style="margin-top:18px">Coeficiente de Concordância de Kendall (W)</h3>
+    <div class="formula-box">
+      <div class="formula">W = χ²<sub>F</sub> / [n(k−1)]</div>
+      <div class="calc-step">= 6.50 / [7 × 2] = 6.50 / 14 = <strong style="color:var(--gold)">0.46</strong></div>
+    </div>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','W varia de 0 a 1. Um W = 0.46 indica concordância moderada entre os ferreiros sobre qual técnica é superior.')}
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','W = 0 → os ferreiros discordam completamente; W = 1 → concordância perfeita. Pense em W como a "harmonia" entre os juízes.')}
+  </div>`
+});
+
+// --- STEP 12: Significance Friedman ---
+slides.push({
+  title: 'Significância (Friedman)', partB: true,
+  html: `
+  <div class="card">
+    <h2>🎯 Passo 12 — Significância e Post-hoc Nemenyi</h2>
+
+    <div class="formula-box">
+      <div class="formula">χ²<sub>F</sub> = 6.50 &nbsp;|&nbsp; χ²<sub>crítico</sub>(2, α=0.05) = 5.99</div>
+      <div class="calc-step" style="color:var(--success)">6.50 > 5.99 → <strong>Rejeita H₀!</strong></div>
+    </div>
+    <div class="formula-box">
+      <div class="formula">p = 0.039</div>
+      <div class="calc-step">p < 0.05 → As técnicas de forja diferem significativamente</div>
+    </div>
+
+    <h3>Post-hoc de Nemenyi</h3>
+    ${dlg('odin','🧙‍♂️ Odin Dinho','O Nemenyi é o post-hoc padrão do Friedman. Comparamos a diferença entre ranks médios com uma <strong>Diferença Crítica (CD)</strong>.')}
+
+    <div class="formula-box">
+      <div class="formula">CD = q<sub>α</sub> × √[k(k+1) / (6n)]</div>
+      <div class="calc-step">= 2.343 × √[3×4 / (6×7)] = 2.343 × √0.2857 = 2.343 × 0.5345 = <strong style="color:var(--gold)">1.25</strong></div>
+    </div>
+
+    <h3>Ranks Médios</h3>
+    <table class="data-table">
+      <tr><th>Técnica</th><th>R̄</th></tr>
+      <tr><td>🔨 Martelo</td><td>1.36</td></tr>
+      <tr><td>⚒️ Bigorna Dupla</td><td>1.93</td></tr>
+      <tr><td>🔥 Forja Rúnica</td><td>2.71</td></tr>
+    </table>
+
+    <button class="animate-btn" onclick="animateNemenyi()">⚔️ Executar Post-hoc Nemenyi</button>
+    <div class="comparison-grid" id="nemenyiGrid">
+      <div class="comp-card" id="nem1" style="opacity:0.3">
+        <h4>Martelo vs Bigorna</h4>
+        <div>|1.36 − 1.93| = 0.57</div>
+        <div>CD = 1.25</div>
+        <div class="verdict ns">❌ 0.57 ≤ 1.25</div>
+      </div>
+      <div class="comp-card" id="nem2" style="opacity:0.3">
+        <h4>Martelo vs Forja Rúnica</h4>
+        <div>|1.36 − 2.71| = 1.36</div>
+        <div>CD = 1.25</div>
+        <div class="verdict sig">✅ 1.36 > 1.25</div>
+      </div>
+      <div class="comp-card" id="nem3" style="opacity:0.3">
+        <h4>Bigorna vs Forja Rúnica</h4>
+        <div>|1.93 − 2.71| = 0.79</div>
+        <div>CD = 1.25</div>
+        <div class="verdict ns">❌ 0.79 ≤ 1.25</div>
+      </div>
+    </div>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','A Forja Rúnica é significativamente melhor que o Martelo. As demais diferenças não atingem significância após o ajuste de Nemenyi.')}
+  </div>`
+});
+
+// --- STEP 13: APA Friedman ---
+slides.push({
+  title: 'Resultado APA (Friedman)', partB: true,
+  html: `
+  <div class="card">
+    <h2>📝 Passo 13 — Resultado em Formato APA</h2>
+
+    <div class="apa-box" style="border-color:var(--corvo-purple)">
+      <h3 style="color:var(--corvo-purple);font-family:'Bangers',cursive;font-size:1.3rem">Friedman</h3>
+      <div class="apa-result">
+        χ²(2) = 6.50, <em>p</em> = .039, <em>W</em> = .46
+      </div>
+    </div>
+
+    <div class="apa-box" style="border-color:var(--odin-blue)">
+      <h3 style="color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.1rem">Post-hoc de Nemenyi</h3>
+      <div class="apa-result" style="font-size:1rem">
+        Martelo vs. Bigorna: |ΔR̄| = 0.57, CD = 1.25 (n.s.)<br>
+        Martelo vs. Forja Rúnica: |ΔR̄| = 1.36, CD = 1.25*<br>
+        Bigorna vs. Forja Rúnica: |ΔR̄| = 0.79, CD = 1.25 (n.s.)
+      </div>
+    </div>
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','As avaliações da qualidade das espadas diferiram significativamente entre técnicas de forja, χ²(2) = 6.50, <em>p</em> = .039, com concordância moderada entre ferreiros (<em>W</em> = .46). A Forja Rúnica (<em>R̄</em> = 2.71) foi avaliada significativamente melhor que o Martelo (<em>R̄</em> = 1.36) pelo post-hoc de Nemenyi (CD = 1.25).')}
+  </div>`
+});
+
+// --- STEP 14: Conclusion ---
+slides.push({
+  title: 'Lição dos Corvos', partB: true,
+  html: `
+  <div class="card">
+    <h2>🏆 Passo 14 — Lição dos Corvos</h2>
+
+    <h3>Árvore de Decisão — Qual Teste Usar?</h3>
+    <div class="flowchart">
+      <div class="flow-node decision">Os dados são <strong>ordinais</strong>, não-normais ou de pequenas amostras?</div>
+      <div class="flow-arrow">↓ SIM</div>
+      <div class="flow-node decision">Os grupos são <strong>independentes</strong> ou <strong>pareados/repetidos</strong>?</div>
+      <div class="flow-branches">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div class="flow-arrow">↓ Independentes</div>
+          <div class="flow-node decision">Quantos grupos?</div>
+          <div class="flow-branches">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="flow-arrow">↓ 2</span>
+              <div class="flow-node test">Mann-Whitney U</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="flow-arrow">↓ 3+</span>
+              <div class="flow-node test" style="border-color:var(--gold);color:var(--gold)"><strong>Kruskal-Wallis</strong><br><small>Post-hoc: Dunn</small></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div class="flow-arrow">↓ Pareados</div>
+          <div class="flow-node decision">Quantas condições?</div>
+          <div class="flow-branches">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="flow-arrow">↓ 2</span>
+              <div class="flow-node test">Wilcoxon Signed-Rank</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <span class="flow-arrow">↓ 3+</span>
+              <div class="flow-node test" style="border-color:var(--corvo-purple);color:var(--corvo-purple)"><strong>Friedman</strong><br><small>Post-hoc: Nemenyi</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${dlg('corvo','🐦‍⬛ Muninn sussurra:','<strong>Pontos-chave:</strong><br>• Kruskal-Wallis rankeia <em>todos os dados juntos</em> — compara distribuições entre grupos independentes<br>• Friedman rankeia <em>dentro de cada sujeito</em> — controla diferenças individuais<br>• Ambos usam χ² como referência para a significância<br>• Sempre reporte o tamanho de efeito: η²<sub>H</sub> (KW) ou W de Kendall (Friedman)<br>• Post-hoc é obrigatório quando o teste omnibus é significativo')}
+
+    ${dlg('corvo','🐦‍⬛ Huginn provoca:','<strong>Desafios para você:</strong><br>1. Se uma aldeia tivesse exatamente os mesmos dados que outra, o que aconteceria com H?<br>2. No Friedman, se todos os ferreiros dessem a mesma ordenação, quanto valeria W?<br>3. Qual seria o impacto de usar ANOVA paramétrica com dados ordinais de 5 pontos?<br>4. Invente um cenário viking com 4 grupos e decida qual teste usar.')}
+
+    ${dlg('odin','🧙‍♂️ Odin Dinho','A forja da boa estatística exige paciência — assim como a forja de uma espada digna de Valhalla. Não force pressupostos; escolha a ferramenta certa para cada tipo de dado. Skål! 🍺')}
+  </div>`
+});
+
+// ========== ENGINE ==========
+let currentStep = 0;
+const totalSteps = slides.length;
+
+function buildSlides() {
+  const container = document.getElementById('slidesContainer');
+  const indicator = document.getElementById('stepIndicator');
+  slides.forEach((s, i) => {
+    // Slide
+    const div = document.createElement('div');
+    div.className = 'slide' + (i === 0 ? ' active' : '');
+    div.id = 'slide_' + i;
+    div.innerHTML = s.html;
+    container.appendChild(div);
+    // Dot
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === 0 ? ' active' : '') + (s.partB ? ' part-b' : '');
+    dot.textContent = i;
+    dot.title = s.title;
+    dot.onclick = () => goToStep(i);
+    indicator.appendChild(dot);
+  });
+  updateNav();
+}
+
+function goToStep(n) {
+  if (n < 0 || n >= totalSteps) return;
+  document.querySelectorAll('.slide').forEach(s => { s.classList.remove('active'); s.style.animation = ''; });
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.remove('active');
+    if (i < n) d.classList.add('completed');
+    else d.classList.remove('completed');
+  });
+  currentStep = n;
+  const slide = document.getElementById('slide_' + n);
+  slide.classList.add('active');
+  slide.style.animation = 'none';
+  slide.offsetHeight; // reflow
+  slide.style.animation = 'fadeIn 0.4s ease forwards';
+  document.querySelectorAll('.step-dot')[n].classList.add('active');
+  updateNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep() { goToStep(currentStep + 1); }
+function prevStep() { goToStep(currentStep - 1); }
+
+function updateNav() {
+  document.getElementById('btnPrev').disabled = currentStep === 0;
+  document.getElementById('btnNext').disabled = currentStep === totalSteps - 1;
+  document.getElementById('stepCounter').textContent = `Passo ${currentStep} / ${totalSteps - 1}`;
+  document.getElementById('progressFill').style.width = ((currentStep / (totalSteps - 1)) * 100) + '%';
+}
+
+// ========== ANIMATIONS ==========
+
+function animateRanking() {
+  const btn = document.getElementById('btnRank');
+  btn.disabled = true;
+  const container = document.getElementById('rankVisual');
+  container.innerHTML = '';
+  sorted.forEach((item, i) => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'rank-item';
+      div.style.animationDelay = '0s';
+      const colorClass = gc(item.g);
+      div.innerHTML = `<div class="rank-num">R${item.rank}</div><div class="rank-val ${colorClass}">${item.v}</div><div style="font-size:0.7rem;color:var(--text-dim)">${item.g}</div>`;
+      container.appendChild(div);
+    }, i * 150);
+  });
+  setTimeout(() => { btn.disabled = false; }, sorted.length * 150 + 200);
+}
+
+function animateBars() {
+  const maxR = 61;
+  setTimeout(() => { document.getElementById('bar_birka').style.height = (60/maxR*170) + 'px'; }, 200);
+  setTimeout(() => { document.getElementById('bar_hedeby').style.height = (15/maxR*170) + 'px'; }, 500);
+  setTimeout(() => { document.getElementById('bar_kaupang').style.height = (61/maxR*170) + 'px'; }, 800);
+}
+
+function animateH() {
+  const btn = document.getElementById('btnCalcH');
+  btn.disabled = true;
+  const container = document.getElementById('hCalcSteps');
+  const steps = [
+    { text: '<strong>Passo 1:</strong> 12 / N(N+1) = 12 / (16 × 17) = 12 / 272 = <span style="color:var(--gold)">0.04412</span>', delay: 0 },
+    { text: '<strong>Passo 2:</strong> R²<sub>Birka</sub> / n<sub>Birka</sub> = 60² / 6 = 3600 / 6 = <span class="birka">600.00</span>', delay: 600 },
+    { text: '<strong>Passo 3:</strong> R²<sub>Hedeby</sub> / n<sub>Hedeby</sub> = 15² / 5 = 225 / 5 = <span class="hedeby">45.00</span>', delay: 1200 },
+    { text: '<strong>Passo 4:</strong> R²<sub>Kaupang</sub> / n<sub>Kaupang</sub> = 61² / 5 = 3721 / 5 = <span class="kaupang">744.20</span>', delay: 1800 },
+    { text: '<strong>Passo 5:</strong> Σ(R²/n) = 600 + 45 + 744.2 = <span style="color:var(--gold)">1389.20</span>', delay: 2400 },
+    { text: '<strong>Passo 6:</strong> H = 0.04412 × 1389.20 − 3 × 17 = 61.29 − 51 = <span style="color:var(--gold);font-size:1.3rem"><strong>10.29</strong></span>', delay: 3000 },
+  ];
+  container.innerHTML = '';
+  steps.forEach(s => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'formula-box';
+      div.style.opacity = '0';
+      div.style.transition = 'opacity 0.4s';
+      div.innerHTML = `<div class="calc-step" style="text-align:left">${s.text}</div>`;
+      container.appendChild(div);
+      requestAnimationFrame(() => { div.style.opacity = '1'; });
+    }, s.delay);
+  });
+  setTimeout(() => { btn.disabled = false; }, 3600);
+}
+
+function animateDunn() {
+  ['dunn1','dunn2','dunn3'].forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el.style.opacity = '1';
+      el.style.transition = 'opacity 0.5s';
+      if (id === 'dunn1' || id === 'dunn3') el.classList.add('significant');
+      else el.classList.add('not-significant');
+    }, i * 600);
+  });
+}
+
+function animateFriedmanRanks() {
+  const btn = document.getElementById('btnFriedRank');
+  btn.disabled = true;
+  const ranksData = [
+    [2,1,3],[1,3,2],[1,2,3],[2,1,3],[1,3,2],[1,2,3],[1.5,1.5,3]
+  ];
+  ranksData.forEach((row, ri) => {
+    setTimeout(() => {
+      const tr = document.getElementById('fr' + ri);
+      const cells = tr.querySelectorAll('td');
+      for (let c = 1; c <= 3; c++) {
+        const orig = fData[ri][c-1];
+        const rank = row[c-1];
+        cells[c].innerHTML = `<span style="color:var(--text-dim);font-size:0.8rem">${orig}</span> → <strong style="color:var(--gold)">${rank}</strong>`;
+        cells[c].classList.add('highlight-flash');
+        if (rank % 1 !== 0) cells[c].classList.add('tie-rank');
+      }
+    }, ri * 400);
+  });
+  setTimeout(() => { btn.disabled = false; }, 7 * 400 + 200);
+}
+
+function animateFriedBars() {
+  const maxR = 19;
+  setTimeout(() => { document.getElementById('bar_mart').style.height = (9.5/maxR*170) + 'px'; }, 200);
+  setTimeout(() => { document.getElementById('bar_big').style.height = (13.5/maxR*170) + 'px'; }, 500);
+  setTimeout(() => { document.getElementById('bar_run').style.height = (19/maxR*170) + 'px'; }, 800);
+}
+
+function animateFriedman() {
+  const btn = document.getElementById('btnCalcF');
+  btn.disabled = true;
+  const container = document.getElementById('fCalcSteps');
+  const steps = [
+    { text: '<strong>Passo 1:</strong> 12 / nk(k+1) = 12 / (7 × 3 × 4) = 12 / 84 = <span style="color:var(--gold)">0.14286</span>', delay: 0 },
+    { text: '<strong>Passo 2:</strong> R²<sub>Martelo</sub> = 9.5² = <span style="color:var(--thor-red)">90.25</span>', delay: 600 },
+    { text: '<strong>Passo 3:</strong> R²<sub>Bigorna</sub> = 13.5² = <span style="color:var(--silver)">182.25</span>', delay: 1200 },
+    { text: '<strong>Passo 4:</strong> R²<sub>Rúnica</sub> = 19.0² = <span style="color:var(--gold)">361.00</span>', delay: 1800 },
+    { text: '<strong>Passo 5:</strong> ΣRⱼ² = 90.25 + 182.25 + 361.00 = <span style="color:var(--gold)">633.50</span>', delay: 2400 },
+    { text: '<strong>Passo 6:</strong> χ²<sub>F</sub> = 0.14286 × 633.50 − 3 × 7 × 4 = 90.50 − 84 = <span style="color:var(--gold);font-size:1.3rem"><strong>6.50</strong></span>', delay: 3000 },
+  ];
+  container.innerHTML = '';
+  steps.forEach(s => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'formula-box';
+      div.style.opacity = '0';
+      div.style.transition = 'opacity 0.4s';
+      div.innerHTML = `<div class="calc-step" style="text-align:left">${s.text}</div>`;
+      container.appendChild(div);
+      requestAnimationFrame(() => { div.style.opacity = '1'; });
+    }, s.delay);
+  });
+  setTimeout(() => { btn.disabled = false; }, 3600);
+}
+
+function animateNemenyi() {
+  ['nem1','nem2','nem3'].forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el.style.opacity = '1';
+      el.style.transition = 'opacity 0.5s';
+      if (id === 'nem2') el.classList.add('significant');
+      else el.classList.add('not-significant');
+    }, i * 600);
+  });
+}
+
+// ========== KEYBOARD NAV ==========
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextStep(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevStep(); }
+});
+
+// ========== INIT ==========
+buildSlides();
+</script>
+</body>
+</html>

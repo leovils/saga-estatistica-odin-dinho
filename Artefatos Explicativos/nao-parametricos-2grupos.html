@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testes Não-Paramétricos para 2 Grupos — Passo a Passo | Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117; --bg-card: #161b22; --bg-panel: #1c2333;
+  --odin-blue: #58a6ff; --thor-red: #f85149; --corvo-purple: #bc8cff;
+  --gold: #f0c040; --silver: #8b949e; --text: #e6edf3; --text-dim: #8b949e;
+  --success: #3fb950; --border: #30363d;
+  --lobo-color: #58a6ff; --serpente-color: #3fb950;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* PROGRESS BAR */
+.progress-bar-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-dark);
+  padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-label {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-panel);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--odin-blue), var(--gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* PART DIVIDER */
+.part-divider {
+  text-align: center;
+  margin: 30px 0;
+  padding: 24px;
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  background: rgba(240,192,64,0.06);
+}
+
+.part-divider h2 {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+
+.part-divider p {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  margin-top: 6px;
+}
+
+/* STEP CONTENT */
+.step-content {
+  min-height: 60vh;
+  padding: 30px 0;
+  display: none;
+}
+
+.step-content.active {
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+  font-family: 'Bangers', cursive;
+  font-size: 2.2rem;
+  color: var(--gold);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.step-subtitle {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.3rem;
+  color: var(--odin-blue);
+  margin-bottom: 15px;
+}
+
+/* DIALOGUE BOXES */
+.dialogue-box {
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.dialogue-box.odin {
+  background: rgba(88,166,255,0.08);
+  border-left-color: var(--odin-blue);
+}
+.dialogue-box.thor {
+  background: rgba(248,81,73,0.08);
+  border-left-color: var(--thor-red);
+}
+.dialogue-box.corvo {
+  background: rgba(188,140,255,0.08);
+  border-left-color: var(--corvo-purple);
+}
+
+.char-name {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+
+.dialogue-text {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* DATA TABLE */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1rem;
+}
+
+.data-table th, .data-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.data-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+}
+
+.data-table td {
+  background: var(--bg-card);
+  transition: background 0.3s;
+}
+
+.data-table tr:hover td {
+  background: rgba(88,166,255,0.1);
+}
+
+.lobo { color: var(--lobo-color); }
+.serpente { color: var(--serpente-color); }
+
+/* FORMULA */
+.formula {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 1.15rem;
+  text-align: center;
+  font-family: 'Patrick Hand', cursive;
+  color: var(--gold);
+}
+
+.formula-label {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+/* CALC TABLE */
+.calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 0.95rem;
+}
+
+.calc-table th, .calc-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.calc-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.calc-table td {
+  background: var(--bg-card);
+}
+
+/* ANIMATED BAR */
+.bar-container { margin: 20px 0; }
+
+.bar-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.bar-label {
+  width: 100px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.9rem;
+  text-align: right;
+  padding-right: 10px;
+  flex-shrink: 0;
+}
+
+.bar-track {
+  flex: 1;
+  height: 30px;
+  background: var(--bg-panel);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 1.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+/* SVG VISUALS */
+.visual-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.visual-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* HIGHLIGHT BOX */
+.highlight-box {
+  background: rgba(240,192,64,0.08);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.highlight-box .hl-label {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--gold);
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.highlight-box .hl-value {
+  font-family: 'Bangers', cursive;
+  font-size: 1.8rem;
+  color: var(--text);
+}
+
+/* RESULT BOX */
+.result-box {
+  background: var(--bg-panel);
+  border: 2px solid var(--success);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.result-box .result-label {
+  font-family: 'Bangers', cursive;
+  font-size: 1.5rem;
+  color: var(--success);
+  margin-bottom: 10px;
+}
+
+.result-box .result-apa {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.2rem;
+  color: var(--gold);
+  line-height: 1.8;
+}
+
+/* NAVIGATION */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+
+.nav-btn {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.1rem;
+  padding: 12px 28px;
+  border: 2px solid var(--odin-blue);
+  background: transparent;
+  color: var(--odin-blue);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  background: var(--odin-blue);
+  color: var(--bg-dark);
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn:disabled:hover {
+  background: transparent;
+  color: var(--odin-blue);
+}
+
+.step-indicator {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ANIMATION FOR RANKING */
+.rank-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-family: 'Bangers', cursive;
+  font-size: 1.2rem;
+  margin: 4px;
+  transition: all 0.6s ease;
+  border: 2px solid;
+}
+
+.rank-item.lobo-item {
+  background: rgba(88,166,255,0.15);
+  border-color: var(--lobo-color);
+  color: var(--lobo-color);
+}
+
+.rank-item.serpente-item {
+  background: rgba(63,185,80,0.15);
+  border-color: var(--serpente-color);
+  color: var(--serpente-color);
+}
+
+.rank-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+/* MATRIX TABLE */
+.matrix-table {
+  border-collapse: collapse;
+  margin: 16px auto;
+  font-size: 0.85rem;
+}
+
+.matrix-table th, .matrix-table td {
+  padding: 6px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.matrix-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.8rem;
+}
+
+.matrix-table td {
+  background: var(--bg-card);
+}
+
+.matrix-table .win { color: var(--success); font-weight: bold; }
+.matrix-table .lose { color: var(--thor-red); }
+.matrix-table .tie { color: var(--gold); }
+
+/* DECISION TREE */
+.decision-tree {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.dt-node {
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin: 8px auto;
+  max-width: 400px;
+  font-size: 0.95rem;
+}
+
+.dt-question {
+  background: rgba(240,192,64,0.12);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Permanent Marker', cursive;
+}
+
+.dt-answer {
+  background: rgba(88,166,255,0.1);
+  border: 1px solid var(--odin-blue);
+  color: var(--odin-blue);
+}
+
+.dt-answer.red {
+  background: rgba(248,81,73,0.1);
+  border-color: var(--thor-red);
+  color: var(--thor-red);
+}
+
+.dt-answer.green {
+  background: rgba(63,185,80,0.1);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.dt-arrow {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 1.4rem;
+  margin: 4px 0;
+}
+
+.dt-branch {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* COMPARISON TABLE */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.comparison-table th, .comparison-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.comparison-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+.comparison-table td {
+  background: var(--bg-card);
+}
+
+/* DIFF BARS */
+.diff-bar-container { margin: 16px 0; }
+
+.diff-bar-row {
+  display: flex;
+  align-items: center;
+  margin: 6px 0;
+  gap: 8px;
+}
+
+.diff-bar-name {
+  width: 80px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.diff-bar-track {
+  flex: 1;
+  height: 24px;
+  background: var(--bg-panel);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.diff-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  font-size: 0.8rem;
+  font-family: 'Permanent Marker', cursive;
+}
+
+.diff-bar-fill.positive { background: var(--success); color: #fff; }
+.diff-bar-fill.negative { background: var(--thor-red); color: #fff; }
+
+/* ANIMATE BUTTON */
+.animate-btn {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+  padding: 10px 22px;
+  border: 2px solid var(--gold);
+  background: rgba(240,192,64,0.1);
+  color: var(--gold);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: block;
+  margin: 16px auto;
+}
+
+.animate-btn:hover {
+  background: var(--gold);
+  color: var(--bg-dark);
+}
+
+/* SIGNATURE */
+.signature {
+  text-align: center;
+  padding: 30px 0 10px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+  margin-top: 30px;
+}
+
+.signature .sig-name {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--odin-blue);
+  font-size: 1rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .step-title { font-size: 1.6rem; }
+  .container { padding: 12px; }
+  .nav-btn { padding: 10px 18px; font-size: 0.95rem; }
+  .rank-item { width: 38px; height: 38px; font-size: 1rem; }
+  .matrix-table { font-size: 0.75rem; }
+  .matrix-table th, .matrix-table td { padding: 4px 6px; }
+  .bar-label { width: 70px; font-size: 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-container">
+  <div class="progress-label" id="progressLabel">Passo 0 de 14</div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 0: INTRODUÇÃO -->
+<!-- ============================================================ -->
+<div class="step-content active" id="step0">
+
+  <div class="part-divider">
+    <h2>PARTE A: MANN-WHITNEY U</h2>
+    <p>Grupos Independentes</p>
+  </div>
+
+  <div class="step-title">Passo 0 — Quando Usar Testes Não-Paramétricos?</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Nem sempre os dados seguem distribuição normal. Amostras pequenas, distribuições assimétricas, dados ordinais — quando os pressupostos do teste t falham, precisamos de ferramentas diferentes. Os testes não-paramétricos são essas ferramentas.</div>
+  </div>
+
+  <div class="dialogue-box thor">
+    <div class="char-name thor">⚡ ThorMento acha:</div>
+    <div class="dialogue-text">"Bah, teste t resolve tudo! Joga os dados lá e pronto!"</div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho responde:</div>
+    <div class="dialogue-text">Não quando os pressupostos são violados, ThorMento. Com n = 7 ou 8, não dá para garantir normalidade. O teste t pode dar resultados enganosos.</div>
+  </div>
+
+  <!-- Mini distribution visual -->
+  <div class="visual-container">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Normal distribution -->
+      <text x="175" y="20" fill="#58a6ff" font-family="Permanent Marker" font-size="14" text-anchor="middle">Distribuição Normal</text>
+      <text x="175" y="36" fill="#3fb950" font-family="Patrick Hand" font-size="12" text-anchor="middle">✓ Teste t OK</text>
+      <path d="M50,170 Q80,170 100,150 Q120,120 140,80 Q155,50 175,40 Q195,50 210,80 Q230,120 250,150 Q270,170 300,170" fill="none" stroke="#58a6ff" stroke-width="2.5"/>
+      <line x1="50" y1="170" x2="300" y2="170" stroke="#30363d" stroke-width="1"/>
+
+      <!-- Skewed distribution -->
+      <text x="525" y="20" fill="#f85149" font-family="Permanent Marker" font-size="14" text-anchor="middle">Distribuição Assimétrica</text>
+      <text x="525" y="36" fill="#f85149" font-family="Patrick Hand" font-size="12" text-anchor="middle">✗ Precisa de não-paramétrico!</text>
+      <path d="M400,170 Q420,170 435,140 Q445,110 455,65 Q462,45 470,40 Q490,55 520,100 Q560,140 600,155 Q640,165 680,170" fill="none" stroke="#f85149" stroke-width="2.5"/>
+      <line x1="400" y1="170" x2="680" y2="170" stroke="#30363d" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">Testes não-paramétricos trabalham com <strong>RANKINGS</strong>, não com valores brutos. Isso os torna robustos contra outliers e distribuições estranhas. A lógica é simples: se um grupo tende a ter ranks maiores, ele tende a ter valores maiores.</div>
+  </div>
+
+  <!-- Decision tree -->
+  <div class="step-subtitle">Árvore de Decisão: Quando Usar?</div>
+  <div class="decision-tree">
+    <div class="dt-node dt-question">Seus dados seguem distribuição normal?</div>
+    <div class="dt-arrow">↓</div>
+    <div class="dt-branch">
+      <div>
+        <div class="dt-node dt-answer green">SIM → Teste t</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-node dt-question" style="font-size:0.85rem;">Grupos independentes<br>ou pareados?</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-branch">
+          <div class="dt-node dt-answer" style="font-size:0.8rem;">Independ. → t independente</div>
+          <div class="dt-node dt-answer" style="font-size:0.8rem;">Pareados → t pareado</div>
+        </div>
+      </div>
+      <div>
+        <div class="dt-node dt-answer red">NÃO → Não-Paramétrico</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-node dt-question" style="font-size:0.85rem;">Grupos independentes<br>ou pareados?</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-branch">
+          <div class="dt-node dt-answer" style="font-size:0.8rem;">Independ. → Mann-Whitney U</div>
+          <div class="dt-node dt-answer" style="font-size:0.8rem;">Pareados → Wilcoxon Signed-Rank</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+    <div class="dialogue-text">Se os testes não-paramétricos são tão robustos, por que não usar SEMPRE eles? Pense nisso antes de avançar.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 1: O CONCEITO DE RANKING -->
+<!-- ============================================================ -->
+<div class="step-content" id="step1">
+  <div class="step-title">Passo 1 — O Conceito de Ranking</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Dois clãs viking — <span class="lobo">Clã do Lobo (n=8)</span> e <span class="serpente">Clã da Serpente (n=7)</span> — disputaram na feira de Hedeby. Registrei o número de peças de prata trocadas por cada mercador. Os dados NÃO seguem distribuição normal — são poucos e assimétricos.</div>
+  </div>
+
+  <div class="step-subtitle">Dados Originais</div>
+  <table class="data-table">
+    <thead>
+      <tr><th class="lobo">Clã do Lobo 🐺</th><th class="serpente">Clã da Serpente 🐍</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="lobo">12</td><td class="serpente">8</td></tr>
+      <tr><td class="lobo">15</td><td class="serpente">20</td></tr>
+      <tr><td class="lobo">18</td><td class="serpente">6</td></tr>
+      <tr><td class="lobo">9</td><td class="serpente">10</td></tr>
+      <tr><td class="lobo">22</td><td class="serpente">16</td></tr>
+      <tr><td class="lobo">14</td><td class="serpente">7</td></tr>
+      <tr><td class="lobo">11</td><td class="serpente">13</td></tr>
+      <tr><td class="lobo">25</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">O passo fundamental: <strong>juntar todos os valores</strong> dos dois grupos, ordená-los do menor ao maior, e atribuir ranks de 1 a N (N = n₁ + n₂ = 15).</div>
+  </div>
+
+  <button class="animate-btn" onclick="animateRanking()">⚔️ Animar Ranking</button>
+
+  <div class="step-subtitle">Valores Combinados → Ordenados → Ranqueados</div>
+
+  <div id="rankingDisplay">
+    <table class="calc-table" id="rankTable">
+      <thead>
+        <tr>
+          <th>Posição</th><th>Valor</th><th>Clã</th><th>Rank</th>
+        </tr>
+      </thead>
+      <tbody id="rankTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">Se dois valores fossem iguais (empate), atribuiríamos o <strong>rank médio</strong>. Exemplo: se posições 3 e 4 empatam, ambas recebem rank (3+4)/2 = 3,5. Neste dataset, não temos empates.</div>
+  </div>
+
+  <!-- Color coded circles -->
+  <div class="step-subtitle">Visualização: Interleaving dos Clãs</div>
+  <div class="rank-row" id="rankCircles"></div>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.9rem;margin-top:8px;">
+    <span class="lobo">● Lobo</span> &nbsp;&nbsp; <span class="serpente">● Serpente</span> — veja como os valores se intercalam
+  </p>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 2: HIPÓTESES -->
+<!-- ============================================================ -->
+<div class="step-content" id="step2">
+  <div class="step-title">Passo 2 — Hipóteses do Mann-Whitney U</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">O Mann-Whitney U testa se as distribuições dos dois grupos são iguais. Não é apenas sobre médias — é sobre a tendência geral de um grupo ter valores maiores que o outro.</div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-label">H₀ (Hipótese Nula)</div>
+    <div class="hl-value" style="font-size:1.3rem;">As distribuições dos dois grupos são iguais<br><span style="font-size:1rem;color:var(--text-dim);">P(X > Y) = 0,5</span></div>
+  </div>
+
+  <div class="highlight-box" style="border-color:var(--thor-red);">
+    <div class="hl-label" style="color:var(--thor-red);">H₁ (Hipótese Alternativa)</div>
+    <div class="hl-value" style="font-size:1.3rem;">As distribuições diferem<br><span style="font-size:1rem;color:var(--text-dim);">P(X > Y) ≠ 0,5</span></div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">Note que H₀ é sobre as <strong>DISTRIBUIÇÕES</strong>, não apenas as médias. Se as formas das distribuições forem iguais, aí sim podemos interpretar como diferença de locação (medianas).</div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">A lógica é simples: se H₀ for verdadeira, os ranks devem se distribuir igualmente entre os clãs. Se um clã acumular ranks mais altos, temos evidência contra H₀.</div>
+  </div>
+
+  <div class="dialogue-box thor">
+    <div class="char-name thor">⚡ ThorMento diz:</div>
+    <div class="dialogue-text">"Ranks? Que perda de tempo! Os valores originais são mais informativos!"</div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho responde:</div>
+    <div class="dialogue-text">Os ranks nos protegem de outliers, ThorMento. Se um mercador trocasse 250 peças em vez de 25, o rank dele seria o mesmo — 15. O teste t seria distorcido, o Mann-Whitney não.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 3: RANK SUMS -->
+<!-- ============================================================ -->
+<div class="step-content" id="step3">
+  <div class="step-title">Passo 3 — Soma dos Ranks (R₁ e R₂)</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho pede:</div>
+    <div class="dialogue-text">Agora separamos os ranks por clã e somamos. Cada mercador mantém o rank que recebeu na ordenação conjunta.</div>
+  </div>
+
+  <div class="step-subtitle">Ranks por Clã</div>
+
+  <table class="calc-table">
+    <thead>
+      <tr>
+        <th colspan="3" class="lobo" style="color:var(--lobo-color);">Clã do Lobo 🐺</th>
+        <th colspan="3" class="serpente" style="color:var(--serpente-color);">Clã da Serpente 🐍</th>
+      </tr>
+      <tr>
+        <th>Mercador</th><th>Valor</th><th>Rank</th>
+        <th>Mercador</th><th>Valor</th><th>Rank</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td><td class="lobo">9</td><td class="lobo"><strong>4</strong></td>
+        <td>1</td><td class="serpente">6</td><td class="serpente"><strong>1</strong></td>
+      </tr>
+      <tr>
+        <td>2</td><td class="lobo">11</td><td class="lobo"><strong>6</strong></td>
+        <td>2</td><td class="serpente">7</td><td class="serpente"><strong>2</strong></td>
+      </tr>
+      <tr>
+        <td>3</td><td class="lobo">12</td><td class="lobo"><strong>7</strong></td>
+        <td>3</td><td class="serpente">8</td><td class="serpente"><strong>3</strong></td>
+      </tr>
+      <tr>
+        <td>4</td><td class="lobo">14</td><td class="lobo"><strong>9</strong></td>
+        <td>4</td><td class="serpente">10</td><td class="serpente"><strong>5</strong></td>
+      </tr>
+      <tr>
+        <td>5</td><td class="lobo">15</td><td class="lobo"><strong>10</strong></td>
+        <td>5</td><td class="serpente">13</td><td class="serpente"><strong>8</strong></td>
+      </tr>
+      <tr>
+        <td>6</td><td class="lobo">18</td><td class="lobo"><strong>12</strong></td>
+        <td>6</td><td class="serpente">16</td><td class="serpente"><strong>11</strong></td>
+      </tr>
+      <tr>
+        <td>7</td><td class="lobo">22</td><td class="lobo"><strong>14</strong></td>
+        <td>7</td><td class="serpente">20</td><td class="serpente"><strong>13</strong></td>
+      </tr>
+      <tr>
+        <td>8</td><td class="lobo">25</td><td class="lobo"><strong>15</strong></td>
+        <td></td><td></td><td></td>
+      </tr>
+      <tr style="background:var(--bg-panel);">
+        <td colspan="2" style="font-family:'Permanent Marker';background:var(--bg-panel);">Soma R₁ =</td>
+        <td style="font-family:'Bangers';font-size:1.3rem;color:var(--lobo-color);background:var(--bg-panel);"><strong>77</strong></td>
+        <td colspan="2" style="font-family:'Permanent Marker';background:var(--bg-panel);">Soma R₂ =</td>
+        <td style="font-family:'Bangers';font-size:1.3rem;color:var(--serpente-color);background:var(--bg-panel);"><strong>43</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <div class="formula-label">Verificação</div>
+    R₁ + R₂ = 77 + 43 = <strong>120</strong> = N(N+1)/2 = 15 × 16 / 2 = <strong>120</strong> ✓
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">Essa verificação é essencial! Se R₁ + R₂ ≠ N(N+1)/2, há erro nos ranks. Sempre confira.</div>
+  </div>
+
+  <!-- Bar visual -->
+  <div class="step-subtitle">Visualização: Rank Sums</div>
+  <div class="bar-container">
+    <div class="bar-wrapper">
+      <div class="bar-label lobo">🐺 Lobo</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:64.2%;background:var(--lobo-color);" id="barR1">R₁ = 77</div>
+      </div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-label serpente">🐍 Serpente</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:35.8%;background:var(--serpente-color);" id="barR2">R₂ = 43</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">O Clã do Lobo acumulou mais ranks altos (R₁ = 77 vs R₂ = 43). Mas será essa diferença estatisticamente significativa? É o que vamos calcular.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 4: CÁLCULO DE U -->
+<!-- ============================================================ -->
+<div class="step-content" id="step4">
+  <div class="step-title">Passo 4 — Cálculo da Estatística U</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">A estatística U transforma as somas de ranks em uma medida de sobreposição entre os grupos. Quanto menor o U, maior a separação.</div>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">Fórmula de U₁</div>
+    U₁ = n₁ × n₂ + n₁(n₁ + 1) / 2 − R₁
+  </div>
+
+  <div class="step-subtitle">Cálculo Passo a Passo: U₁</div>
+  <table class="calc-table">
+    <tbody>
+      <tr><td style="text-align:left;">n₁ × n₂</td><td>8 × 7</td><td style="color:var(--gold);"><strong>56</strong></td></tr>
+      <tr><td style="text-align:left;">n₁(n₁ + 1) / 2</td><td>8 × 9 / 2</td><td style="color:var(--gold);"><strong>36</strong></td></tr>
+      <tr><td style="text-align:left;">R₁</td><td></td><td style="color:var(--lobo-color);"><strong>77</strong></td></tr>
+      <tr style="background:var(--bg-panel);"><td style="text-align:left;background:var(--bg-panel);font-family:'Permanent Marker';">U₁ = 56 + 36 − 77</td><td style="background:var(--bg-panel);"></td><td style="background:var(--bg-panel);font-family:'Bangers';font-size:1.4rem;color:var(--gold);"><strong>15</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="step-subtitle">Cálculo Passo a Passo: U₂</div>
+  <table class="calc-table">
+    <tbody>
+      <tr><td style="text-align:left;">n₁ × n₂</td><td>8 × 7</td><td style="color:var(--gold);"><strong>56</strong></td></tr>
+      <tr><td style="text-align:left;">n₂(n₂ + 1) / 2</td><td>7 × 8 / 2</td><td style="color:var(--gold);"><strong>28</strong></td></tr>
+      <tr><td style="text-align:left;">R₂</td><td></td><td style="color:var(--serpente-color);"><strong>43</strong></td></tr>
+      <tr style="background:var(--bg-panel);"><td style="text-align:left;background:var(--bg-panel);font-family:'Permanent Marker';">U₂ = 56 + 28 − 43</td><td style="background:var(--bg-panel);"></td><td style="background:var(--bg-panel);font-family:'Bangers';font-size:1.4rem;color:var(--gold);"><strong>41</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <div class="formula-label">Verificação</div>
+    U₁ + U₂ = 15 + 41 = <strong>56</strong> = n₁ × n₂ = 8 × 7 = <strong>56</strong> ✓
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-label">Estatística U</div>
+    <div class="hl-value">U = min(U₁, U₂) = min(15, 41) = <span style="color:var(--gold);">15</span></div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Interpretação alternativa: U conta quantas vezes um valor da Serpente PRECEDE um valor do Lobo (ou vice-versa) nas comparações par-a-par. Veja a matriz:</div>
+  </div>
+
+  <div class="step-subtitle">Matriz de Comparações Par-a-Par</div>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.9rem;">Para cada par: Lobo > Serpente? <span class="win">✓ = sim</span> &nbsp; <span class="lose">✗ = não</span></p>
+
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th class="lobo">Lobo ↓ \ Serpente →</th>
+        <th class="serpente">6</th><th class="serpente">7</th><th class="serpente">8</th><th class="serpente">10</th><th class="serpente">13</th><th class="serpente">16</th><th class="serpente">20</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="lobo"><strong>9</strong></td> <td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="lose">✗</td><td class="lose">✗</td><td class="lose">✗</td><td class="lose">✗</td></tr>
+      <tr><td class="lobo"><strong>11</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="lose">✗</td><td class="lose">✗</td><td class="lose">✗</td></tr>
+      <tr><td class="lobo"><strong>12</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="lose">✗</td><td class="lose">✗</td><td class="lose">✗</td></tr>
+      <tr><td class="lobo"><strong>14</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="lose">✗</td><td class="lose">✗</td></tr>
+      <tr><td class="lobo"><strong>15</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="lose">✗</td><td class="lose">✗</td></tr>
+      <tr><td class="lobo"><strong>18</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="lose">✗</td></tr>
+      <tr><td class="lobo"><strong>22</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td></tr>
+      <tr><td class="lobo"><strong>25</strong></td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td><td class="win">✓</td></tr>
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <div class="formula-label">Contagem de vitórias</div>
+    Lobo vence: <span style="color:var(--success);">41</span> vezes = U₂ &nbsp;&nbsp;|&nbsp;&nbsp; Serpente vence: <span style="color:var(--thor-red);">15</span> vezes = U₁
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+    <div class="dialogue-text">Note como as duas abordagens — fórmula com ranks e contagem par-a-par — dão o mesmo resultado. Não é coincidência: são matematicamente equivalentes!</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 5: SIGNIFICÂNCIA -->
+<!-- ============================================================ -->
+<div class="step-content" id="step5">
+  <div class="step-title">Passo 5 — Significância Estatística</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Com amostras pequenas, podemos usar tabelas de valores críticos. Para amostras maiores (n > 20), usamos a aproximação pela normal (z). Vou mostrar as duas abordagens.</div>
+  </div>
+
+  <div class="step-subtitle">Abordagem 1: Tabela de Valores Críticos</div>
+
+  <div class="highlight-box">
+    <div class="hl-label">Para n₁ = 8, n₂ = 7, α = 0,05 (bilateral)</div>
+    <div class="hl-value" style="font-size:1.3rem;">U<sub>crítico</sub> = 13</div>
+    <p style="color:var(--text-dim);font-size:0.95rem;margin-top:8px;">Rejeitamos H₀ se U ≤ U<sub>crítico</sub></p>
+    <p style="color:var(--text-dim);font-size:0.95rem;">Nosso U = 15 > 13 → <span style="color:var(--thor-red);">Não rejeitamos H₀</span></p>
+  </div>
+
+  <div class="step-subtitle">Abordagem 2: Aproximação Normal (z)</div>
+
+  <div class="formula">
+    <div class="formula-label">Média esperada de U sob H₀</div>
+    μ<sub>U</sub> = n₁ × n₂ / 2 = 8 × 7 / 2 = <strong>28</strong>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">Desvio padrão de U</div>
+    σ<sub>U</sub> = √(n₁ × n₂ × (n₁ + n₂ + 1) / 12) = √(8 × 7 × 16 / 12) = √(74,667) = <strong>8,641</strong>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">Escore z</div>
+    z = (U − μ<sub>U</sub>) / σ<sub>U</sub> = (15 − 28) / 8,641 = −13 / 8,641 = <strong>−1,505</strong>
+  </div>
+
+  <!-- Normal curve SVG -->
+  <div class="visual-container">
+    <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#58a6ff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#58a6ff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Axis -->
+      <line x1="50" y1="200" x2="650" y2="200" stroke="#30363d" stroke-width="1"/>
+      <!-- Normal curve -->
+      <path d="M50,200 Q100,198 140,190 Q180,170 220,130 Q260,75 300,45 Q340,30 350,28 Q360,30 400,45 Q440,75 480,130 Q520,170 560,190 Q600,198 650,200" fill="url(#curveGrad)" stroke="#58a6ff" stroke-width="2"/>
+      <!-- Critical regions -->
+      <rect x="50" y="28" width="122" height="172" fill="rgba(248,81,73,0.1)" rx="4"/>
+      <rect x="528" y="28" width="122" height="172" fill="rgba(248,81,73,0.1)" rx="4"/>
+      <!-- Z labels -->
+      <text x="172" y="220" fill="#f85149" font-family="Permanent Marker" font-size="12" text-anchor="middle">-1,96</text>
+      <text x="528" y="220" fill="#f85149" font-family="Permanent Marker" font-size="12" text-anchor="middle">+1,96</text>
+      <text x="350" y="220" fill="#8b949e" font-family="Patrick Hand" font-size="12" text-anchor="middle">0</text>
+      <!-- Our z value -->
+      <line x1="195" y1="40" x2="195" y2="200" stroke="#f0c040" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <circle cx="195" cy="160" r="5" fill="#f0c040"/>
+      <text x="195" y="238" fill="#f0c040" font-family="Bangers" font-size="15" text-anchor="middle">z = −1,505</text>
+      <text x="350" y="15" fill="#8b949e" font-family="Permanent Marker" font-size="13" text-anchor="middle">Distribuição Normal Padrão (α = 0,05 bilateral)</text>
+    </svg>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">p-valor (bilateral)</div>
+    p = 2 × P(Z ≤ −1,505) ≈ 2 × 0,0662 = <strong>0,1324</strong>
+  </div>
+
+  <div class="highlight-box" style="border-color:var(--thor-red);">
+    <div class="hl-label" style="color:var(--thor-red);">Decisão</div>
+    <div class="hl-value" style="font-size:1.2rem;">p = 0,132 > α = 0,05 → <span style="color:var(--thor-red);">Não rejeitamos H₀</span></div>
+  </div>
+
+  <div class="step-subtitle">Tamanho de Efeito</div>
+  <div class="formula">
+    <div class="formula-label">r (correlação de rank bisserial)</div>
+    r = |z| / √N = 1,505 / √15 = 1,505 / 3,873 = <strong>0,389</strong>
+    <div style="color:var(--text-dim);font-size:0.9rem;margin-top:6px;">Efeito médio (Cohen: 0,1 = pequeno, 0,3 = médio, 0,5 = grande)</div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">Mesmo não sendo significativo, o tamanho de efeito r = 0,389 sugere uma diferença prática moderada. P-value e effect size contam histórias diferentes!</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 6: RESULTADO E INTERPRETAÇÃO -->
+<!-- ============================================================ -->
+<div class="step-content" id="step6">
+  <div class="step-title">Passo 6 — Resultado e Interpretação</div>
+
+  <div class="result-box">
+    <div class="result-label">Resultado em Formato APA</div>
+    <div class="result-apa">
+      <em>U</em> = 15, <em>z</em> = −1,505, <em>p</em> = 0,132, <em>r</em> = 0,39
+    </div>
+    <p style="color:var(--text);margin-top:12px;font-size:1rem;">Não há diferença estatisticamente significativa entre o número de peças de prata trocadas pelo Clã do Lobo (<em>Mdn</em> = 14,5) e pelo Clã da Serpente (<em>Mdn</em> = 10) na feira de Hedeby, <em>U</em> = 15, <em>z</em> = −1,505, <em>p</em> = ,132, <em>r</em> = ,39.</p>
+  </div>
+
+  <div class="dialogue-box thor">
+    <div class="char-name thor">⚡ ThorMento diz:</div>
+    <div class="dialogue-text">"Viu? Não deu significativo! Esse teste é fraco! O teste t teria achado diferença!"</div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho responde:</div>
+    <div class="dialogue-text">Três pontos, ThorMento. Primeiro: com n = 15, qualquer teste terá baixo poder. Segundo: o Mann-Whitney é ligeiramente menos poderoso que o teste t QUANDO os pressupostos do t são válidos — mas quando NÃO são, o Mann-Whitney pode ser MAIS poderoso. Terceiro: o efeito médio (r = 0,39) sugere que com mais dados talvez encontrássemos significância.</div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+    <div class="dialogue-text">O que seria mais informativo: reportar medianas ou médias junto ao resultado do Mann-Whitney? E por quê? Pense antes de avançar para a Parte B.</div>
+  </div>
+
+  <div class="step-subtitle">Resumo do Mann-Whitney U</div>
+  <table class="comparison-table">
+    <thead><tr><th>Elemento</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>n₁ (Lobo), n₂ (Serpente)</td><td>8, 7</td></tr>
+      <tr><td>R₁, R₂</td><td>77, 43</td></tr>
+      <tr><td>U₁, U₂</td><td>15, 41</td></tr>
+      <tr><td>U = min(U₁, U₂)</td><td style="color:var(--gold);">15</td></tr>
+      <tr><td>z</td><td>−1,505</td></tr>
+      <tr><td>p (bilateral)</td><td>0,132</td></tr>
+      <tr><td>r (effect size)</td><td>0,39 (médio)</td></tr>
+      <tr><td>Decisão</td><td style="color:var(--thor-red);">Não rejeitar H₀</td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 7: TRANSIÇÃO PARA PARTE B -->
+<!-- ============================================================ -->
+<div class="step-content" id="step7">
+
+  <div class="part-divider" style="border-color:var(--corvo-purple);">
+    <h2 style="color:var(--corvo-purple);">PARTE B: WILCOXON SIGNED-RANK</h2>
+    <p>Dados Pareados</p>
+  </div>
+
+  <div class="step-title">Passo 7 — Transição: Dados Pareados</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">O Mann-Whitney serve para grupos independentes. Mas e se os MESMOS guerreiros fossem testados duas vezes? Aí temos dados pareados — e precisamos do Wilcoxon Signed-Rank.</div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Oito guerreiros da guarda de Odin foram testados em resistência ao frio ANTES e DEPOIS de um ritual com hidromel encantado. A pergunta: o ritual fez diferença?</div>
+  </div>
+
+  <div class="step-subtitle">Dados: Resistência ao Frio (minutos)</div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Guerreiro</th><th>Antes</th><th>Depois</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Bjorn</td><td>45</td><td>52</td></tr>
+      <tr><td>Ragnar</td><td>38</td><td>41</td></tr>
+      <tr><td>Lagertha</td><td>50</td><td>58</td></tr>
+      <tr><td>Ivar</td><td>42</td><td>40</td></tr>
+      <tr><td>Floki</td><td>35</td><td>44</td></tr>
+      <tr><td>Sigurd</td><td>48</td><td>55</td></tr>
+      <tr><td>Harald</td><td>40</td><td>43</td></tr>
+      <tr><td>Rollo</td><td>44</td><td>50</td></tr>
+    </tbody>
+  </table>
+
+  <div class="dialogue-box thor">
+    <div class="char-name thor">⚡ ThorMento acha:</div>
+    <div class="dialogue-text">"Teste t pareado! Simples assim!"</div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho responde:</div>
+    <div class="dialogue-text">Com apenas 8 pares, não podemos assumir normalidade das diferenças. O Wilcoxon Signed-Rank é a alternativa não-paramétrica segura.</div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">O Wilcoxon Signed-Rank é para o teste t pareado o que o Mann-Whitney é para o teste t independente. Mesma lógica de ranks, mas aplicada às <strong>diferenças</strong> entre os pares.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 8: CONCEITO DO WILCOXON -->
+<!-- ============================================================ -->
+<div class="step-content" id="step8">
+  <div class="step-title">Passo 8 — Conceito do Wilcoxon Signed-Rank</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">O Wilcoxon trabalha com as diferenças entre cada par. A lógica tem quatro passos claros:</div>
+  </div>
+
+  <div class="highlight-box" style="text-align:left;">
+    <div class="hl-label">Algoritmo do Wilcoxon Signed-Rank</div>
+    <ol style="font-size:1.1rem;line-height:2;padding-left:24px;color:var(--text);">
+      <li>Calcular D = Depois − Antes para cada par</li>
+      <li>Descartar pares com D = 0</li>
+      <li>Ranquear os |D| (valores absolutos)</li>
+      <li>Somar ranks positivos (T⁺) e negativos (T⁻) separadamente</li>
+    </ol>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">A sacada: se o tratamento não tem efeito, as diferenças positivas e negativas devem ser equilibradas — T⁺ ≈ T⁻. Se o tratamento funciona, um deles dominará.</div>
+  </div>
+
+  <div class="step-subtitle">Hipóteses</div>
+
+  <div class="highlight-box">
+    <div class="hl-label">H₀ (Hipótese Nula)</div>
+    <div class="hl-value" style="font-size:1.2rem;">A distribuição das diferenças é simétrica em torno de zero<br><span style="font-size:0.95rem;color:var(--text-dim);">Mediana das diferenças = 0</span></div>
+  </div>
+
+  <div class="highlight-box" style="border-color:var(--thor-red);">
+    <div class="hl-label" style="color:var(--thor-red);">H₁ (Hipótese Alternativa)</div>
+    <div class="hl-value" style="font-size:1.2rem;">A distribuição das diferenças NÃO é simétrica em torno de zero<br><span style="font-size:0.95rem;color:var(--text-dim);">Mediana das diferenças ≠ 0</span></div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 9: CÁLCULO DAS DIFERENÇAS -->
+<!-- ============================================================ -->
+<div class="step-content" id="step9">
+  <div class="step-title">Passo 9 — Cálculo das Diferenças (D)</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho pede:</div>
+    <div class="dialogue-text">Para cada guerreiro, calcule D = Depois − Antes. Registre o sinal e o valor absoluto.</div>
+  </div>
+
+  <button class="animate-btn" onclick="animateDifferences()">⚔️ Calcular Diferenças</button>
+
+  <table class="calc-table" id="diffTable">
+    <thead>
+      <tr><th>Guerreiro</th><th>Antes</th><th>Depois</th><th>D = Depois − Antes</th><th>Sinal</th><th>|D|</th></tr>
+    </thead>
+    <tbody id="diffTableBody">
+      <tr><td>Bjorn</td><td>45</td><td>52</td><td id="d0" class="diff-val">—</td><td id="s0">—</td><td id="a0">—</td></tr>
+      <tr><td>Ragnar</td><td>38</td><td>41</td><td id="d1" class="diff-val">—</td><td id="s1">—</td><td id="a1">—</td></tr>
+      <tr><td>Lagertha</td><td>50</td><td>58</td><td id="d2" class="diff-val">—</td><td id="s2">—</td><td id="a2">—</td></tr>
+      <tr><td>Ivar</td><td>42</td><td>40</td><td id="d3" class="diff-val">—</td><td id="s3">—</td><td id="a3">—</td></tr>
+      <tr><td>Floki</td><td>35</td><td>44</td><td id="d4" class="diff-val">—</td><td id="s4">—</td><td id="a4">—</td></tr>
+      <tr><td>Sigurd</td><td>48</td><td>55</td><td id="d5" class="diff-val">—</td><td id="s5">—</td><td id="a5">—</td></tr>
+      <tr><td>Harald</td><td>40</td><td>43</td><td id="d6" class="diff-val">—</td><td id="s6">—</td><td id="a6">—</td></tr>
+      <tr><td>Rollo</td><td>44</td><td>50</td><td id="d7" class="diff-val">—</td><td id="s7">—</td><td id="a7">—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="step-subtitle">Visualização das Diferenças</div>
+  <div class="diff-bar-container" id="diffBars"></div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn sussurra:</div>
+    <div class="dialogue-text">7 de 8 guerreiros melhoraram (diferença positiva). Apenas Ivar piorou (D = −2). Se alguma diferença fosse zero, descartaríamos esse par e reduziríamos n.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 10: RANKING DOS |D| -->
+<!-- ============================================================ -->
+<div class="step-content" id="step10">
+  <div class="step-title">Passo 10 — Ranking dos Valores Absolutos |D|</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Agora ordenamos os valores absolutos das diferenças e atribuímos ranks. Empates recebem rank médio — e aqui temos dois empates.</div>
+  </div>
+
+  <button class="animate-btn" onclick="animateWilcoxonRanking()">⚔️ Animar Ranking dos |D|</button>
+
+  <table class="calc-table" id="wilcoxonRankTable">
+    <thead>
+      <tr><th>Posição</th><th>Guerreiro</th><th>|D|</th><th>Sinal de D</th><th>Rank</th></tr>
+    </thead>
+    <tbody id="wilcoxonRankBody">
+    </tbody>
+  </table>
+
+  <div class="formula">
+    <div class="formula-label">Tratamento de Empates</div>
+    |D| = 3 aparece nas posições 2 e 3 → Rank médio = (2+3)/2 = <strong>2,5</strong><br>
+    |D| = 7 aparece nas posições 5 e 6 → Rank médio = (5+6)/2 = <strong>5,5</strong>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+    <div class="dialogue-text">Por que ranqueamos os valores ABSOLUTOS e não as diferenças com sinal? Porque o rank captura apenas a MAGNITUDE — o sinal entra depois, na soma.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 11: SOMA DOS RANKS POR SINAL -->
+<!-- ============================================================ -->
+<div class="step-content" id="step11">
+  <div class="step-title">Passo 11 — Soma dos Ranks por Sinal</div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">Agora devolvemos os sinais aos ranks e somamos separadamente: T⁺ para diferenças positivas e T⁻ para negativas.</div>
+  </div>
+
+  <div class="step-subtitle">Ranks com Sinal</div>
+  <table class="calc-table">
+    <thead>
+      <tr><th>Guerreiro</th><th>D</th><th>|D|</th><th>Rank</th><th>Rank com Sinal</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="color:var(--thor-red);">Ivar</td><td style="color:var(--thor-red);">−2</td><td>2</td><td>1</td><td style="color:var(--thor-red);font-weight:bold;">−1</td></tr>
+      <tr><td style="color:var(--success);">Ragnar</td><td style="color:var(--success);">+3</td><td>3</td><td>2,5</td><td style="color:var(--success);font-weight:bold;">+2,5</td></tr>
+      <tr><td style="color:var(--success);">Harald</td><td style="color:var(--success);">+3</td><td>3</td><td>2,5</td><td style="color:var(--success);font-weight:bold;">+2,5</td></tr>
+      <tr><td style="color:var(--success);">Rollo</td><td style="color:var(--success);">+6</td><td>6</td><td>4</td><td style="color:var(--success);font-weight:bold;">+4</td></tr>
+      <tr><td style="color:var(--success);">Bjorn</td><td style="color:var(--success);">+7</td><td>7</td><td>5,5</td><td style="color:var(--success);font-weight:bold;">+5,5</td></tr>
+      <tr><td style="color:var(--success);">Sigurd</td><td style="color:var(--success);">+7</td><td>7</td><td>5,5</td><td style="color:var(--success);font-weight:bold;">+5,5</td></tr>
+      <tr><td style="color:var(--success);">Lagertha</td><td style="color:var(--success);">+8</td><td>8</td><td>7</td><td style="color:var(--success);font-weight:bold;">+7</td></tr>
+      <tr><td style="color:var(--success);">Floki</td><td style="color:var(--success);">+9</td><td>9</td><td>8</td><td style="color:var(--success);font-weight:bold;">+8</td></tr>
+    </tbody>
+  </table>
+
+  <div class="highlight-box" style="border-color:var(--success);">
+    <div class="hl-label" style="color:var(--success);">T⁺ (Soma dos Ranks Positivos)</div>
+    <div class="hl-value">2,5 + 2,5 + 4 + 5,5 + 5,5 + 7 + 8 = <span style="color:var(--success);">35</span></div>
+  </div>
+
+  <div class="highlight-box" style="border-color:var(--thor-red);">
+    <div class="hl-label" style="color:var(--thor-red);">T⁻ (Soma dos Ranks Negativos)</div>
+    <div class="hl-value">1 = <span style="color:var(--thor-red);">1</span></div>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">Verificação</div>
+    T⁺ + T⁻ = 35 + 1 = <strong>36</strong> = n(n+1)/2 = 8 × 9 / 2 = <strong>36</strong> ✓
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-label">Estatística T</div>
+    <div class="hl-value">T = min(T⁺, T⁻) = min(35, 1) = <span style="color:var(--gold);">1</span></div>
+  </div>
+
+  <!-- Visual: stacked bars -->
+  <div class="step-subtitle">Visualização: T⁺ vs T⁻</div>
+  <div class="bar-container">
+    <div class="bar-wrapper">
+      <div class="bar-label" style="color:var(--success);">T⁺</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:97.2%;background:var(--success);">35</div>
+      </div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-label" style="color:var(--thor-red);">T⁻</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:2.8%;background:var(--thor-red);">1</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho explica:</div>
+    <div class="dialogue-text">A assimetria é gritante: T⁺ = 35 contra T⁻ = 1. Quase todos os guerreiros melhoraram, e as melhorias foram maiores que a única piora. O ritual parece ter funcionado!</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 12: SIGNIFICÂNCIA WILCOXON -->
+<!-- ============================================================ -->
+<div class="step-content" id="step12">
+  <div class="step-title">Passo 12 — Significância do Wilcoxon</div>
+
+  <div class="step-subtitle">Abordagem 1: Tabela de Valores Críticos</div>
+
+  <div class="highlight-box">
+    <div class="hl-label">Para n = 8 pares, α = 0,05 (bilateral)</div>
+    <div class="hl-value" style="font-size:1.3rem;">T<sub>crítico</sub> = 3</div>
+    <p style="color:var(--text-dim);font-size:0.95rem;margin-top:8px;">Rejeitamos H₀ se T ≤ T<sub>crítico</sub></p>
+    <p style="color:var(--text-dim);font-size:0.95rem;">Nosso T = 1 ≤ 3 → <span style="color:var(--success);">Rejeitamos H₀!</span></p>
+  </div>
+
+  <div class="step-subtitle">Abordagem 2: Aproximação Normal (z)</div>
+
+  <div class="formula">
+    <div class="formula-label">Média esperada de T sob H₀</div>
+    μ<sub>T</sub> = n(n+1) / 4 = 8 × 9 / 4 = <strong>18</strong>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">Desvio padrão de T</div>
+    σ<sub>T</sub> = √(n(n+1)(2n+1) / 24) = √(8 × 9 × 17 / 24) = √(51) = <strong>7,141</strong>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">Escore z</div>
+    z = (T − μ<sub>T</sub>) / σ<sub>T</sub> = (1 − 18) / 7,141 = −17 / 7,141 = <strong>−2,380</strong>
+  </div>
+
+  <!-- Normal curve SVG -->
+  <div class="visual-container">
+    <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="curveGrad2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#bc8cff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#bc8cff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Axis -->
+      <line x1="50" y1="200" x2="650" y2="200" stroke="#30363d" stroke-width="1"/>
+      <!-- Normal curve -->
+      <path d="M50,200 Q100,198 140,190 Q180,170 220,130 Q260,75 300,45 Q340,30 350,28 Q360,30 400,45 Q440,75 480,130 Q520,170 560,190 Q600,198 650,200" fill="url(#curveGrad2)" stroke="#bc8cff" stroke-width="2"/>
+      <!-- Critical regions -->
+      <rect x="50" y="28" width="122" height="172" fill="rgba(248,81,73,0.12)" rx="4"/>
+      <rect x="528" y="28" width="122" height="172" fill="rgba(248,81,73,0.12)" rx="4"/>
+      <!-- Z labels -->
+      <text x="172" y="220" fill="#f85149" font-family="Permanent Marker" font-size="12" text-anchor="middle">-1,96</text>
+      <text x="528" y="220" fill="#f85149" font-family="Permanent Marker" font-size="12" text-anchor="middle">+1,96</text>
+      <text x="350" y="220" fill="#8b949e" font-family="Patrick Hand" font-size="12" text-anchor="middle">0</text>
+      <!-- Our z value - in critical region -->
+      <line x1="138" y1="40" x2="138" y2="200" stroke="#f0c040" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <circle cx="138" cy="185" r="5" fill="#f0c040"/>
+      <text x="138" y="238" fill="#f0c040" font-family="Bangers" font-size="15" text-anchor="middle">z = −2,380</text>
+      <text x="350" y="15" fill="#8b949e" font-family="Permanent Marker" font-size="13" text-anchor="middle">Distribuição Normal Padrão (α = 0,05 bilateral)</text>
+      <!-- Arrow showing it's in the rejection region -->
+      <text x="100" y="80" fill="#f85149" font-family="Permanent Marker" font-size="12" text-anchor="middle">Região de</text>
+      <text x="100" y="95" fill="#f85149" font-family="Permanent Marker" font-size="12" text-anchor="middle">Rejeição!</text>
+    </svg>
+  </div>
+
+  <div class="formula">
+    <div class="formula-label">p-valor (bilateral)</div>
+    p = 2 × P(Z ≤ −2,380) ≈ 2 × 0,00866 = <strong>0,0173</strong>
+  </div>
+
+  <div class="step-subtitle">Tamanho de Efeito</div>
+  <div class="formula">
+    <div class="formula-label">r (effect size)</div>
+    r = |z| / √(2n) = 2,380 / √16 = 2,380 / 4 = <strong>0,595</strong>
+    <div style="color:var(--text-dim);font-size:0.9rem;margin-top:6px;">Efeito grande (Cohen: 0,1 = pequeno, 0,3 = médio, 0,5 = grande)</div>
+  </div>
+
+  <div class="highlight-box" style="border-color:var(--success);">
+    <div class="hl-label" style="color:var(--success);">Decisão</div>
+    <div class="hl-value" style="font-size:1.2rem;">p = 0,017 < α = 0,05 → <span style="color:var(--success);">Rejeitamos H₀!</span></div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 13: RESULTADO APA WILCOXON -->
+<!-- ============================================================ -->
+<div class="step-content" id="step13">
+  <div class="step-title">Passo 13 — Resultado e Comparação</div>
+
+  <div class="result-box">
+    <div class="result-label">Resultado do Wilcoxon em Formato APA</div>
+    <div class="result-apa">
+      <em>T</em> = 1, <em>z</em> = −2,380, <em>p</em> = 0,017, <em>r</em> = 0,60
+    </div>
+    <p style="color:var(--text);margin-top:12px;font-size:1rem;">Houve aumento estatisticamente significativo na resistência ao frio dos guerreiros após o ritual com hidromel encantado (<em>Mdn</em><sub>antes</sub> = 43, <em>Mdn</em><sub>depois</sub> = 47,5), <em>T</em> = 1, <em>z</em> = −2,380, <em>p</em> = ,017, <em>r</em> = ,60.</p>
+  </div>
+
+  <div class="step-subtitle">Quando Usar Cada Teste?</div>
+
+  <div class="decision-tree">
+    <div class="dt-node dt-question">O design é de grupos independentes ou pareados?</div>
+    <div class="dt-arrow">↓</div>
+    <div class="dt-branch">
+      <div>
+        <div class="dt-node dt-answer" style="font-size:0.9rem;">Independentes<br>(sujeitos diferentes)</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-node dt-answer green" style="font-size:0.9rem;">Mann-Whitney U</div>
+      </div>
+      <div>
+        <div class="dt-node dt-answer" style="font-size:0.9rem;">Pareados<br>(mesmos sujeitos / antes-depois)</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-node dt-answer green" style="font-size:0.9rem;">Wilcoxon Signed-Rank</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-subtitle">Tabela Comparativa</div>
+  <table class="comparison-table">
+    <thead>
+      <tr><th>Aspecto</th><th>Mann-Whitney U</th><th>Wilcoxon Signed-Rank</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Design</td><td>Grupos independentes</td><td>Dados pareados</td></tr>
+      <tr><td>Equivalente paramétrico</td><td>Teste t independente</td><td>Teste t pareado</td></tr>
+      <tr><td>O que ranqueia</td><td>Todos os valores combinados</td><td>|Diferenças| dos pares</td></tr>
+      <tr><td>Estatística</td><td>U = min(U₁, U₂)</td><td>T = min(T⁺, T⁻)</td></tr>
+      <tr><td>H₀</td><td>Distribuições iguais</td><td>Mediana das diferenças = 0</td></tr>
+      <tr><td>Effect size</td><td>r = |z| / √N</td><td>r = |z| / √(2n)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn provoca:</div>
+    <div class="dialogue-text">O Mann-Whitney não deu significativo (p = 0,132) mas o Wilcoxon deu (p = 0,017). Isso não prova que um teste é "melhor" — são perguntas diferentes com dados diferentes! O design pareado tem mais poder porque controla a variabilidade entre sujeitos.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- STEP 14: LIÇÃO DOS CORVOS -->
+<!-- ============================================================ -->
+<div class="step-content" id="step14">
+  <div class="step-title">Passo 14 — Lição dos Corvos</div>
+
+  <div class="part-divider" style="border-color:var(--corvo-purple);margin-bottom:24px;">
+    <h2 style="color:var(--corvo-purple);">LIÇÃO DOS CORVOS</h2>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Muninn resume:</div>
+    <div class="dialogue-text">
+      <strong>Pontos-chave que você deve guardar:</strong><br><br>
+      1. Testes não-paramétricos trabalham com <strong>RANKS</strong>, não valores brutos — isso os protege de outliers e distribuições estranhas.<br><br>
+      2. <strong>Mann-Whitney U</strong>: para grupos independentes. Combina todos os dados, ranqueia, soma ranks por grupo. U mede sobreposição.<br><br>
+      3. <strong>Wilcoxon Signed-Rank</strong>: para dados pareados. Calcula diferenças, ranqueia |D|, soma ranks por sinal. T mede assimetria das diferenças.<br><br>
+      4. <strong>Sempre verifique</strong>: R₁ + R₂ = N(N+1)/2 para Mann-Whitney e T⁺ + T⁻ = n(n+1)/2 para Wilcoxon.<br><br>
+      5. <strong>Reporte em APA</strong>: estatística, z, p-valor E tamanho de efeito (r).
+    </div>
+  </div>
+
+  <div class="dialogue-box corvo">
+    <div class="char-name corvo">🐦‍⬛ Huginn desafia:</div>
+    <div class="dialogue-text">
+      <strong>Perguntas para reflexão:</strong><br><br>
+      1. E se os dados fossem ordinais (escala Likert)? Os testes não-paramétricos continuam válidos? (Sim — ranks funcionam naturalmente com dados ordinais.)<br><br>
+      2. O tamanho de efeito r tem a mesma interpretação que o r de Pearson? (Não exatamente — são baseados em ranks, mas as convenções de Cohen se aplicam.)<br><br>
+      3. Quando usar a tabela de valores críticos vs a aproximação z? (Tabela para n ≤ 20; z para amostras maiores. A tabela é exata; z é aproximação.)<br><br>
+      4. Existe versão não-paramétrica para mais de 2 grupos? (Sim! Kruskal-Wallis para independentes, Friedman para pareados.)
+    </div>
+  </div>
+
+  <div class="dialogue-box odin">
+    <div class="char-name odin">🧙‍♂️ Odin Dinho conclui:</div>
+    <div class="dialogue-text">Não-paramétricos não são "testes de segunda classe". São ferramentas essenciais quando os dados não cooperam — e isso acontece com frequência no mundo real. Um guerreiro sábio conhece todas as armas do arsenal, não apenas as favoritas.</div>
+  </div>
+
+  <div class="step-subtitle">Mapa Rápido: Paramétrico → Não-Paramétrico</div>
+  <table class="comparison-table">
+    <thead>
+      <tr><th>Design</th><th>Paramétrico</th><th>Não-Paramétrico</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>2 grupos independentes</td><td>Teste t independente</td><td style="color:var(--gold);">Mann-Whitney U</td></tr>
+      <tr><td>2 grupos pareados</td><td>Teste t pareado</td><td style="color:var(--gold);">Wilcoxon Signed-Rank</td></tr>
+      <tr><td>k grupos independentes</td><td>ANOVA one-way</td><td>Kruskal-Wallis</td></tr>
+      <tr><td>k grupos pareados</td><td>ANOVA medidas repetidas</td><td>Friedman</td></tr>
+      <tr><td>Correlação</td><td>Pearson r</td><td>Spearman ρ</td></tr>
+    </tbody>
+  </table>
+
+  <div class="signature">
+    <div class="sig-name">Prof. Dr. Leonardo Vils</div>
+    PPGA · UNINOVE · MTPQI · 2026
+  </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" onclick="changeStep(-1)" disabled>← Anterior</button>
+  <span class="step-indicator" id="stepIndicator">Passo 0 de 14</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeStep(1)">Próximo →</button>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ============================================================
+// NAVIGATION
+// ============================================================
+const TOTAL_STEPS = 15; // 0 to 14
+let currentStep = 0;
+
+function changeStep(delta) {
+  const newStep = currentStep + delta;
+  if (newStep < 0 || newStep >= TOTAL_STEPS) return;
+  document.getElementById('step' + currentStep).classList.remove('active');
+  currentStep = newStep;
+  document.getElementById('step' + currentStep).classList.add('active');
+  updateUI();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateUI() {
+  const pct = (currentStep / (TOTAL_STEPS - 1)) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = 'Passo ' + currentStep + ' de ' + (TOTAL_STEPS - 1);
+  document.getElementById('stepIndicator').textContent = 'Passo ' + currentStep + ' de ' + (TOTAL_STEPS - 1);
+  document.getElementById('prevBtn').disabled = currentStep === 0;
+  document.getElementById('nextBtn').disabled = currentStep === TOTAL_STEPS - 1;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); changeStep(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); changeStep(-1); }
+});
+
+// ============================================================
+// STEP 1: RANKING ANIMATION
+// ============================================================
+const loboData = [12, 15, 18, 9, 22, 14, 11, 25];
+const serpenteData = [8, 20, 6, 10, 16, 7, 13];
+
+const combined = [];
+loboData.forEach(v => combined.push({ value: v, clan: 'Lobo' }));
+serpenteData.forEach(v => combined.push({ value: v, clan: 'Serpente' }));
+combined.sort((a, b) => a.value - b.value);
+combined.forEach((item, i) => item.rank = i + 1);
+
+// Populate rank table immediately
+function populateRankTable() {
+  const tbody = document.getElementById('rankTableBody');
+  tbody.innerHTML = '';
+  combined.forEach((item, i) => {
+    const cls = item.clan === 'Lobo' ? 'lobo' : 'serpente';
+    const emoji = item.clan === 'Lobo' ? '🐺' : '🐍';
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i + 1) + '</td><td class="' + cls + '">' + item.value + '</td><td class="' + cls + '">' + emoji + ' ' + item.clan + '</td><td style="font-family:Bangers;font-size:1.2rem;color:var(--gold);">' + item.rank + '</td>';
+    tr.style.opacity = '0';
+    tr.style.transition = 'opacity 0.3s ease';
+    tbody.appendChild(tr);
+  });
+}
+populateRankTable();
+
+// Populate rank circles
+function populateRankCircles() {
+  const container = document.getElementById('rankCircles');
+  container.innerHTML = '';
+  combined.forEach(item => {
+    const cls = item.clan === 'Lobo' ? 'lobo-item' : 'serpente-item';
+    const div = document.createElement('div');
+    div.className = 'rank-item ' + cls;
+    div.textContent = item.value;
+    div.style.opacity = '0';
+    div.style.transition = 'opacity 0.5s ease';
+    container.appendChild(div);
+  });
+}
+populateRankCircles();
+
+let rankAnimated = false;
+function animateRanking() {
+  if (rankAnimated) return;
+  rankAnimated = true;
+  const rows = document.querySelectorAll('#rankTableBody tr');
+  rows.forEach((row, i) => {
+    setTimeout(() => { row.style.opacity = '1'; }, i * 150);
+  });
+  const circles = document.querySelectorAll('#rankCircles .rank-item');
+  circles.forEach((c, i) => {
+    setTimeout(() => { c.style.opacity = '1'; }, i * 150 + 200);
+  });
+}
+
+// ============================================================
+// STEP 9: DIFFERENCES ANIMATION
+// ============================================================
+const warriors = [
+  { name: 'Bjorn', before: 45, after: 52 },
+  { name: 'Ragnar', before: 38, after: 41 },
+  { name: 'Lagertha', before: 50, after: 58 },
+  { name: 'Ivar', before: 42, after: 40 },
+  { name: 'Floki', before: 35, after: 44 },
+  { name: 'Sigurd', before: 48, after: 55 },
+  { name: 'Harald', before: 40, after: 43 },
+  { name: 'Rollo', before: 44, after: 50 }
+];
+
+let diffAnimated = false;
+function animateDifferences() {
+  if (diffAnimated) return;
+  diffAnimated = true;
+
+  warriors.forEach((w, i) => {
+    const d = w.after - w.before;
+    const sign = d > 0 ? '+' : (d < 0 ? '−' : '0');
+    const signColor = d > 0 ? 'var(--success)' : 'var(--thor-red)';
+    setTimeout(() => {
+      document.getElementById('d' + i).textContent = (d > 0 ? '+' : '') + d;
+      document.getElementById('d' + i).style.color = signColor;
+      document.getElementById('d' + i).style.fontWeight = 'bold';
+      document.getElementById('s' + i).textContent = sign;
+      document.getElementById('s' + i).style.color = signColor;
+      document.getElementById('a' + i).textContent = Math.abs(d);
+    }, i * 300);
+  });
+
+  // Build diff bars
+  setTimeout(() => {
+    const container = document.getElementById('diffBars');
+    container.innerHTML = '';
+    const maxD = 9;
+    warriors.forEach((w, i) => {
+      const d = w.after - w.before;
+      const pct = (Math.abs(d) / maxD) * 80;
+      const cls = d >= 0 ? 'positive' : 'negative';
+      const row = document.createElement('div');
+      row.className = 'diff-bar-row';
+      row.innerHTML = '<div class="diff-bar-name">' + w.name + '</div>' +
+        '<div class="diff-bar-track"><div class="diff-bar-fill ' + cls + '" style="width:0%;">' + (d > 0 ? '+' : '') + d + '</div></div>';
+      container.appendChild(row);
+      setTimeout(() => {
+        row.querySelector('.diff-bar-fill').style.width = pct + '%';
+      }, 100 + i * 150);
+    });
+  }, warriors.length * 300 + 200);
+}
+
+// ============================================================
+// STEP 10: WILCOXON RANKING ANIMATION
+// ============================================================
+const wilcoxonData = [
+  { name: 'Ivar', absD: 2, sign: '−', rank: 1 },
+  { name: 'Ragnar', absD: 3, sign: '+', rank: 2.5 },
+  { name: 'Harald', absD: 3, sign: '+', rank: 2.5 },
+  { name: 'Rollo', absD: 6, sign: '+', rank: 4 },
+  { name: 'Bjorn', absD: 7, sign: '+', rank: 5.5 },
+  { name: 'Sigurd', absD: 7, sign: '+', rank: 5.5 },
+  { name: 'Lagertha', absD: 8, sign: '+', rank: 7 },
+  { name: 'Floki', absD: 9, sign: '+', rank: 8 }
+];
+
+let wilcoxonRankAnimated = false;
+function animateWilcoxonRanking() {
+  if (wilcoxonRankAnimated) return;
+  wilcoxonRankAnimated = true;
+
+  const tbody = document.getElementById('wilcoxonRankBody');
+  tbody.innerHTML = '';
+
+  wilcoxonData.forEach((item, i) => {
+    const signColor = item.sign === '+' ? 'var(--success)' : 'var(--thor-red)';
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i + 1) + '</td><td>' + item.name + '</td><td>' + item.absD + '</td><td style="color:' + signColor + ';font-weight:bold;">' + item.sign + '</td><td style="font-family:Bangers;font-size:1.2rem;color:var(--gold);">' + item.rank.toString().replace('.', ',') + '</td>';
+    tr.style.opacity = '0';
+    tr.style.transition = 'opacity 0.3s ease';
+    tbody.appendChild(tr);
+
+    setTimeout(() => { tr.style.opacity = '1'; }, i * 250);
+  });
+}
+
+// Initialize
+updateUI();
+</script>
+
+</body>
+</html>

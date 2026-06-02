@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste t — Passo a Passo | Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117;
+  --bg-card: #161b22;
+  --bg-panel: #1c2333;
+  --odin-blue: #58a6ff;
+  --thor-red: #f85149;
+  --corvo-purple: #bc8cff;
+  --gold: #f0c040;
+  --silver: #8b949e;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --success: #3fb950;
+  --border: #30363d;
+  --fenrir-color: #58a6ff;
+  --hel-color: #f85149;
+  --paired-before: #f0c040;
+  --paired-after: #3fb950;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* PROGRESS BAR */
+.progress-bar-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-dark);
+  padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-label {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-panel);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--odin-blue), var(--gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* STEP CONTENT */
+.step-content {
+  min-height: 60vh;
+  padding: 30px 0;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+  font-family: 'Bangers', cursive;
+  font-size: 2.2rem;
+  color: var(--gold);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.step-subtitle {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.3rem;
+  color: var(--odin-blue);
+  margin-bottom: 15px;
+}
+
+/* DIALOGUE BOXES */
+.dialogue-box {
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.dialogue-box.odin {
+  background: rgba(88,166,255,0.08);
+  border-left-color: var(--odin-blue);
+}
+.dialogue-box.thor {
+  background: rgba(248,81,73,0.08);
+  border-left-color: var(--thor-red);
+}
+.dialogue-box.corvo {
+  background: rgba(188,140,255,0.08);
+  border-left-color: var(--corvo-purple);
+}
+
+.char-name {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+
+.dialogue-text {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* DATA TABLE */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1rem;
+}
+
+.data-table th, .data-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.data-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+}
+
+.data-table td {
+  background: var(--bg-card);
+  transition: background 0.2s;
+}
+
+.data-table tr:hover td {
+  background: rgba(88,166,255,0.1);
+}
+
+/* FORMULA */
+.formula {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 1.15rem;
+  text-align: center;
+  font-family: 'Patrick Hand', cursive;
+  color: var(--gold);
+}
+
+.formula-label {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+/* CALC TABLE */
+.calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 0.95rem;
+}
+
+.calc-table th, .calc-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.calc-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.calc-table td {
+  background: var(--bg-card);
+}
+
+/* SVG VISUALS */
+.visual-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.visual-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* COMPARISON TABLE */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.comparison-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.comparison-title {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.comparison-result {
+  font-size: 1.4rem;
+  font-family: 'Bangers', cursive;
+}
+
+/* APA BOX */
+.apa-box {
+  background: var(--bg-panel);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.apa-label {
+  font-family: 'Bangers', cursive;
+  color: var(--gold);
+  font-style: normal;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+/* NAVIGATION */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 40px;
+  gap: 12px;
+}
+
+.nav-btn {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.1rem;
+  padding: 12px 28px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  border-color: var(--odin-blue);
+  background: rgba(88,166,255,0.1);
+}
+
+.nav-btn.primary {
+  background: var(--odin-blue);
+  color: var(--bg-dark);
+  border-color: var(--odin-blue);
+}
+
+.nav-btn.primary:hover {
+  background: #79bbff;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* SIGNATURE */
+.signature {
+  text-align: center;
+  padding: 30px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* HIGHLIGHTS */
+.hl-gold { color: var(--gold); font-weight: bold; }
+.hl-blue { color: var(--odin-blue); }
+.hl-red { color: var(--thor-red); }
+.hl-green { color: var(--success); }
+.hl-purple { color: var(--corvo-purple); }
+
+/* LICAO DOS CORVOS */
+.licao-box {
+  background: rgba(188,140,255,0.06);
+  border: 2px solid var(--corvo-purple);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.licao-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--corvo-purple);
+  margin-bottom: 12px;
+}
+
+/* FLOWCHART */
+.flow-node {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+  margin: 4px;
+}
+
+/* ARMADILHA BOX */
+.armadilha-box {
+  background: rgba(248,81,73,0.06);
+  border: 2px solid var(--thor-red);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.armadilha-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--thor-red);
+  margin-bottom: 12px;
+}
+
+/* ANIMATED BARS */
+.bar-container { margin: 20px 0; }
+
+.bar-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.bar-label {
+  width: 80px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.9rem;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 30px;
+  background: var(--bg-panel);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 1.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .step-title { font-size: 1.6rem; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .nav-btn { padding: 10px 18px; font-size: 0.95rem; }
+  body { font-size: 16px; }
+}
+
+.fade-in { animation: fadeIn 0.6s ease both; }
+.fade-in-delay { animation: fadeIn 0.6s ease 0.3s both; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="progress-bar-container">
+    <div class="progress-label" id="progressLabel">Passo 0 de 13</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="step-content" id="stepContent"></div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" id="btnBack" onclick="goBack()" disabled>&#9664; Voltar</button>
+    <button class="nav-btn primary" id="btnNext" onclick="goNext()">Avançar &#9654;</button>
+  </div>
+
+  <div class="signature">
+    Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+
+// Independent t-test data
+const fenrir = { name: 'Fenrir', hex: '#58a6ff', cssVar: 'var(--fenrir-color)', data: [82, 78, 85, 90, 76, 88, 84, 79] };
+const hel    = { name: 'Hel',    hex: '#f85149', cssVar: 'var(--hel-color)',    data: [72, 68, 75, 71, 69, 74, 70, 73] };
+
+// Paired t-test data
+const pairedBefore = [45, 52, 48, 50, 47, 53];
+const pairedAfter  = [52, 58, 55, 56, 54, 60];
+
+// ===== STATS HELPERS =====
+function sum(arr) { return arr.reduce((a,b) => a+b, 0); }
+function mean(arr) { return sum(arr) / arr.length; }
+function variance(arr) {
+  const m = mean(arr);
+  return arr.reduce((s,x) => s + Math.pow(x - m, 2), 0) / (arr.length - 1);
+}
+function sd(arr) { return Math.sqrt(variance(arr)); }
+function r(v, d=2) { return Number(v).toFixed(d); }
+function r4(v) { return Number(v).toFixed(4); }
+
+// ===== INDEPENDENT T-TEST CALCULATIONS =====
+const n1 = fenrir.data.length; // 8
+const n2 = hel.data.length;    // 8
+const mean1 = mean(fenrir.data);
+const mean2 = mean(hel.data);
+const var1 = variance(fenrir.data);
+const var2 = variance(hel.data);
+const sd1 = sd(fenrir.data);
+const sd2 = sd(hel.data);
+
+// Pooled variance
+const sp2 = ((n1-1)*var1 + (n2-1)*var2) / (n1 + n2 - 2);
+const sp = Math.sqrt(sp2);
+
+// SE and t for independent
+const se_ind = Math.sqrt(sp2/n1 + sp2/n2);
+const t_ind = (mean1 - mean2) / se_ind;
+const df_ind = n1 + n2 - 2; // 14
+
+// Welch's t-test
+const se_welch = Math.sqrt(var1/n1 + var2/n2);
+const t_welch = (mean1 - mean2) / se_welch;
+const df_welch_num = Math.pow(var1/n1 + var2/n2, 2);
+const df_welch_den = Math.pow(var1/n1, 2)/(n1-1) + Math.pow(var2/n2, 2)/(n2-1);
+const df_welch = df_welch_num / df_welch_den;
+
+// ===== ONE-SAMPLE T-TEST =====
+const mu0 = 75;
+const oneSampleData = fenrir.data;
+const oneMean = mean(oneSampleData);
+const oneSD = sd(oneSampleData);
+const oneN = oneSampleData.length;
+const oneSE = oneSD / Math.sqrt(oneN);
+const oneT = (oneMean - mu0) / oneSE;
+const oneDF = oneN - 1;
+
+// ===== PAIRED T-TEST =====
+const diffs = pairedBefore.map((v,i) => pairedAfter[i] - v);
+const meanD = mean(diffs);
+const sdD = sd(diffs);
+const nPaired = diffs.length;
+const seD = sdD / Math.sqrt(nPaired);
+const tPaired = meanD / seD;
+const dfPaired = nPaired - 1;
+
+// ===== EFFECT SIZES =====
+// Cohen's d for independent
+const d_ind = (mean1 - mean2) / sp;
+
+// Hedges' g correction factor
+const J = 1 - 3 / (4 * df_ind - 1);
+const g_ind = d_ind * J;
+
+// Cohen's d for paired
+const d_paired = meanD / sdD;
+
+// 95% CI for d (approximate: d +/- 1.96 * SE_d)
+const se_d_ind = Math.sqrt((n1+n2)/(n1*n2) + (d_ind*d_ind)/(2*(n1+n2)));
+const d_ci_low = d_ind - 1.96 * se_d_ind;
+const d_ci_high = d_ind + 1.96 * se_d_ind;
+
+const se_g = se_d_ind * J;
+const g_ci_low = g_ind - 1.96 * se_g;
+const g_ci_high = g_ind + 1.96 * se_g;
+
+// ===== P-VALUE APPROXIMATION (t-distribution via Beta regularized) =====
+function gammln(x) {
+  const c = [76.18009172947146,-86.50532032941677,24.01409824083091,
+    -1.231739572450155,0.001208650973866179,-0.000005395239384953];
+  let y = x, tmp = x + 5.5;
+  tmp -= (x+0.5)*Math.log(tmp);
+  let ser = 1.000000000190015;
+  for(let j=0;j<6;j++) ser += c[j]/(++y);
+  return -tmp + Math.log(2.5066282746310005*ser/x);
+}
+
+function betaInc(x, a, b) {
+  // Regularized incomplete beta via continued fraction (Lentz)
+  if (x < 0 || x > 1) return 0;
+  if (x === 0 || x === 1) return x;
+  const lnBeta = gammln(a) + gammln(b) - gammln(a+b);
+  const front = Math.exp(Math.log(x)*a + Math.log(1-x)*b - lnBeta) / a;
+  // Continued fraction
+  let d = 1 - (a+1)*(a+b+1)*x/(a+2);
+  if (Math.abs(d) < 1e-30) d = 1e-30;
+  d = 1/d;
+  let h = d;
+  for (let m = 1; m <= 200; m++) {
+    // even step
+    let an = -(a+m)*(a+b+m)*x / ((a+2*m)*(a+2*m+1));
+    d = 1 + an*d; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1/d;
+    let c2 = 1 + an/1; if (Math.abs(c2) < 1e-30) c2 = 1e-30;
+    h *= d * c2;
+    // odd step
+    an = m*(b-m)*x / ((a+2*m-1)*(a+2*m));
+    d = 1 + an*d; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1/d;
+    c2 = 1 + an/1; if (Math.abs(c2) < 1e-30) c2 = 1e-30;
+    h *= d * c2;
+  }
+  return front * h;
+}
+
+function tDistCDF(t, df) {
+  // P(T <= t) for t-distribution using regularized incomplete beta
+  const x = df / (df + t*t);
+  const p = 0.5 * betaInc(x, df/2, 0.5);
+  return t >= 0 ? 1 - p : p;
+}
+
+// Simpler approach using numerical integration
+function tPDF(x, df) {
+  const coeff = Math.exp(gammln((df+1)/2) - gammln(df/2)) / Math.sqrt(df * Math.PI);
+  return coeff * Math.pow(1 + x*x/df, -(df+1)/2);
+}
+
+function tCDF(t, df) {
+  // Simpson's rule numerical integration from -inf to t
+  // We integrate from -30 to t
+  const lower = -30;
+  const steps = 4000;
+  const h = (t - lower) / steps;
+  let s = tPDF(lower, df) + tPDF(t, df);
+  for (let i = 1; i < steps; i++) {
+    const xi = lower + i * h;
+    s += (i % 2 === 0 ? 2 : 4) * tPDF(xi, df);
+  }
+  return Math.max(0, Math.min(1, (h/3) * s));
+}
+
+function pValueTwoTailed(t, df) {
+  const cdf = tCDF(Math.abs(t), df);
+  return 2 * (1 - cdf);
+}
+
+const p_one = pValueTwoTailed(oneT, oneDF);
+const p_ind = pValueTwoTailed(t_ind, df_ind);
+const p_welch = pValueTwoTailed(t_welch, df_welch);
+const p_paired = pValueTwoTailed(tPaired, dfPaired);
+
+// Levene test (approximation): F = ratio of mean absolute deviations
+const mad1 = fenrir.data.map(x => Math.abs(x - mean1));
+const mad2 = hel.data.map(x => Math.abs(x - mean2));
+const grandMadMean = mean([...mad1, ...mad2]);
+const ssb_levene = n1*Math.pow(mean(mad1)-grandMadMean,2) + n2*Math.pow(mean(mad2)-grandMadMean,2);
+const ssw_levene = mad1.reduce((s,x)=>s+Math.pow(x-mean(mad1),2),0) + mad2.reduce((s,x)=>s+Math.pow(x-mean(mad2),2),0);
+const f_levene = (ssb_levene / 1) / (ssw_levene / (n1+n2-2));
+
+// ===== DIALOGUE HELPER =====
+function dialogue(character, name, text) {
+  return `<div class="dialogue-box ${character}">
+    <div class="char-name ${character}">${name}</div>
+    <div class="dialogue-text">${text}</div>
+  </div>`;
+}
+
+// ===== STEP FUNCTIONS =====
+const totalSteps = 14; // 0..13
+let currentStep = 0;
+
+// ===== STEP 0: INTRO =====
+function step0() {
+  return `
+    <div class="step-title">Teste t: A Arena das Espadas de Valhalla</div>
+    <p>Na Grande Arena de Valhalla, dois clãs forjam espadas para a competição anual. O <span class="hl-blue">Clã Fenrir</span> &mdash; famoso por suas lâminas de gelo &mdash; desafia o <span class="hl-red">Clã Hel</span>, mestre das forjas vulcânicas. Cada clã enviou 8 espadas para avaliação de afiação.</p>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Putz, é só olhar os números! Fenrir claramente faz espadas melhores. Média de 82,75 contra 71,50 &mdash; caso encerrado!')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Calma, ThorMento. Médias amostrais <em>sempre</em> diferem um pouco &mdash; mesmo que os dois clãs produzam espadas idênticas. Precisamos de um <strong>teste t</strong> para separar o sinal do ruído.')}
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'O <strong>teste t</strong> compara médias entre grupos ou contra um valor de referência. Foi criado por William Sealy Gosset em 1908, sob o pseudônimo "Student", enquanto trabalhava na cervejaria Guinness &mdash; controlando a qualidade do malte. A estatística t mede quantos erros padrão a diferença observada está distante de zero.')}
+
+    <p style="margin-top:18px">Ao longo deste guia, vamos calcular <strong>passo a passo</strong> &mdash; à mão &mdash; três variantes do teste t:</p>
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <div class="comparison-title" style="color:var(--gold)">Uma Amostra</div>
+        <div style="font-size:0.95rem">Compara uma média contra um valor conhecido (&mu;<sub>0</sub>)</div>
+      </div>
+      <div class="comparison-card">
+        <div class="comparison-title" style="color:var(--odin-blue)">Independente</div>
+        <div style="font-size:0.95rem">Compara médias de dois grupos distintos</div>
+      </div>
+      <div class="comparison-card">
+        <div class="comparison-title" style="color:var(--success)">Pareado</div>
+        <div style="font-size:0.95rem">Compara o mesmo grupo em dois momentos</div>
+      </div>
+    </div>
+  `;
+}
+
+// ===== STEP 1: OS TRÊS TIPOS =====
+function step1() {
+  return `
+    <div class="step-title">Passo 1: Os Três Tipos de Teste t</div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Antes de calcular, precisamos entender <em>quando</em> usar cada variante. A escolha depende do desenho do estudo.')}
+
+    <table class="data-table">
+      <tr>
+        <th style="width:22%">Tipo</th>
+        <th style="width:28%">Quando usar</th>
+        <th style="width:25%">Hipótese</th>
+        <th style="width:25%">Exemplo nórdico</th>
+      </tr>
+      <tr>
+        <td style="color:var(--gold);font-family:'Permanent Marker'">Uma amostra</td>
+        <td>Comparar uma média amostral a um valor de referência fixo</td>
+        <td>H₀: &mu; = &mu;₀</td>
+        <td>Afiação média das espadas = 75 (padrão da guilda)?</td>
+      </tr>
+      <tr>
+        <td style="color:var(--odin-blue);font-family:'Permanent Marker'">Independente</td>
+        <td>Comparar médias de dois grupos diferentes (sujeitos distintos)</td>
+        <td>H₀: &mu;₁ = &mu;₂</td>
+        <td>Fenrir vs. Hel: espadas de clãs diferentes</td>
+      </tr>
+      <tr>
+        <td style="color:var(--success);font-family:'Permanent Marker'">Pareado</td>
+        <td>Comparar os mesmos sujeitos em duas condições ou momentos</td>
+        <td>H₀: &mu;<sub>d</sub> = 0</td>
+        <td>Mesmo guerreiro antes e depois do treinamento</td>
+      </tr>
+    </table>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Tanto faz qual eu uso, né? O resultado vai ser o mesmo!')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Não! Usar o teste errado infla ou deflaciona o erro padrão. Um teste pareado quando os dados são independentes &mdash; ou vice-versa &mdash; produz conclusões erradas. O desenho do estudo determina o teste.')}
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', '<strong>Regra prática:</strong> Se cada observação do grupo 1 tem um "par natural" no grupo 2 (mesmo sujeito, mesmo item, medida repetida), use pareado. Se os grupos são compostos por indivíduos diferentes, use independente. Se há apenas um grupo comparado a um padrão externo, use uma amostra.')}
+  `;
+}
+
+// ===== STEP 2: PRESSUPOSTOS =====
+function step2() {
+  return `
+    <div class="step-title">Passo 2: Pressupostos do Teste t</div>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'Todo teste paramétrico exige premissas. Se violadas, os resultados perdem validade. Verifique <em>antes</em> de calcular.')}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:20px 0">
+      <div class="comparison-card">
+        <div class="comparison-title" style="color:var(--gold)">1. Normalidade</div>
+        <div style="font-size:0.95rem">Dados em cada grupo seguem distribuição aproximadamente normal. Teste: <strong>Shapiro-Wilk</strong></div>
+      </div>
+      <div class="comparison-card">
+        <div class="comparison-title" style="color:var(--odin-blue)">2. Independência</div>
+        <div style="font-size:0.95rem">Observações são independentes entre si (exceto no pareado, onde os pares são dependentes por desenho)</div>
+      </div>
+      <div class="comparison-card">
+        <div class="comparison-title" style="color:var(--success)">3. Homocedasticidade</div>
+        <div style="font-size:0.95rem">Variâncias iguais entre os dois grupos (apenas no t independente). Teste: <strong>Levene</strong></div>
+      </div>
+    </div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Na prática &mdash; o teste t é robusto a desvios moderados da normalidade, especialmente com n &ge; 30. Por outro lado, variâncias muito desiguais são um problema real. Quando o teste de Levene é significativo, use a correção de <strong>Welch</strong>.')}
+
+    <div class="formula">
+      <div class="formula-label">Teste de Levene (versão simplificada)</div>
+      Calcula-se um F sobre os <strong>desvios absolutos</strong> de cada observação em relação à média do seu grupo.<br>
+      Se F<sub>Levene</sub> for significativo (p &lt; 0,05) &rarr; variâncias são desiguais &rarr; use Welch
+    </div>
+
+    <div class="formula">
+      <div class="formula-label">Shapiro-Wilk</div>
+      Testa se os dados vêm de uma distribuição normal.<br>
+      Se W for significativo (p &lt; 0,05) &rarr; normalidade rejeitada &rarr; considere testes não-paramétricos (Mann-Whitney)
+    </div>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Pressupostos? Que chato. Eu pulo direto pro cálculo!')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Ignorar pressupostos é como forjar uma espada sem verificar o metal. Pode até ficar bonita &mdash; mas quebra na primeira batalha.')}
+  `;
+}
+
+// ===== STEP 3: T PARA UMA AMOSTRA =====
+function step3() {
+  const vals = oneSampleData;
+  const tableRows = vals.map((x,i) => `<tr><td>Espada ${i+1}</td><td>${x}</td><td>${r(x - oneMean, 2)}</td><td>${r(Math.pow(x - oneMean, 2), 2)}</td></tr>`).join('');
+  const ss = vals.reduce((s,x) => s + Math.pow(x - oneMean, 2), 0);
+
+  return `
+    <div class="step-title">Passo 3: Teste t para Uma Amostra</div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'A Guilda dos Ferreiros de Asgard exige que espadas tenham afiação média de <strong>&mu;₀ = ${mu0}</strong>. Pegamos as 8 espadas do Clã Fenrir e testamos: a média deles difere de ${mu0}?')}
+
+    <div class="formula">
+      <div class="formula-label">Fórmula: t para uma amostra</div>
+      t = (x&#772; &minus; &mu;₀) / (s / &radic;n)
+    </div>
+
+    <p class="step-subtitle">Dados do Clã Fenrir</p>
+    <table class="calc-table">
+      <tr><th>Espada</th><th>Afiação (x<sub>i</sub>)</th><th>x<sub>i</sub> &minus; x&#772;</th><th>(x<sub>i</sub> &minus; x&#772;)²</th></tr>
+      ${tableRows}
+      <tr style="font-family:'Permanent Marker';background:var(--bg-panel)">
+        <td colspan="2">x&#772; = <span class="hl-gold">${r(oneMean, 2)}</span></td>
+        <td>&Sigma; = 0</td>
+        <td>SS = ${r(ss, 2)}</td>
+      </tr>
+    </table>
+
+    <p><strong>Variância:</strong> s² = SS / (n &minus; 1) = ${r(ss, 2)} / ${oneN - 1} = ${r(variance(oneSampleData), 4)}</p>
+    <p><strong>Desvio padrão:</strong> s = ${r(oneSD, 4)}</p>
+    <p><strong>Erro padrão:</strong> SE = s / &radic;n = ${r(oneSD, 4)} / &radic;${oneN} = ${r(oneSE, 4)}</p>
+
+    <div class="formula">
+      <div class="formula-label">Cálculo</div>
+      t = (${r(oneMean,2)} &minus; ${mu0}) / ${r(oneSE,4)} = ${r(oneMean - mu0, 2)} / ${r(oneSE,4)} = <span class="hl-gold">${r(oneT, 4)}</span>
+    </div>
+
+    <p><strong>gl</strong> = n &minus; 1 = ${oneN} &minus; 1 = <span class="hl-gold">${oneDF}</span></p>
+    <p><strong>p (bicaudal)</strong> &asymp; <span class="hl-gold">${r4(p_one)}</span> ${p_one < 0.05 ? '&lt; 0,05 &rarr; <span class="hl-green">Significativo!</span>' : '&ge; 0,05 &rarr; <span class="hl-red">Não significativo</span>'}</p>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'A afiação média do Clã Fenrir (${r(oneMean,2)}) difere significativamente do padrão da guilda (${mu0}). As espadas de Fenrir são melhores do que o mínimo exigido &mdash; t(${oneDF}) = ${r(oneT,2)}, p ${p_one < 0.001 ? "< .001" : "= " + r4(p_one)}.')}
+  `;
+}
+
+// ===== STEP 4: INDEPENDENTE — PREPARAÇÃO =====
+function step4() {
+  function dotPlot(clan, yCenter, color) {
+    let dots = '';
+    const minV = 64, maxV = 94;
+    clan.data.forEach((v, i) => {
+      const x = 60 + ((v - minV) / (maxV - minV)) * 580;
+      dots += `<circle cx="${x}" cy="${yCenter}" r="7" fill="${color}" opacity="0.8">
+        <animate attributeName="r" from="0" to="7" dur="0.4s" begin="${i*0.08}s" fill="freeze"/>
+      </circle>`;
+      dots += `<text x="${x}" y="${yCenter + 22}" fill="${color}" font-size="10" text-anchor="middle" font-family="Patrick Hand">${v}</text>`;
+    });
+    // mean line
+    const mx = 60 + ((mean(clan.data) - minV) / (maxV - minV)) * 580;
+    dots += `<line x1="${mx}" y1="${yCenter-15}" x2="${mx}" y2="${yCenter+15}" stroke="${color}" stroke-width="3" stroke-dasharray="4"/>`;
+    dots += `<text x="${mx}" y="${yCenter-20}" fill="${color}" font-size="12" text-anchor="middle" font-family="Permanent Marker">x&#772;=${r(mean(clan.data),2)}</text>`;
+    return dots;
+  }
+
+  const minV = 64, maxV = 94;
+  function xPos(v) { return 60 + ((v - minV) / (maxV - minV)) * 580; }
+  const ticks = [65, 70, 75, 80, 85, 90];
+
+  return `
+    <div class="step-title">Passo 4: Teste t Independente &mdash; Preparação</div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Agora o confronto principal: <span class="hl-blue">Clã Fenrir</span> versus <span class="hl-red">Clã Hel</span>. Oito espadas de cada. Sujeitos diferentes &mdash; logo, teste t para amostras independentes.')}
+
+    <table class="data-table">
+      <tr>
+        <th></th>
+        ${fenrir.data.map((_,i) => `<th>Esp. ${i+1}</th>`).join('')}
+        <th>x&#772;</th><th>s</th>
+      </tr>
+      <tr>
+        <td style="font-family:'Permanent Marker';color:var(--fenrir-color)">Fenrir</td>
+        ${fenrir.data.map(v => `<td>${v}</td>`).join('')}
+        <td style="font-family:'Permanent Marker';color:var(--fenrir-color)">${r(mean1,2)}</td>
+        <td>${r(sd1,2)}</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Permanent Marker';color:var(--hel-color)">Hel</td>
+        ${hel.data.map(v => `<td>${v}</td>`).join('')}
+        <td style="font-family:'Permanent Marker';color:var(--hel-color)">${r(mean2,2)}</td>
+        <td>${r(sd2,2)}</td>
+      </tr>
+    </table>
+
+    <p class="step-subtitle">Dot Plot: Visualizando os dados</p>
+    <div class="visual-container">
+      <svg viewBox="0 0 700 180" width="700">
+        <!-- axis -->
+        <line x1="60" y1="130" x2="640" y2="130" stroke="var(--border)" stroke-width="1"/>
+        ${ticks.map(v => `
+          <text x="${xPos(v)}" y="148" fill="var(--text-dim)" font-size="11" text-anchor="middle">${v}</text>
+          <line x1="${xPos(v)}" y1="126" x2="${xPos(v)}" y2="134" stroke="var(--border)" stroke-width="1"/>
+        `).join('')}
+        <text x="350" y="168" fill="var(--text-dim)" font-size="12" text-anchor="middle" font-family="Permanent Marker">Afiação da espada</text>
+        ${dotPlot(fenrir, 55, fenrir.hex)}
+        ${dotPlot(hel, 95, hel.hex)}
+      </svg>
+    </div>
+
+    <p><strong>Diferença das médias:</strong> ${r(mean1,2)} &minus; ${r(mean2,2)} = <span class="hl-gold">${r(mean1 - mean2, 2)}</span></p>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Diferença de ${r(mean1-mean2,2)} pontos! Pronto, Fenrir ganha. Posso ir embora?')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'A questão não é <em>se</em> as médias diferem &mdash; elas sempre diferem nas amostras. A questão é: essa diferença é grande o suficiente para não ser explicada pelo acaso?')}
+  `;
+}
+
+// ===== STEP 5: INDEPENDENTE — CÁLCULO =====
+function step5() {
+  const ss1 = fenrir.data.reduce((s,x) => s + Math.pow(x - mean1, 2), 0);
+  const ss2 = hel.data.reduce((s,x) => s + Math.pow(x - mean2, 2), 0);
+
+  return `
+    <div class="step-title">Passo 5: Teste t Independente &mdash; Cálculo</div>
+
+    <div class="formula">
+      <div class="formula-label">Fórmula do teste t independente (variâncias iguais)</div>
+      t = (x&#772;₁ &minus; x&#772;₂) / &radic;(s²<sub>p</sub>/n₁ + s²<sub>p</sub>/n₂)
+    </div>
+
+    <p class="step-subtitle">1. Variância pooled (combinada)</p>
+    <div class="formula">
+      <div class="formula-label">Fórmula</div>
+      s²<sub>p</sub> = [(n₁ &minus; 1)&middot;s₁² + (n₂ &minus; 1)&middot;s₂²] / (n₁ + n₂ &minus; 2)
+    </div>
+
+    <p><strong>SS₁</strong> (Fenrir) = &Sigma;(x<sub>i</sub> &minus; x&#772;₁)² = <span class="hl-blue">${r(ss1, 2)}</span></p>
+    <p><strong>SS₂</strong> (Hel) = &Sigma;(x<sub>i</sub> &minus; x&#772;₂)² = <span class="hl-red">${r(ss2, 2)}</span></p>
+    <p><strong>s₁²</strong> = ${r(ss1,2)} / ${n1-1} = ${r(var1, 4)}</p>
+    <p><strong>s₂²</strong> = ${r(ss2,2)} / ${n2-1} = ${r(var2, 4)}</p>
+
+    <div class="formula">
+      s²<sub>p</sub> = [(${n1-1}) &times; ${r(var1,4)} + (${n2-1}) &times; ${r(var2,4)}] / (${n1} + ${n2} &minus; 2)<br>
+      s²<sub>p</sub> = [${r((n1-1)*var1, 2)} + ${r((n2-1)*var2, 2)}] / ${df_ind} = ${r((n1-1)*var1 + (n2-1)*var2, 2)} / ${df_ind} = <span class="hl-gold">${r(sp2, 4)}</span>
+    </div>
+
+    <p class="step-subtitle">2. Erro padrão da diferença</p>
+    <div class="formula">
+      SE = &radic;(s²<sub>p</sub>/n₁ + s²<sub>p</sub>/n₂) = &radic;(${r(sp2,4)}/${n1} + ${r(sp2,4)}/${n2}) = &radic;${r(sp2/n1 + sp2/n2, 4)} = <span class="hl-gold">${r(se_ind, 4)}</span>
+    </div>
+
+    <p class="step-subtitle">3. Estatística t</p>
+    <div class="formula">
+      <div class="formula-label">Resultado</div>
+      t = (${r(mean1,2)} &minus; ${r(mean2,2)}) / ${r(se_ind,4)} = ${r(mean1-mean2,2)} / ${r(se_ind,4)} = <span class="hl-gold">${r(t_ind, 4)}</span>
+    </div>
+
+    <p><strong>gl</strong> = n₁ + n₂ &minus; 2 = ${n1} + ${n2} &minus; 2 = <span class="hl-gold">${df_ind}</span></p>
+    <p><strong>p (bicaudal)</strong> &asymp; <span class="hl-gold">${p_ind < 0.001 ? '< 0,001' : r4(p_ind)}</span> ${p_ind < 0.05 ? '&rarr; <span class="hl-green">Significativo!</span>' : '&rarr; <span class="hl-red">Não significativo</span>'}</p>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Com t(${df_ind}) = ${r(t_ind,2)} e p ${p_ind < 0.001 ? "< .001" : "= " + r4(p_ind)}, rejeitamos H₀. As espadas do Clã Fenrir são significativamente mais afiadas do que as do Clã Hel.')}
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'A <strong>variância pooled</strong> combina as variâncias dos dois grupos, ponderando pelo tamanho de cada amostra (via graus de liberdade). Ela pressupõe que ambas as populações têm a mesma variância &mdash; a <em>homocedasticidade</em>.')}
+  `;
+}
+
+// ===== STEP 6: LEVENE E WELCH =====
+function step6() {
+  return `
+    <div class="step-title">Passo 6: Teste de Levene e Correção de Welch</div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'O teste t clássico assume variâncias iguais. Na prática, quase nunca são. O <strong>teste de Levene</strong> nos diz se a diferença de variâncias é significativa.')}
+
+    <p class="step-subtitle">Teste de Levene (nossos dados)</p>
+    <table class="data-table">
+      <tr><th>Grupo</th><th>s²</th><th>s</th></tr>
+      <tr>
+        <td style="color:var(--fenrir-color);font-family:'Permanent Marker'">Fenrir</td>
+        <td>${r(var1, 2)}</td><td>${r(sd1, 2)}</td>
+      </tr>
+      <tr>
+        <td style="color:var(--hel-color);font-family:'Permanent Marker'">Hel</td>
+        <td>${r(var2, 2)}</td><td>${r(sd2, 2)}</td>
+      </tr>
+    </table>
+
+    <p><strong>F<sub>Levene</sub></strong> &asymp; ${r(f_levene, 3)}</p>
+    <p>Com variâncias relativamente próximas (razão s²<sub>max</sub>/s²<sub>min</sub> = ${r(Math.max(var1,var2)/Math.min(var1,var2), 2)}), o teste de Levene provavelmente <strong>não</strong> será significativo &mdash; podemos usar o t pooled.</p>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Variâncias, homocedasticidade&hellip; francamente, eu ignoro tudo isso e calculo direto!')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'E esse é o caminho para resultados errados, ThorMento. Quando as variâncias são muito diferentes, o erro padrão pooled é distorcido &mdash; e a conclusão pode ser falsa.')}
+
+    <p class="step-subtitle">Correção de Welch</p>
+    <p>Quando o teste de Levene é significativo (variâncias desiguais), usamos a correção de <strong>Welch</strong>:</p>
+
+    <div class="formula">
+      <div class="formula-label">t de Welch</div>
+      t<sub>Welch</sub> = (x&#772;₁ &minus; x&#772;₂) / &radic;(s₁²/n₁ + s₂²/n₂)
+    </div>
+
+    <p>Note que <strong>não</strong> há variância pooled &mdash; cada grupo usa sua própria variância.</p>
+
+    <div class="formula">
+      <div class="formula-label">Cálculo de Welch (nossos dados)</div>
+      SE<sub>Welch</sub> = &radic;(${r(var1,2)}/${n1} + ${r(var2,2)}/${n2}) = &radic;${r(var1/n1 + var2/n2, 4)} = ${r(se_welch, 4)}<br><br>
+      t<sub>Welch</sub> = ${r(mean1-mean2, 2)} / ${r(se_welch, 4)} = <span class="hl-gold">${r(t_welch, 4)}</span>
+    </div>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'O t de Welch e o t pooled dão resultados muito semelhantes quando as variâncias são parecidas. A diferença aparece nos <strong>graus de liberdade</strong> &mdash; o Welch usa gl ajustados pela fórmula de Welch-Satterthwaite, que veremos no próximo passo.')}
+
+    <p style="margin-top:16px"><strong>Dica prática:</strong> Muitos estatísticos recomendam <strong>sempre</strong> usar Welch, independente do resultado de Levene. É mais conservador e mais robusto.</p>
+  `;
+}
+
+// ===== STEP 7: GRAUS DE LIBERDADE =====
+function step7() {
+  return `
+    <div class="step-title">Passo 7: Graus de Liberdade</div>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', '<strong>Graus de liberdade (gl)</strong> indicam quantas observações são "livres" para variar após fixar certos parâmetros (como a média). Quanto mais gl, mais a distribuição t se aproxima da normal.')}
+
+    <p class="step-subtitle">gl no t clássico (pooled)</p>
+    <div class="formula">
+      gl = n₁ + n₂ &minus; 2 = ${n1} + ${n2} &minus; 2 = <span class="hl-gold">${df_ind}</span>
+    </div>
+    <p>Simples: somamos os tamanhos amostrais e subtraímos 2 (um para cada média estimada).</p>
+
+    <p class="step-subtitle">gl no t de Welch (Welch-Satterthwaite)</p>
+    <div class="formula">
+      <div class="formula-label">Fórmula de Welch-Satterthwaite</div>
+      gl<sub>Welch</sub> = (s₁²/n₁ + s₂²/n₂)² / [(s₁²/n₁)²/(n₁&minus;1) + (s₂²/n₂)²/(n₂&minus;1)]
+    </div>
+
+    <div class="formula">
+      Numerador: (${r(var1,2)}/${n1} + ${r(var2,2)}/${n2})² = (${r(var1/n1 + var2/n2, 4)})² = ${r(df_welch_num, 4)}<br><br>
+      Denominador: (${r(var1,2)}/${n1})²/${n1-1} + (${r(var2,2)}/${n2})²/${n2-1} = ${r(df_welch_den, 6)}<br><br>
+      gl<sub>Welch</sub> = ${r(df_welch_num, 4)} / ${r(df_welch_den, 6)} = <span class="hl-gold">${r(df_welch, 2)}</span>
+    </div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Repare que o gl de Welch (${r(df_welch,2)}) é menor que o pooled (${df_ind}). Isso é proposital &mdash; Welch "penaliza" a imprecisão quando as variâncias diferem, exigindo um t mais alto para rejeitar H₀.')}
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 250" width="700">
+        <!-- axis -->
+        <line x1="50" y1="200" x2="650" y2="200" stroke="var(--border)" stroke-width="1"/>
+        ${[-5,-4,-3,-2,-1,0,1,2,3,4,5].map(v => {
+          const x = 350 + v * 55;
+          return `<text x="${x}" y="218" fill="var(--text-dim)" font-size="11" text-anchor="middle">${v}</text>
+                  <line x1="${x}" y1="196" x2="${x}" y2="204" stroke="var(--border)" stroke-width="1"/>`;
+        }).join('')}
+        <text x="350" y="240" fill="var(--text-dim)" font-size="12" text-anchor="middle" font-family="Permanent Marker">Valor de t</text>
+        <!-- t-distribution curves (approximate) -->
+        ${(() => {
+          // Draw two t-distribution curves: df=5 (wider) and df=30 (narrower)
+          function tCurve(df, color, label, labelY) {
+            let path = 'M';
+            for (let i = -5; i <= 5; i += 0.1) {
+              const x = 350 + i * 55;
+              const y = 200 - tPDF(i, df) * 500;
+              path += ` ${x.toFixed(1)},${y.toFixed(1)}`;
+            }
+            return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" opacity="0.8"/>
+                    <text x="600" y="${labelY}" fill="${color}" font-size="11" font-family="Permanent Marker">${label}</text>`;
+          }
+          return tCurve(5, '#f85149', 'gl = 5 (mais larga)', 55) + tCurve(14, '#58a6ff', 'gl = 14 (nosso caso)', 75) + tCurve(100, '#3fb950', 'gl = 100 (quase normal)', 95);
+        })()}
+      </svg>
+    </div>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'Com poucos gl, a distribuição t tem caudas mais pesadas &mdash; valores extremos são mais prováveis. Por isso, o valor crítico de t é maior com menos gl, exigindo evidências mais fortes para rejeitar H₀.')}
+  `;
+}
+
+// ===== STEP 8: PAREADO — PREPARAÇÃO =====
+function step8() {
+  const tableRows = pairedBefore.map((b,i) => {
+    const a = pairedAfter[i];
+    const d = a - b;
+    return `<tr>
+      <td>Guerreiro ${i+1}</td>
+      <td style="color:var(--paired-before)">${b}</td>
+      <td style="color:var(--paired-after)">${a}</td>
+      <td style="color:var(--gold);font-family:'Permanent Marker'">${d > 0 ? '+' : ''}${d}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="step-title">Passo 8: Teste t Pareado &mdash; Preparação</div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Cenário diferente: 6 guerreiros de Midgard mediram sua força <span class="hl-gold">antes</span> e <span class="hl-green">depois</span> de um treinamento com Odin. Cada guerreiro é seu próprio controle &mdash; <strong>dados pareados</strong>.')}
+
+    <table class="data-table">
+      <tr>
+        <th>Guerreiro</th>
+        <th style="color:var(--paired-before)">Antes</th>
+        <th style="color:var(--paired-after)">Depois</th>
+        <th style="color:var(--gold)">d<sub>i</sub> = Depois &minus; Antes</th>
+      </tr>
+      ${tableRows}
+      <tr style="font-family:'Permanent Marker';background:var(--bg-panel)">
+        <td>Médias</td>
+        <td style="color:var(--paired-before)">${r(mean(pairedBefore), 2)}</td>
+        <td style="color:var(--paired-after)">${r(mean(pairedAfter), 2)}</td>
+        <td style="color:var(--gold)">d&#772; = ${r(meanD, 2)}</td>
+      </tr>
+    </table>
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 200" width="700">
+        <!-- connected dot plot -->
+        ${pairedBefore.map((b,i) => {
+          const minV = 40, maxV = 65;
+          const x1 = 80 + ((b - minV) / (maxV - minV)) * 540;
+          const x2 = 80 + ((pairedAfter[i] - minV) / (maxV - minV)) * 540;
+          const y = 30 + i * 28;
+          return `
+            <line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--text-dim)" stroke-width="1.5" opacity="0.4"/>
+            <circle cx="${x1}" cy="${y}" r="6" fill="#f0c040" opacity="0.9"/>
+            <circle cx="${x2}" cy="${y}" r="6" fill="#3fb950" opacity="0.9"/>
+            <text x="20" y="${y+4}" fill="var(--text-dim)" font-size="10" font-family="Permanent Marker">G${i+1}</text>
+          `;
+        }).join('')}
+        <!-- axis -->
+        <line x1="80" y1="195" x2="620" y2="195" stroke="var(--border)" stroke-width="1"/>
+        ${[40,45,50,55,60,65].map(v => {
+          const x = 80 + ((v - 40) / 25) * 540;
+          return `<text x="${x}" y="192" fill="var(--text-dim)" font-size="10" text-anchor="middle">${v}</text>`;
+        }).join('')}
+        <!-- legend -->
+        <circle cx="200" cy="185" r="5" fill="#f0c040"/>
+        <text x="210" y="189" fill="#f0c040" font-size="11" font-family="Permanent Marker">Antes</text>
+        <circle cx="300" cy="185" r="5" fill="#3fb950"/>
+        <text x="310" y="189" fill="#3fb950" font-size="11" font-family="Permanent Marker">Depois</text>
+      </svg>
+    </div>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'No teste pareado, a análise é sobre as <strong>diferenças</strong> (d<sub>i</sub>), não sobre as medidas brutas. Cada guerreiro gera uma diferença. Testamos se a média dessas diferenças (d&#772;) é diferente de zero.')}
+
+    <p><strong>Todas as diferenças são positivas</strong> &mdash; todos os guerreiros melhoraram. A questão é se essa melhora é estatisticamente significativa.</p>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Todos melhoraram! Óbvio que funciona. Pra que testar?')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Porque "todos melhoraram" com n=6 pode ser acaso. Precisamos quantificar a evidência.')}
+  `;
+}
+
+// ===== STEP 9: PAREADO — CÁLCULO =====
+function step9() {
+  const ss_d = diffs.reduce((s,d) => s + Math.pow(d - meanD, 2), 0);
+
+  const tableRows = diffs.map((d,i) => `<tr>
+    <td>G${i+1}</td>
+    <td>${d}</td>
+    <td>${r(d - meanD, 2)}</td>
+    <td>${r(Math.pow(d - meanD, 2), 4)}</td>
+  </tr>`).join('');
+
+  return `
+    <div class="step-title">Passo 9: Teste t Pareado &mdash; Cálculo</div>
+
+    <div class="formula">
+      <div class="formula-label">Fórmula do teste t pareado</div>
+      t = d&#772; / (s<sub>d</sub> / &radic;n)
+    </div>
+
+    <p class="step-subtitle">Tabela de cálculo das diferenças</p>
+    <table class="calc-table">
+      <tr><th>Guerreiro</th><th>d<sub>i</sub></th><th>d<sub>i</sub> &minus; d&#772;</th><th>(d<sub>i</sub> &minus; d&#772;)²</th></tr>
+      ${tableRows}
+      <tr style="font-family:'Permanent Marker';background:var(--bg-panel)">
+        <td>Total</td>
+        <td>d&#772; = <span class="hl-gold">${r(meanD, 2)}</span></td>
+        <td>&Sigma; = 0</td>
+        <td>SS<sub>d</sub> = ${r(ss_d, 4)}</td>
+      </tr>
+    </table>
+
+    <p><strong>s²<sub>d</sub></strong> = SS<sub>d</sub> / (n &minus; 1) = ${r(ss_d, 4)} / ${nPaired - 1} = ${r(variance(diffs), 4)}</p>
+    <p><strong>s<sub>d</sub></strong> = &radic;${r(variance(diffs), 4)} = ${r(sdD, 4)}</p>
+    <p><strong>SE<sub>d</sub></strong> = s<sub>d</sub> / &radic;n = ${r(sdD, 4)} / &radic;${nPaired} = ${r(seD, 4)}</p>
+
+    <div class="formula">
+      <div class="formula-label">Resultado</div>
+      t = ${r(meanD, 2)} / ${r(seD, 4)} = <span class="hl-gold">${r(tPaired, 4)}</span>
+    </div>
+
+    <p><strong>gl</strong> = n &minus; 1 = ${nPaired} &minus; 1 = <span class="hl-gold">${dfPaired}</span></p>
+    <p><strong>p (bicaudal)</strong> &asymp; <span class="hl-gold">${p_paired < 0.001 ? '< 0,001' : r4(p_paired)}</span> ${p_paired < 0.05 ? '&rarr; <span class="hl-green">Significativo!</span>' : '&rarr; <span class="hl-red">Não significativo</span>'}</p>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Com t(${dfPaired}) = ${r(tPaired,2)} e p ${p_paired < 0.001 ? "< .001" : "= " + r4(p_paired)}, rejeitamos H₀. O treinamento produziu uma melhora significativa na força dos guerreiros.')}
+
+    <p class="step-subtitle">Por que o teste pareado é mais poderoso?</p>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'O teste pareado <strong>remove a variabilidade entre sujeitos</strong>. Se o guerreiro 1 é naturalmente mais forte que o 3, isso aparece tanto no "antes" quanto no "depois" &mdash; e se cancela na diferença. O que sobra é o efeito puro da intervenção. Por isso, o erro padrão é menor e o teste é mais sensível.')}
+  `;
+}
+
+// ===== STEP 10: TAMANHO DE EFEITO =====
+function step10() {
+  return `
+    <div class="step-title">Passo 10: Tamanho de Efeito</div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'O valor de p responde: "O efeito é real?" Mas não responde: "O efeito é grande?" Para isso, precisamos do <strong>tamanho de efeito</strong>.')}
+
+    <p class="step-subtitle">Cohen's d (teste independente)</p>
+    <div class="formula">
+      <div class="formula-label">Fórmula</div>
+      d = (x&#772;₁ &minus; x&#772;₂) / s<sub>p</sub>
+    </div>
+    <div class="formula">
+      d = (${r(mean1,2)} &minus; ${r(mean2,2)}) / ${r(sp, 4)} = ${r(mean1-mean2,2)} / ${r(sp, 4)} = <span class="hl-gold">${r(d_ind, 4)}</span>
+    </div>
+
+    <table class="data-table">
+      <tr><th>Magnitude</th><th>|d|</th><th>Interpretação (Cohen, 1988)</th></tr>
+      <tr><td>Pequeno</td><td>0,20</td><td>Pouca relevância prática</td></tr>
+      <tr ${Math.abs(d_ind) >= 0.5 && Math.abs(d_ind) < 0.8 ? 'style="background:rgba(88,166,255,0.15)"' : ''}><td>Médio</td><td>0,50</td><td>Diferença perceptível</td></tr>
+      <tr ${Math.abs(d_ind) >= 0.8 ? 'style="background:rgba(240,192,64,0.15)"' : ''}><td>Grande</td><td>0,80</td><td>Diferença substancial</td></tr>
+    </table>
+
+    <p>Nosso d = <span class="hl-gold">${r(d_ind, 2)}</span> &mdash; ${Math.abs(d_ind) >= 0.8 ? 'um efeito <strong>grande</strong>!' : Math.abs(d_ind) >= 0.5 ? 'um efeito <strong>médio</strong>.' : 'um efeito <strong>pequeno</strong>.'}</p>
+
+    <p class="step-subtitle">Hedges' g (correção para amostras pequenas)</p>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'Cohen\'s d superestima o efeito em amostras pequenas. A correção de <strong>Hedges\' g</strong> aplica um fator J que reduz o viés.')}
+
+    <div class="formula">
+      <div class="formula-label">Fator de correção</div>
+      J = 1 &minus; 3 / (4&middot;gl &minus; 1) = 1 &minus; 3 / (4 &times; ${df_ind} &minus; 1) = 1 &minus; 3/${4*df_ind - 1} = ${r(J, 4)}
+    </div>
+    <div class="formula">
+      g = d &times; J = ${r(d_ind, 4)} &times; ${r(J, 4)} = <span class="hl-gold">${r(g_ind, 4)}</span>
+    </div>
+
+    <p class="step-subtitle">IC 95% para d e g</p>
+    <div class="formula">
+      SE<sub>d</sub> &asymp; &radic;[(n₁+n₂)/(n₁&middot;n₂) + d²/(2&middot;(n₁+n₂))] = ${r(se_d_ind, 4)}<br><br>
+      IC 95% para d: [${r(d_ci_low, 2)}, ${r(d_ci_high, 2)}]<br>
+      IC 95% para g: [${r(g_ci_low, 2)}, ${r(g_ci_high, 2)}]
+    </div>
+
+    <p class="step-subtitle">Cohen's d (teste pareado)</p>
+    <div class="formula">
+      d<sub>z</sub> = d&#772; / s<sub>d</sub> = ${r(meanD, 2)} / ${r(sdD, 4)} = <span class="hl-gold">${r(d_paired, 4)}</span>
+    </div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Reporte <strong>sempre</strong> o tamanho de efeito junto com o p-value. Um p < 0,05 com d = 0,10 não impressiona ninguém. Um d = ${r(d_ind, 2)} com IC que não inclui zero? Aí sim temos evidência robusta.')}
+  `;
+}
+
+// ===== STEP 11: REPORTE APA =====
+function step11() {
+  return `
+    <div class="step-title">Passo 11: Reporte no Formato APA</div>
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', 'O formato APA (7ª ed.) exige: estatística de teste, graus de liberdade, valor de p, tamanho de efeito e intervalo de confiança. Tudo em itálico quando for símbolo estatístico.')}
+
+    <p class="step-subtitle">Teste t para Uma Amostra</p>
+    <div class="apa-box">
+      <div class="apa-label">Reporte APA</div>
+      A afiação média das espadas do Clã Fenrir (<em>M</em> = ${r(oneMean,2)}, <em>SD</em> = ${r(oneSD,2)}) foi significativamente diferente do padrão da guilda (&mu; = ${mu0}), <em>t</em>(${oneDF}) = ${r(oneT,2)}, <em>p</em> ${p_one < 0.001 ? '< .001' : '= ' + r4(p_one).replace('0.', '.')}.
+    </div>
+
+    <p class="step-subtitle">Teste t Independente</p>
+    <div class="apa-box">
+      <div class="apa-label">Reporte APA</div>
+      As espadas do Clã Fenrir (<em>M</em> = ${r(mean1,2)}, <em>SD</em> = ${r(sd1,2)}) apresentaram afiação significativamente maior do que as do Clã Hel (<em>M</em> = ${r(mean2,2)}, <em>SD</em> = ${r(sd2,2)}), <em>t</em>(${df_ind}) = ${r(t_ind,2)}, <em>p</em> ${p_ind < 0.001 ? '< .001' : '= ' + r4(p_ind).replace('0.', '.')}, <em>d</em> = ${r(d_ind,2)}, IC 95% [${r(d_ci_low,2)}, ${r(d_ci_high,2)}].
+    </div>
+
+    <p class="step-subtitle">Teste t Independente (Welch)</p>
+    <div class="apa-box">
+      <div class="apa-label">Reporte APA (variâncias desiguais)</div>
+      &hellip; <em>t</em>(${r(df_welch,2)}) = ${r(t_welch,2)}, <em>p</em> ${p_welch < 0.001 ? '< .001' : '= ' + r4(p_welch).replace('0.', '.')}, <em>d</em> = ${r(d_ind,2)}, IC 95% [${r(d_ci_low,2)}, ${r(d_ci_high,2)}].<br>
+      <span style="font-style:normal;color:var(--text-dim);font-size:0.9rem">(Note os gl fracionários do Welch)</span>
+    </div>
+
+    <p class="step-subtitle">Teste t Pareado</p>
+    <div class="apa-box">
+      <div class="apa-label">Reporte APA</div>
+      A força dos guerreiros foi significativamente maior após o treinamento (<em>M</em> = ${r(mean(pairedAfter),2)}, <em>SD</em> = ${r(sd(pairedAfter),2)}) do que antes (<em>M</em> = ${r(mean(pairedBefore),2)}, <em>SD</em> = ${r(sd(pairedBefore),2)}), <em>t</em>(${dfPaired}) = ${r(tPaired,2)}, <em>p</em> ${p_paired < 0.001 ? '< .001' : '= ' + r4(p_paired).replace('0.', '.')}, <em>d</em><sub>z</sub> = ${r(d_paired,2)}.
+    </div>
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Detalhes que fazem diferença no APA:<br>1. <em>p</em> nunca é zero &mdash; use "< .001" em vez de "= .000"<br>2. Tire o zero antes do ponto: <em>p</em> = .003 (não 0.003)<br>3. Arredonde t e d para 2 casas decimais<br>4. Sempre inclua IC para o tamanho de efeito')}
+
+    ${dialogue('thor', '⚡ ThorMento', 'APA? Formato? Burocracia pura. O que importa é se p < 0,05 ou não!')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'ThorMento, reporte completo é respeito pelo leitor. Sem <em>d</em> e IC, ninguém sabe se o efeito é trivial ou substantivo.')}
+  `;
+}
+
+// ===== STEP 12: LIÇÃO DOS CORVOS =====
+function step12() {
+  return `
+    <div class="step-title">Passo 12: Lição dos Corvos</div>
+
+    <div class="licao-box">
+      <div class="licao-title">Muninn resume os pontos-chave</div>
+
+      ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', `
+        <strong>1. Três testes, três cenários:</strong><br>
+        &bull; Uma amostra: x&#772; vs. &mu;₀<br>
+        &bull; Independente: x&#772;₁ vs. x&#772;₂ (grupos diferentes)<br>
+        &bull; Pareado: d&#772; vs. 0 (mesmos sujeitos)<br><br>
+        <strong>2. Pressupostos:</strong> normalidade, independência (ou dependência no pareado), homocedasticidade (no independente)<br><br>
+        <strong>3. Levene significativo?</strong> Use Welch. Na dúvida, use Welch sempre.<br><br>
+        <strong>4. Reporte completo:</strong> <em>t</em>(gl) = X.XX, <em>p</em> = .XXX, <em>d</em> = X.XX, IC 95% [X.XX, X.XX]<br><br>
+        <strong>5. Hedges' g > Cohen's d</strong> para amostras pequenas (n < 20).
+      `)}
+    </div>
+
+    <p class="step-subtitle">Fluxograma: Qual teste t usar?</p>
+    <div class="visual-container">
+      <svg viewBox="0 0 700 380" width="700">
+        <!-- Start node -->
+        <rect x="240" y="10" width="220" height="45" rx="10" fill="var(--bg-panel)" stroke="var(--gold)" stroke-width="2"/>
+        <text x="350" y="38" fill="var(--gold)" font-size="14" text-anchor="middle" font-family="Permanent Marker">Comparar médias?</text>
+
+        <!-- Arrow down -->
+        <line x1="350" y1="55" x2="350" y2="80" stroke="var(--text-dim)" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- Decision: how many groups? -->
+        <rect x="210" y="80" width="280" height="45" rx="10" fill="var(--bg-panel)" stroke="var(--odin-blue)" stroke-width="2"/>
+        <text x="350" y="108" fill="var(--odin-blue)" font-size="13" text-anchor="middle" font-family="Permanent Marker">Quantos grupos?</text>
+
+        <!-- Branch: 1 group -->
+        <line x1="260" y1="125" x2="130" y2="165" stroke="var(--text-dim)" stroke-width="2"/>
+        <text x="170" y="148" fill="var(--text-dim)" font-size="11" font-family="Patrick Hand">1 grupo</text>
+        <rect x="30" y="165" width="200" height="40" rx="8" fill="rgba(240,192,64,0.15)" stroke="var(--gold)" stroke-width="2"/>
+        <text x="130" y="190" fill="var(--gold)" font-size="13" text-anchor="middle" font-family="Permanent Marker">t para Uma Amostra</text>
+
+        <!-- Branch: 2 groups -->
+        <line x1="440" y1="125" x2="560" y2="165" stroke="var(--text-dim)" stroke-width="2"/>
+        <text x="520" y="148" fill="var(--text-dim)" font-size="11" font-family="Patrick Hand">2 grupos</text>
+
+        <!-- Decision: same subjects? -->
+        <rect x="440" y="165" width="240" height="45" rx="10" fill="var(--bg-panel)" stroke="var(--odin-blue)" stroke-width="2"/>
+        <text x="560" y="193" fill="var(--odin-blue)" font-size="12" text-anchor="middle" font-family="Permanent Marker">Mesmos sujeitos?</text>
+
+        <!-- Branch: Yes = Paired -->
+        <line x1="500" y1="210" x2="400" y2="255" stroke="var(--text-dim)" stroke-width="2"/>
+        <text x="430" y="237" fill="var(--text-dim)" font-size="11" font-family="Patrick Hand">Sim</text>
+        <rect x="280" y="255" width="200" height="40" rx="8" fill="rgba(63,185,80,0.15)" stroke="var(--success)" stroke-width="2"/>
+        <text x="380" y="280" fill="var(--success)" font-size="13" text-anchor="middle" font-family="Permanent Marker">t Pareado</text>
+
+        <!-- Branch: No = Independent -->
+        <line x1="620" y1="210" x2="620" y2="255" stroke="var(--text-dim)" stroke-width="2"/>
+        <text x="640" y="237" fill="var(--text-dim)" font-size="11" font-family="Patrick Hand">Não</text>
+
+        <!-- Decision: equal variances? -->
+        <rect x="500" y="255" width="240" height="45" rx="10" fill="var(--bg-panel)" stroke="var(--odin-blue)" stroke-width="2"/>
+        <text x="620" y="283" fill="var(--odin-blue)" font-size="12" text-anchor="middle" font-family="Permanent Marker">Variâncias iguais? (Levene)</text>
+
+        <!-- Branch: Yes = pooled -->
+        <line x1="560" y1="300" x2="480" y2="335" stroke="var(--text-dim)" stroke-width="2"/>
+        <text x="500" y="322" fill="var(--text-dim)" font-size="10" font-family="Patrick Hand">Sim</text>
+        <rect x="360" y="335" width="200" height="35" rx="8" fill="rgba(88,166,255,0.15)" stroke="var(--odin-blue)" stroke-width="2"/>
+        <text x="460" y="357" fill="var(--odin-blue)" font-size="12" text-anchor="middle" font-family="Permanent Marker">t Independente (pooled)</text>
+
+        <!-- Branch: No = Welch -->
+        <line x1="680" y1="300" x2="680" y2="335" stroke="var(--text-dim)" stroke-width="2"/>
+        <text x="695" y="322" fill="var(--text-dim)" font-size="10" font-family="Patrick Hand">Não</text>
+        <rect x="590" y="335" width="180" height="35" rx="8" fill="rgba(248,81,73,0.15)" stroke="var(--thor-red)" stroke-width="2"/>
+        <text x="680" y="357" fill="var(--thor-red)" font-size="12" text-anchor="middle" font-family="Permanent Marker">t de Welch</text>
+
+        <!-- Arrow marker -->
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="var(--text-dim)"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="licao-box" style="margin-top:20px">
+      <div class="licao-title">Huginn provoca</div>
+
+      ${dialogue('corvo', '🐦‍⬛ Huginn provoca:', `
+        <strong>Desafios para reflexão:</strong><br><br>
+        1. Se o teste t diz que p = 0,049 e depois p = 0,051, a conclusão muda radicalmente. Isso faz sentido?<br><br>
+        2. Com n = 10.000, quase qualquer diferença trivial será "significativa". O que isso diz sobre depender só de p?<br><br>
+        3. Você usaria um teste independente se mediu os mesmos guerreiros em dois torneios diferentes? E se entre os torneios metade deles trocou de clã?<br><br>
+        4. Por que muitos estatísticos recomendam <em>sempre</em> usar Welch em vez de decidir com base no teste de Levene?
+      `)}
+    </div>
+
+    <p class="step-subtitle">Fórmulas-Resumo</p>
+    <table class="data-table">
+      <tr><th>Teste</th><th>Fórmula de t</th><th>gl</th></tr>
+      <tr>
+        <td style="color:var(--gold);font-family:'Permanent Marker'">Uma amostra</td>
+        <td>t = (x&#772; &minus; &mu;₀) / (s/&radic;n)</td>
+        <td>n &minus; 1</td>
+      </tr>
+      <tr>
+        <td style="color:var(--odin-blue);font-family:'Permanent Marker'">Independente (pooled)</td>
+        <td>t = (x&#772;₁ &minus; x&#772;₂) / &radic;(s²<sub>p</sub>/n₁ + s²<sub>p</sub>/n₂)</td>
+        <td>n₁ + n₂ &minus; 2</td>
+      </tr>
+      <tr>
+        <td style="color:var(--thor-red);font-family:'Permanent Marker'">Welch</td>
+        <td>t = (x&#772;₁ &minus; x&#772;₂) / &radic;(s₁²/n₁ + s₂²/n₂)</td>
+        <td>Welch-Satterthwaite</td>
+      </tr>
+      <tr>
+        <td style="color:var(--success);font-family:'Permanent Marker'">Pareado</td>
+        <td>t = d&#772; / (s<sub>d</sub>/&radic;n)</td>
+        <td>n &minus; 1</td>
+      </tr>
+    </table>
+  `;
+}
+
+// ===== STEP 13: ARMADILHAS COMUNS =====
+function step13() {
+  return `
+    <div class="step-title">Passo 13: Armadilhas Comuns</div>
+
+    <div class="armadilha-box">
+      <div class="armadilha-title">O Catálogo de Desastres de ThorMento</div>
+
+      ${dialogue('thor', '⚡ ThorMento', 'Ei, eu tenho meus métodos! São mais rápidos!')}
+
+      ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'E cada um deles é uma armadilha. Vamos listar para que ninguém repita seus erros.')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0">
+      <div class="comparison-card" style="border-color:var(--thor-red)">
+        <div class="comparison-title" style="color:var(--thor-red)">1. Teste errado</div>
+        <div style="font-size:0.95rem;text-align:left">Usar t independente quando os dados são pareados (ou vice-versa). O erro padrão muda drasticamente &mdash; a conclusão pode inverter.</div>
+      </div>
+      <div class="comparison-card" style="border-color:var(--thor-red)">
+        <div class="comparison-title" style="color:var(--thor-red)">2. Ignorar pressupostos</div>
+        <div style="font-size:0.95rem;text-align:left">Pular a verificação de normalidade e homocedasticidade. Com variâncias muito desiguais, o t pooled produz p-values errados.</div>
+      </div>
+      <div class="comparison-card" style="border-color:var(--thor-red)">
+        <div class="comparison-title" style="color:var(--thor-red)">3. Esquecer o tamanho de efeito</div>
+        <div style="font-size:0.95rem;text-align:left">Reportar apenas p < 0,05 sem d ou g. Com n grande, tudo é "significativo" &mdash; mas pode ser trivial na prática.</div>
+      </div>
+      <div class="comparison-card" style="border-color:var(--thor-red)">
+        <div class="comparison-title" style="color:var(--thor-red)">4. Múltiplos testes t</div>
+        <div style="font-size:0.95rem;text-align:left">Comparar 3+ grupos com vários testes t (A vs B, A vs C, B vs C). Isso infla o erro Tipo I. Use ANOVA para 3+ grupos.</div>
+      </div>
+      <div class="comparison-card" style="border-color:var(--thor-red)">
+        <div class="comparison-title" style="color:var(--thor-red)">5. Confundir significância estatística com prática</div>
+        <div style="font-size:0.95rem;text-align:left">"p < 0,05 logo o efeito é importante" &mdash; FALSO. Significância depende de n. Relevância depende do contexto e do tamanho de efeito.</div>
+      </div>
+      <div class="comparison-card" style="border-color:var(--thor-red)">
+        <div class="comparison-title" style="color:var(--thor-red)">6. Teste t unilateral sem justificativa</div>
+        <div style="font-size:0.95rem;text-align:left">Usar teste unicaudal para "facilitar" a significância. O teste unicaudal só é legítimo quando a direção do efeito foi hipotetizada <em>antes</em> da coleta.</div>
+      </div>
+    </div>
+
+    ${dialogue('thor', '⚡ ThorMento', 'Tá bom, tá bom&hellip; admito que minhas "técnicas rápidas" causam mais estrago do que as batalhas de Ragnarök.')}
+
+    ${dialogue('odin', '🧙‍♂️ Odin Dinho', 'Finalmente uma admissão sábia, ThorMento. Lembrem-se: o teste t é uma ferramenta elegante &mdash; mas só funciona bem nas mãos de quem respeita seus pressupostos, reporta o tamanho de efeito e interpreta os resultados com juízo.')}
+
+    ${dialogue('corvo', '🐦‍⬛ Muninn sussurra:', '<strong>Checklist final antes de submeter seu artigo:</strong><br>1. Verifiquei normalidade? (Shapiro-Wilk ou histograma)<br>2. Verifiquei homocedasticidade? (Levene)<br>3. Escolhi o teste t correto para meu desenho?<br>4. Reportei no formato APA com <em>t</em>, gl, <em>p</em>, <em>d</em> e IC?<br>5. Interpretei o tamanho de efeito, não só o p-value?')}
+
+    <div class="visual-container" style="margin-top:30px">
+      <svg viewBox="0 0 700 120" width="700">
+        <!-- Overlapping distributions illustration -->
+        ${(() => {
+          function normalPDF(x, mu, sigma) {
+            return (1/(sigma*Math.sqrt(2*Math.PI))) * Math.exp(-0.5*Math.pow((x-mu)/sigma, 2));
+          }
+          let path1 = 'M';
+          let path2 = 'M';
+          for (let x = 50; x <= 100; x += 0.5) {
+            const px = 30 + (x - 50) * 12.8;
+            const y1 = 100 - normalPDF(x, mean1, sp) * sp * 280;
+            const y2 = 100 - normalPDF(x, mean2, sp) * sp * 280;
+            path1 += ` ${px.toFixed(1)},${y1.toFixed(1)}`;
+            path2 += ` ${px.toFixed(1)},${y2.toFixed(1)}`;
+          }
+          return `
+            <path d="${path1}" fill="none" stroke="${fenrir.hex}" stroke-width="2.5" opacity="0.8"/>
+            <path d="${path2}" fill="none" stroke="${hel.hex}" stroke-width="2.5" opacity="0.8"/>
+            <text x="${30 + (mean1-50)*12.8}" y="15" fill="${fenrir.hex}" font-size="12" text-anchor="middle" font-family="Permanent Marker">Fenrir (${r(mean1,1)})</text>
+            <text x="${30 + (mean2-50)*12.8}" y="15" fill="${hel.hex}" font-size="12" text-anchor="middle" font-family="Permanent Marker">Hel (${r(mean2,1)})</text>
+            <line x1="${30 + (mean1-50)*12.8}" y1="20" x2="${30 + (mean1-50)*12.8}" y2="100" stroke="${fenrir.hex}" stroke-width="1.5" stroke-dasharray="4"/>
+            <line x1="${30 + (mean2-50)*12.8}" y1="20" x2="${30 + (mean2-50)*12.8}" y2="100" stroke="${hel.hex}" stroke-width="1.5" stroke-dasharray="4"/>
+            <line x1="30" y1="100" x2="670" y2="100" stroke="var(--border)" stroke-width="1"/>
+            <text x="350" y="115" fill="var(--text-dim)" font-size="11" text-anchor="middle" font-family="Permanent Marker">Distribuições dos dois clãs (d = ${r(d_ind,2)})</text>
+          `;
+        })()}
+      </svg>
+    </div>
+  `;
+}
+
+// ===== STEP REGISTRY =====
+const stepFunctions = [step0, step1, step2, step3, step4, step5, step6, step7, step8, step9, step10, step11, step12, step13];
+
+const stepNames = [
+  'Introdução',
+  'Os Três Tipos',
+  'Pressupostos',
+  't Uma Amostra',
+  'Independente: Dados',
+  'Independente: Cálculo',
+  'Levene e Welch',
+  'Graus de Liberdade',
+  'Pareado: Dados',
+  'Pareado: Cálculo',
+  'Tamanho de Efeito',
+  'Reporte APA',
+  'Lição dos Corvos',
+  'Armadilhas Comuns'
+];
+
+// ===== NAVIGATION =====
+function renderStep() {
+  const content = document.getElementById('stepContent');
+  content.innerHTML = stepFunctions[currentStep]();
+  content.style.animation = 'none';
+  content.offsetHeight; // trigger reflow
+  content.style.animation = 'fadeIn 0.4s ease';
+
+  document.getElementById('progressLabel').textContent = `Passo ${currentStep} de ${totalSteps - 1} — ${stepNames[currentStep]}`;
+  document.getElementById('progressFill').style.width = `${(currentStep / (totalSteps - 1)) * 100}%`;
+
+  document.getElementById('btnBack').disabled = currentStep === 0;
+  document.getElementById('btnNext').textContent = currentStep === totalSteps - 1 ? 'Recomeçar ↻' : 'Avançar ▶';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext() {
+  if (currentStep >= totalSteps - 1) {
+    currentStep = 0;
+  } else {
+    currentStep++;
+  }
+  renderStep();
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderStep();
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
+});
+
+// Initialize
+renderStep();
+</script>
+</body>
+</html>

@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste de Equivalência (TOST) — Passo a Passo | Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117;
+  --bg-card: #161b22;
+  --bg-panel: #1c2333;
+  --odin-blue: #58a6ff;
+  --thor-red: #f85149;
+  --corvo-purple: #bc8cff;
+  --gold: #f0c040;
+  --silver: #8b949e;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --success: #3fb950;
+  --border: #30363d;
+  --asgard-color: #58a6ff;
+  --alfheim-color: #3fb950;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* PROGRESS BAR */
+.progress-bar-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-dark);
+  padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-label {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-panel);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--odin-blue), var(--gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* STEP CONTENT */
+.step-content {
+  min-height: 60vh;
+  padding: 30px 0;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+  font-family: 'Bangers', cursive;
+  font-size: 2.2rem;
+  color: var(--gold);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.step-subtitle {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.3rem;
+  color: var(--odin-blue);
+  margin-bottom: 15px;
+}
+
+/* DIALOGUE BOXES */
+.dialogue-box {
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.dialogue-box.odin {
+  background: rgba(88,166,255,0.08);
+  border-left-color: var(--odin-blue);
+}
+.dialogue-box.thor {
+  background: rgba(248,81,73,0.08);
+  border-left-color: var(--thor-red);
+}
+.dialogue-box.corvo {
+  background: rgba(188,140,255,0.08);
+  border-left-color: var(--corvo-purple);
+}
+
+.char-name {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+
+.dialogue-text {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* DATA TABLE */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1rem;
+}
+
+.data-table th, .data-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.data-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+}
+
+.data-table td {
+  background: var(--bg-card);
+  transition: background 0.2s;
+}
+
+.data-table tr:hover td {
+  background: rgba(88,166,255,0.1);
+}
+
+.mean-row td {
+  font-family: 'Permanent Marker', cursive;
+  background: var(--bg-panel) !important;
+}
+
+/* FORMULA */
+.formula {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 1.15rem;
+  text-align: center;
+  font-family: 'Patrick Hand', cursive;
+  color: var(--gold);
+}
+
+.formula-label {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+/* CALC TABLE */
+.calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 0.95rem;
+}
+
+.calc-table th, .calc-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.calc-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.calc-table td {
+  background: var(--bg-card);
+}
+
+/* SVG VISUALS */
+.visual-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.visual-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* APA BOX */
+.apa-box {
+  background: var(--bg-panel);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.apa-label {
+  font-family: 'Bangers', cursive;
+  color: var(--gold);
+  font-style: normal;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+/* NAVIGATION */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 40px;
+  gap: 12px;
+}
+
+.nav-btn {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.1rem;
+  padding: 12px 28px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  border-color: var(--odin-blue);
+  background: rgba(88,166,255,0.1);
+}
+
+.nav-btn.primary {
+  background: var(--odin-blue);
+  color: var(--bg-dark);
+  border-color: var(--odin-blue);
+}
+
+.nav-btn.primary:hover {
+  background: #79bbff;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* SIGNATURE */
+.signature {
+  text-align: center;
+  padding: 30px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* HIGHLIGHTS */
+.hl-gold { color: var(--gold); font-weight: bold; }
+.hl-blue { color: var(--odin-blue); }
+.hl-red { color: var(--thor-red); }
+.hl-green { color: var(--success); }
+.hl-purple { color: var(--corvo-purple); }
+
+/* QUADRANT GRID */
+.quadrant-grid {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 0;
+  margin: 20px 0;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.quadrant-header {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  padding: 12px 16px;
+  text-align: center;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.quadrant-cell {
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.quadrant-cell.q-green {
+  background: rgba(63,185,80,0.08);
+  border-color: var(--success);
+}
+
+.quadrant-cell.q-red {
+  background: rgba(248,81,73,0.08);
+  border-color: var(--thor-red);
+}
+
+.quadrant-cell.q-yellow {
+  background: rgba(240,192,64,0.08);
+  border-color: var(--gold);
+}
+
+.quadrant-cell.q-gray {
+  background: rgba(139,148,158,0.08);
+  border-color: var(--text-dim);
+}
+
+.quadrant-emoji {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* INFO CARD */
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 12px 0;
+}
+
+.info-card-title {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--odin-blue);
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+/* APPROACH CARDS */
+.approach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.approach-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+}
+
+.approach-card h4 {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--gold);
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+/* DECISION TREE */
+.decision-box {
+  background: var(--bg-panel);
+  border: 2px solid var(--odin-blue);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 10px 0;
+  text-align: center;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.05rem;
+}
+
+.decision-box.question {
+  border-color: var(--gold);
+  background: rgba(240,192,64,0.06);
+}
+
+.decision-box.answer-yes {
+  border-color: var(--success);
+  background: rgba(63,185,80,0.06);
+}
+
+.decision-box.answer-no {
+  border-color: var(--thor-red);
+  background: rgba(248,81,73,0.06);
+}
+
+.decision-arrow {
+  text-align: center;
+  font-size: 1.4rem;
+  color: var(--text-dim);
+  margin: 4px 0;
+}
+
+/* LICAO DOS CORVOS */
+.licao-box {
+  background: rgba(188,140,255,0.06);
+  border: 2px solid var(--corvo-purple);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.licao-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--corvo-purple);
+  margin-bottom: 12px;
+}
+
+/* NUMBER LINE */
+.number-line-container {
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .step-title { font-size: 1.6rem; }
+  .quadrant-grid { grid-template-columns: 1fr; }
+  .approach-grid { grid-template-columns: 1fr; }
+  .nav-btn { padding: 10px 18px; font-size: 0.95rem; }
+  body { font-size: 16px; }
+}
+
+/* ANIMATE ON APPEAR */
+.fade-in {
+  animation: fadeIn 0.6s ease both;
+}
+
+.fade-in-delay {
+  animation: fadeIn 0.6s ease 0.3s both;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="progress-bar-container">
+    <div class="progress-label" id="progressLabel">Passo 0 de 10</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="step-content" id="stepContent"></div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" id="btnBack" onclick="goBack()" disabled>&#9664; Voltar</button>
+    <button class="nav-btn primary" id="btnNext" onclick="goNext()">Avançar &#9654;</button>
+  </div>
+
+  <div class="signature">
+    Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+// Two forges: Asgard and Alfheim
+const asgard = { name: 'Asgard', M: 752, SD: 18, n: 20, color: 'var(--asgard-color)', hex: '#58a6ff' };
+const alfheim = { name: 'Alfheim', M: 748, SD: 20, n: 20, color: 'var(--alfheim-color)', hex: '#3fb950' };
+
+const SESOI = 10; // +/- 10 degrees
+const diff = asgard.M - alfheim.M; // 4
+const SE = Math.sqrt((asgard.SD * asgard.SD / asgard.n) + (alfheim.SD * alfheim.SD / alfheim.n));
+// SE = sqrt(324/20 + 400/20) = sqrt(16.2 + 20) = sqrt(36.2) = 6.0166...
+
+// Welch degrees of freedom approximation
+const s1sq_n = (asgard.SD * asgard.SD) / asgard.n; // 16.2
+const s2sq_n = (alfheim.SD * alfheim.SD) / alfheim.n; // 20
+const dfNum = Math.pow(s1sq_n + s2sq_n, 2);
+const dfDen = (Math.pow(s1sq_n, 2) / (asgard.n - 1)) + (Math.pow(s2sq_n, 2) / (alfheim.n - 1));
+const df_welch = dfNum / dfDen; // ~37.16
+
+// TOST: Two one-sided tests
+// Test 1: H01: delta <= -SESOI => t1 = (diff - (-SESOI)) / SE = (4+10)/6.0166 = 14/6.0166 = 2.327
+// Test 2: H02: delta >= +SESOI => t2 = (diff - (+SESOI)) / SE = (4-10)/6.0166 = -6/6.0166 = -0.9972
+const t1 = (diff - (-SESOI)) / SE;
+const t2 = (diff - SESOI) / SE;
+
+// 90% CI for equivalence: diff +/- t_crit(0.05, df) * SE
+// t_crit(0.05, ~37) ≈ 1.687
+const t_crit_90 = 1.687;
+const ci90_lower = diff - t_crit_90 * SE;
+const ci90_upper = diff + t_crit_90 * SE;
+
+// p-value approximation using t distribution
+function tDistCDF(t, df) {
+  // Regularized incomplete beta function approximation
+  const x = df / (df + t * t);
+  if (t < 0) return 0.5 * betaInc(x, df/2, 0.5);
+  return 1 - 0.5 * betaInc(x, df/2, 0.5);
+}
+
+function betaInc(x, a, b) {
+  // Continued fraction approximation for regularized incomplete beta
+  if (x === 0 || x === 1) return x === 0 ? 0 : 1;
+  const lnBeta = gammln(a) + gammln(b) - gammln(a + b);
+  const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta);
+  // Lentz's continued fraction
+  let f = 1, c = 1, d = 0;
+  for (let m = 0; m <= 200; m++) {
+    let numerator;
+    if (m === 0) {
+      numerator = 1;
+    } else {
+      const m2 = 2 * Math.ceil(m / 2);
+      const k = Math.ceil(m / 2);
+      if (m % 2 === 1) {
+        numerator = -(a + k - 1 + k) * x / ((a + m2 - 2) * (a + m2 - 1));
+        numerator = (a + k - 1) * (a + b + k - 1) * x / ((a + 2*k - 2) * (a + 2*k - 1));
+        numerator = -numerator;
+      } else {
+        numerator = k * (b - k) * x / ((a + 2*k - 1) * (a + 2*k));
+      }
+    }
+    d = 1 + numerator * d;
+    if (Math.abs(d) < 1e-30) d = 1e-30;
+    d = 1 / d;
+    c = 1 + numerator / c;
+    if (Math.abs(c) < 1e-30) c = 1e-30;
+    const delta = c * d;
+    f *= delta;
+    if (Math.abs(delta - 1) < 1e-10) break;
+  }
+  return front * f / a;
+}
+
+function gammln(x) {
+  const c = [76.18009172947146,-86.50532032941677,24.01409824083091,
+    -1.231739572450155,0.001208650973866179,-0.000005395239384953];
+  let y = x, tmp = x + 5.5;
+  tmp -= (x + 0.5) * Math.log(tmp);
+  let ser = 1.000000000190015;
+  for (let j = 0; j < 6; j++) ser += c[j] / (++y);
+  return -tmp + Math.log(2.5066282746310005 * ser / x);
+}
+
+// p-values for TOST
+// p1 = P(T > t1) when t1 > 0 => 1 - CDF(t1, df)
+// p2 = P(T < t2) when t2 < 0 => CDF(t2, df) but we want P(T < t2) = 1 - P(T > |t2|)
+// For TOST, the p-value for each one-sided test:
+// p1 (upper test): we want small p => P(T >= t1 | H01) for rejecting H01
+// p2 (lower test): we want small p => P(T <= t2 | H02) for rejecting H02
+// Simpler: p_tost = max(p1, p2) where
+// p1 = 1 - CDF(t1, df) for testing diff >= -SESOI (reject left bound)
+// p2 = CDF(t2, df) for testing diff <= +SESOI (reject right bound)
+
+// Using pre-calculated values for accuracy
+const p1_val = 0.0127; // one-sided p for t1=2.327, df~37
+const p2_val = 0.1625; // one-sided p for t2=-0.997, df~37
+const p_tost = Math.max(p1_val, p2_val);
+
+function r(v, d=2) { return Number(v).toFixed(d); }
+function r4(v) { return Number(v).toFixed(4); }
+
+// ===== DIALOGUE HELPER =====
+function dialogue(character, name, text) {
+  return `<div class="dialogue-box ${character}">
+    <div class="char-name ${character}">${name}</div>
+    <div class="dialogue-text">${text}</div>
+  </div>`;
+}
+
+// ===== STEP FUNCTIONS =====
+const totalSteps = 11; // 0..10
+let currentStep = 0;
+
+function step0() {
+  return `
+    <div class="step-title">A Ponte de Bifrost: "Igual" ou Apenas "Sem Diferenca"?</div>
+
+    <p>Na Ponte de Bifrost, dois mestres ferreiros &mdash; <span class="hl-blue">Asgard</span> e <span class="hl-green">Alfheim</span> &mdash; clamam que suas receitas de hidromel produzem temperaturas de forja <em>equivalentes</em>. Odin Dinho precisa provar que as forjas sao realmente iguais &mdash; nao apenas que nao encontrou diferenca.</p>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Facil! Rodo um teste t, p = 0,53 &mdash; nao significativo. Pronto: as forjas sao iguais! Caso encerrado.')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', '<strong>ERRADO.</strong> Esse e o erro mais perigoso da estatistica frequentista. <em>Nao rejeitar H&#8320;</em> NAO e o mesmo que <em>confirmar H&#8320;</em>. Um p > 0,05 pode significar tres coisas:<br><br>1. As forjas sao realmente iguais<br>2. Sua amostra e pequena demais para detectar a diferenca<br>3. Existe uma diferenca, mas o poder do teste e baixo<br><br>Ausencia de evidencia <strong>nao e</strong> evidencia de ausencia.')}
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 180" width="700">
+        <!-- Two contrasting boxes -->
+        <rect x="20" y="20" width="310" height="140" rx="12" fill="none" stroke="${'#f85149'}" stroke-width="2" stroke-dasharray="5"/>
+        <text x="175" y="55" fill="#f85149" font-size="16" text-anchor="middle" font-family="Bangers">NHST (Teste t classico)</text>
+        <text x="175" y="80" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Patrick Hand">p > 0,05</text>
+        <text x="175" y="100" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Patrick Hand">"Nao encontrei diferenca"</text>
+        <text x="175" y="125" fill="#f85149" font-size="14" text-anchor="middle" font-family="Permanent Marker">&#8800; "Sao iguais"</text>
+        <text x="175" y="148" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">Pode ser falta de poder!</text>
+
+        <rect x="370" y="20" width="310" height="140" rx="12" fill="none" stroke="#3fb950" stroke-width="2"/>
+        <text x="525" y="55" fill="#3fb950" font-size="16" text-anchor="middle" font-family="Bangers">TOST (Equivalencia)</text>
+        <text x="525" y="80" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Patrick Hand">90% IC dentro dos limites</text>
+        <text x="525" y="100" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Patrick Hand">"Provei que a diferenca e trivial"</text>
+        <text x="525" y="125" fill="#3fb950" font-size="14" text-anchor="middle" font-family="Permanent Marker">= "Sao equivalentes"</text>
+        <text x="525" y="148" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">Evidencia positiva de igualdade</text>
+
+        <!-- Arrow -->
+        <text x="350" y="95" fill="#f0c040" font-size="24" text-anchor="middle" font-family="Bangers">&#8800;</text>
+      </svg>
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'O TOST &mdash; <em>Two One-Sided Tests</em> &mdash; inverte a logica. Em vez de testar <strong>"sao diferentes?"</strong>, testa <strong>"a diferenca e pequena o suficiente para ser irrelevante?"</strong>. E a unica forma estatisticamente correta de concluir equivalencia.')}
+
+    <p style="text-align:center;margin-top:10px"><span class="hl-gold">Nosso cenario:</span> Forja de Asgard (M=752&#176;, SD=18, n=20) vs. Forja de Alfheim (M=748&#176;, SD=20, n=20)</p>
+  `;
+}
+
+function step1() {
+  return `
+    <div class="step-title">Passo 1: SESOI &mdash; O Menor Efeito de Interesse</div>
+
+    <p class="step-subtitle">Smallest Effect Size of Interest</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Antes de qualquer calculo, precisamos responder: <strong>qual diferenca seria grande o suficiente para importar na pratica?</strong> Esse limiar se chama SESOI. E uma decisao de <em>dominio</em>, nao de estatistica.')}
+
+    <div class="formula">
+      <div class="formula-label">Definicao</div>
+      SESOI = &Delta;<sub>L</sub> = Menor diferenca que tem consequencia pratica
+    </div>
+
+    <p>No nosso caso: o mestre ferreiro de Asgard diz que qualquer diferenca de temperatura <strong>ate 10 graus</strong> nao altera a qualidade da espada forjada. Por outro lado, acima de 10 graus muda a tempera do aco.</p>
+
+    <div class="formula" style="font-size:1.3rem">
+      SESOI = <span class="hl-gold">&plusmn;10 graus</span>
+    </div>
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 160" width="700">
+        <!-- Number line -->
+        <line x1="50" y1="80" x2="650" y2="80" stroke="#30363d" stroke-width="2"/>
+
+        <!-- Ticks -->
+        ${[-20,-15,-10,-5,0,5,10,15,20].map(v => {
+          const x = 350 + v * 15;
+          const isLimit = Math.abs(v) === 10;
+          const col = isLimit ? '#f0c040' : '#8b949e';
+          return `<line x1="${x}" y1="72" x2="${x}" y2="88" stroke="${col}" stroke-width="${isLimit ? 3 : 1}"/>
+                  <text x="${x}" y="105" fill="${col}" font-size="${isLimit ? 13 : 10}" text-anchor="middle" font-family="${isLimit ? 'Permanent Marker' : 'Patrick Hand'}">${v > 0 ? '+' : ''}${v}</text>`;
+        }).join('')}
+
+        <!-- Equivalence zone -->
+        <rect x="${350 - 10*15}" y="55" width="${20*15}" height="50" rx="8" fill="#3fb950" opacity="0.12"/>
+        <text x="350" y="48" fill="#3fb950" font-size="14" text-anchor="middle" font-family="Bangers">ZONA DE EQUIVALENCIA</text>
+
+        <!-- Bound labels -->
+        <text x="${350-10*15}" y="130" fill="#f0c040" font-size="12" text-anchor="middle" font-family="Permanent Marker">&minus;SESOI</text>
+        <text x="${350+10*15}" y="130" fill="#f0c040" font-size="12" text-anchor="middle" font-family="Permanent Marker">+SESOI</text>
+
+        <!-- Bound lines -->
+        <line x1="${350-10*15}" y1="50" x2="${350-10*15}" y2="110" stroke="#f0c040" stroke-width="2" stroke-dasharray="5"/>
+        <line x1="${350+10*15}" y1="50" x2="${350+10*15}" y2="110" stroke="#f0c040" stroke-width="2" stroke-dasharray="5"/>
+
+        <!-- Zero marker -->
+        <circle cx="350" cy="80" r="5" fill="#e6edf3"/>
+        <text x="350" y="143" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Patrick Hand">&Delta; = 0 (igualdade perfeita)</text>
+
+        <!-- Arrows showing "not relevant" zones -->
+        <text x="${350-13*15}" y="75" fill="#f85149" font-size="11" text-anchor="middle" font-family="Permanent Marker">&larr; Diferenca relevante</text>
+        <text x="${350+13*15}" y="75" fill="#f85149" font-size="11" text-anchor="middle" font-family="Permanent Marker">Diferenca relevante &rarr;</text>
+      </svg>
+    </div>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Posso escolher SESOI = &plusmn;50? Assim qualquer coisa cai dentro!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', '<strong>Nao!</strong> O SESOI deve ser definido <em>antes</em> de ver os dados, baseado no conhecimento do dominio. Escolher um SESOI conveniente depois de ver os resultados e tao grave quanto p-hacking. Isso tem nome: <strong>SESOI hacking</strong>.')}
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'O SESOI e a fronteira entre "irrelevante" e "relevante". Se a diferenca verdadeira estiver dentro de [&minus;SESOI, +SESOI], consideramos os grupos <em>praticamente equivalentes</em> &mdash; mesmo que nao sejam identicos.')}
+  `;
+}
+
+function step2() {
+  return `
+    <div class="step-title">Passo 2: A Logica do TOST</div>
+
+    <p class="step-subtitle">Two One-Sided Tests</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'O TOST funciona com uma logica engenhosa. Em vez de um unico teste, fazemos <strong>dois testes unilaterais</strong> &mdash; um para cada fronteira da zona de equivalencia.')}
+
+    <div class="info-card">
+      <div class="info-card-title">Teste 1 (Limite Inferior)</div>
+      <p>H&#8320;&#8321;: &Delta; &le; &minus;SESOI (a diferenca e menor que &minus;10)<br>
+      H&#8321;&#8321;: &Delta; &gt; &minus;SESOI (a diferenca e maior que &minus;10)<br>
+      <span class="hl-blue">Rejeitamos? &rarr; A media nao esta abaixo do limite inferior.</span></p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title">Teste 2 (Limite Superior)</div>
+      <p>H&#8320;&#8322;: &Delta; &ge; +SESOI (a diferenca e maior que +10)<br>
+      H&#8321;&#8322;: &Delta; &lt; +SESOI (a diferenca e menor que +10)<br>
+      <span class="hl-green">Rejeitamos? &rarr; A media nao esta acima do limite superior.</span></p>
+    </div>
+
+    <div class="formula" style="font-size:1.2rem; border-color:var(--success)">
+      <div class="formula-label" style="color:var(--success)">Regra de Decisao</div>
+      Equivalencia declarada &#8596; <strong>AMBOS</strong> os testes rejeitam suas H&#8320;
+    </div>
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 280" width="700">
+        <!-- Number line base -->
+        <line x1="80" y1="60" x2="620" y2="60" stroke="#30363d" stroke-width="2"/>
+
+        <!-- Equivalence zone -->
+        <rect x="200" y="35" width="300" height="50" rx="8" fill="#3fb950" opacity="0.1"/>
+
+        <!-- Bounds -->
+        <line x1="200" y1="30" x2="200" y2="90" stroke="#f0c040" stroke-width="2"/>
+        <line x1="500" y1="30" x2="500" y2="90" stroke="#f0c040" stroke-width="2"/>
+        <text x="200" y="25" fill="#f0c040" font-size="12" text-anchor="middle" font-family="Permanent Marker">&minus;10</text>
+        <text x="500" y="25" fill="#f0c040" font-size="12" text-anchor="middle" font-family="Permanent Marker">+10</text>
+        <text x="350" y="25" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">0</text>
+        <line x1="350" y1="35" x2="350" y2="85" stroke="#8b949e" stroke-width="1" stroke-dasharray="3"/>
+
+        <!-- Test 1 arrow -->
+        <text x="80" y="130" fill="#58a6ff" font-size="14" font-family="Bangers">TESTE 1</text>
+        <text x="80" y="148" fill="#8b949e" font-size="11" font-family="Patrick Hand">H&#8320;: &Delta; &le; &minus;10</text>
+        <text x="80" y="165" fill="#58a6ff" font-size="11" font-family="Patrick Hand">"A diferenca NAO esta la embaixo"</text>
+        <line x1="200" y1="140" x2="350" y2="140" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowBlue)"/>
+        <text x="275" y="135" fill="#58a6ff" font-size="11" text-anchor="middle" font-family="Permanent Marker">Rejeitar &rarr;</text>
+
+        <!-- Test 2 arrow -->
+        <text x="400" y="130" fill="#3fb950" font-size="14" font-family="Bangers">TESTE 2</text>
+        <text x="400" y="148" fill="#8b949e" font-size="11" font-family="Patrick Hand">H&#8320;: &Delta; &ge; +10</text>
+        <text x="400" y="165" fill="#3fb950" font-size="11" font-family="Patrick Hand">"A diferenca NAO esta la em cima"</text>
+        <line x1="500" y1="140" x2="350" y2="140" stroke="#3fb950" stroke-width="2" marker-end="url(#arrowGreen)"/>
+        <text x="425" y="135" fill="#3fb950" font-size="11" text-anchor="middle" font-family="Permanent Marker">&larr; Rejeitar</text>
+
+        <!-- Conclusion -->
+        <rect x="170" y="200" width="360" height="55" rx="10" fill="none" stroke="#3fb950" stroke-width="2"/>
+        <text x="350" y="225" fill="#3fb950" font-size="15" text-anchor="middle" font-family="Bangers">AMBOS REJEITADOS?</text>
+        <text x="350" y="245" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Permanent Marker">&#10003; EQUIVALENCIA DECLARADA</text>
+
+        <!-- Arrow markers -->
+        <defs>
+          <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+          </marker>
+          <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3fb950"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'A logica e bonita: se provamos que &Delta; nao esta abaixo de &minus;SESOI <strong>e</strong> nao esta acima de +SESOI, entao &Delta; esta <em>dentro</em> da zona de equivalencia. Os dois testes funcionam como um cerco &mdash; fechando a diferenca dentro dos limites por ambos os lados.')}
+  `;
+}
+
+function step3() {
+  return `
+    <div class="step-title">Passo 3: O Intervalo de Confianca de 90%</div>
+
+    <p class="step-subtitle">Por que 90% e nao 95%?</p>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Opa! 90%? Isso e menos rigoroso! Deveria ser 95%, como sempre!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Na verdade, <strong>90% e matematicamente equivalente</strong> a dois testes unilaterais com &alpha; = 0,05 cada. Pense: se cada cauda tem 5%, sobram 90% no meio. O IC de 90% para equivalencia e tao rigoroso quanto o IC de 95% para diferenca &mdash; apenas com uma logica invertida.')}
+
+    <div class="formula">
+      <div class="formula-label">Regra do IC de 90%</div>
+      Se o IC de 90% cai <strong>inteiramente</strong> dentro de [&minus;SESOI, +SESOI]<br>
+      &rarr; Equivalencia declarada com &alpha; = 0,05
+    </div>
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 320" width="700">
+        <!-- Title -->
+        <text x="350" y="25" fill="#e6edf3" font-size="15" text-anchor="middle" font-family="Bangers">TRES CENARIOS POSSIVEIS</text>
+
+        <!-- Scenario 1: Equivalence confirmed -->
+        <text x="80" y="65" fill="#3fb950" font-size="13" font-family="Permanent Marker">Cenario A:</text>
+        <text x="80" y="82" fill="#8b949e" font-size="11" font-family="Patrick Hand">IC dentro dos limites</text>
+        <line x1="200" y1="72" x2="620" y2="72" stroke="#30363d" stroke-width="1"/>
+        <line x1="300" y1="55" x2="300" y2="89" stroke="#f0c040" stroke-width="2"/>
+        <line x1="520" y1="55" x2="520" y2="89" stroke="#f0c040" stroke-width="2"/>
+        <rect x="300" y="62" width="220" height="20" rx="4" fill="#3fb950" opacity="0.1"/>
+        <!-- CI bar inside -->
+        <line x1="360" y1="72" x2="470" y2="72" stroke="#3fb950" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="415" cy="72" r="4" fill="#e6edf3"/>
+        <text x="415" y="95" fill="#3fb950" font-size="11" text-anchor="middle" font-family="Permanent Marker">&#10003; EQUIVALENTES</text>
+
+        <!-- Scenario 2: IC exceeds bounds -->
+        <text x="80" y="145" fill="#f85149" font-size="13" font-family="Permanent Marker">Cenario B:</text>
+        <text x="80" y="162" fill="#8b949e" font-size="11" font-family="Patrick Hand">IC excede os limites</text>
+        <line x1="200" y1="152" x2="620" y2="152" stroke="#30363d" stroke-width="1"/>
+        <line x1="300" y1="135" x2="300" y2="169" stroke="#f0c040" stroke-width="2"/>
+        <line x1="520" y1="135" x2="520" y2="169" stroke="#f0c040" stroke-width="2"/>
+        <rect x="300" y="142" width="220" height="20" rx="4" fill="#3fb950" opacity="0.1"/>
+        <!-- CI bar exceeding right -->
+        <line x1="380" y1="152" x2="560" y2="152" stroke="#f85149" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="470" cy="152" r="4" fill="#e6edf3"/>
+        <text x="470" y="175" fill="#f85149" font-size="11" text-anchor="middle" font-family="Permanent Marker">&#10007; NAO EQUIVALENTES</text>
+
+        <!-- Scenario 3: Indeterminate -->
+        <text x="80" y="225" fill="#f0c040" font-size="13" font-family="Permanent Marker">Cenario C:</text>
+        <text x="80" y="242" fill="#8b949e" font-size="11" font-family="Patrick Hand">IC cruza um limite</text>
+        <line x1="200" y1="232" x2="620" y2="232" stroke="#30363d" stroke-width="1"/>
+        <line x1="300" y1="215" x2="300" y2="249" stroke="#f0c040" stroke-width="2"/>
+        <line x1="520" y1="215" x2="520" y2="249" stroke="#f0c040" stroke-width="2"/>
+        <rect x="300" y="222" width="220" height="20" rx="4" fill="#3fb950" opacity="0.1"/>
+        <!-- CI bar crossing left bound -->
+        <line x1="270" y1="232" x2="430" y2="232" stroke="#f0c040" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="350" cy="232" r="4" fill="#e6edf3"/>
+        <text x="350" y="260" fill="#f0c040" font-size="11" text-anchor="middle" font-family="Permanent Marker">? INCONCLUSIVO</text>
+
+        <!-- Labels for bounds -->
+        <text x="300" y="290" fill="#f0c040" font-size="11" text-anchor="middle" font-family="Permanent Marker">&minus;SESOI</text>
+        <text x="520" y="290" fill="#f0c040" font-size="11" text-anchor="middle" font-family="Permanent Marker">+SESOI</text>
+      </svg>
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'A equivalencia entre IC de 90% e TOST com &alpha; = 0,05 foi demonstrada por Schuirmann (1987). E a chamada <em>intersection-union test</em>: o IC de 90% deve cair inteiramente dentro dos limites de equivalencia. Se o IC de 95% cair dentro dos limites, tanto melhor &mdash; mas o de 90% e o criterio minimo.')}
+  `;
+}
+
+function step4() {
+  return `
+    <div class="step-title">Passo 4: Calculo Passo a Passo</div>
+
+    <p class="step-subtitle">Usando os dados das forjas de Bifrost</p>
+
+    <table class="data-table">
+      <tr>
+        <th></th>
+        <th>Media (M)</th>
+        <th>Desvio-padrao (SD)</th>
+        <th>n</th>
+      </tr>
+      <tr>
+        <td style="font-family:'Permanent Marker';color:var(--asgard-color)">Forja de Asgard</td>
+        <td>752&#176;</td>
+        <td>18</td>
+        <td>20</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Permanent Marker';color:var(--alfheim-color)">Forja de Alfheim</td>
+        <td>748&#176;</td>
+        <td>20</td>
+        <td>20</td>
+      </tr>
+    </table>
+
+    <p style="text-align:center"><span class="hl-gold">SESOI = &plusmn;10 graus</span></p>
+
+    <!-- Step 4a: Difference -->
+    <div class="formula">
+      <div class="formula-label">1. Diferenca observada</div>
+      &Delta; = M<sub>Asgard</sub> &minus; M<sub>Alfheim</sub> = 752 &minus; 748 = <span class="hl-gold">${r(diff)}</span>
+    </div>
+
+    <!-- Step 4b: SE -->
+    <div class="formula">
+      <div class="formula-label">2. Erro-padrao da diferenca</div>
+      SE = &radic;(SD&#178;<sub>1</sub>/n<sub>1</sub> + SD&#178;<sub>2</sub>/n<sub>2</sub>) = &radic;(324/20 + 400/20) = &radic;(16,2 + 20) = &radic;36,2 = <span class="hl-gold">${r(SE, 4)}</span>
+    </div>
+
+    <!-- Step 4c: t-values -->
+    <div class="formula">
+      <div class="formula-label">3. Estatistica t&#8321; (limite inferior)</div>
+      t&#8321; = (&Delta; &minus; (&minus;SESOI)) / SE = (4 &minus; (&minus;10)) / ${r(SE, 4)} = 14 / ${r(SE, 4)} = <span class="hl-blue">${r(t1, 4)}</span>
+    </div>
+
+    <div class="formula">
+      <div class="formula-label">4. Estatistica t&#8322; (limite superior)</div>
+      t&#8322; = (&Delta; &minus; (+SESOI)) / SE = (4 &minus; 10) / ${r(SE, 4)} = &minus;6 / ${r(SE, 4)} = <span class="hl-green">${r(t2, 4)}</span>
+    </div>
+
+    <!-- Step 4d: df -->
+    <div class="formula">
+      <div class="formula-label">5. Graus de liberdade (Welch)</div>
+      df = (s&#178;<sub>1</sub>/n<sub>1</sub> + s&#178;<sub>2</sub>/n<sub>2</sub>)&#178; / [(s&#178;<sub>1</sub>/n<sub>1</sub>)&#178;/(n<sub>1</sub>&minus;1) + (s&#178;<sub>2</sub>/n<sub>2</sub>)&#178;/(n<sub>2</sub>&minus;1)] = <span class="hl-gold">${r(df_welch, 2)}</span>
+    </div>
+
+    <!-- Step 4e: 90% CI -->
+    <div class="formula">
+      <div class="formula-label">6. IC de 90%</div>
+      IC<sub>90%</sub> = &Delta; &plusmn; t<sub>crit(0,05; ${r(df_welch,0)})</sub> &times; SE = 4 &plusmn; ${t_crit_90} &times; ${r(SE,4)}<br>
+      IC<sub>90%</sub> = [<span class="hl-gold">${r(ci90_lower, 2)}</span> ; <span class="hl-gold">${r(ci90_upper, 2)}</span>]
+    </div>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Agora a pergunta crucial: o IC de 90% [${r(ci90_lower,2)} ; ${r(ci90_upper,2)}] cai inteiramente dentro de [&minus;10 ; +10]?<br><br><strong>Limite inferior do IC = ${r(ci90_lower,2)}</strong> &mdash; esta acima de &minus;10? <span class="hl-green">Sim! &#10003;</span><br><strong>Limite superior do IC = ${r(ci90_upper,2)}</strong> &mdash; esta abaixo de +10? <span class="hl-red">Nao! &#10007; Excede por ${r(ci90_upper - 10, 2)} graus</span><br><br>O IC <strong>nao</strong> cabe inteiramente na zona de equivalencia. Resultado: <strong>inconclusivo</strong>.')}
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Mas a diferenca e so 4 graus! Obvio que sao iguais!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'A diferenca <em>pontual</em> e 4, sim. Mas a <em>incerteza</em> ao redor dessa estimativa se estende ate ${r(ci90_upper,2)}. Com n = 20 por grupo, nao temos precisao suficiente para excluir que a diferenca real possa ser maior que 10. Precisariamos de mais guerreiros testando as forjas &mdash; ou de forjas com menor variabilidade.')}
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 130" width="700">
+        <!-- Number line -->
+        <line x1="50" y1="60" x2="650" y2="60" stroke="#30363d" stroke-width="2"/>
+
+        <!-- Scale: -15 to +15 mapped to 50..650, but we need to go to ~15 to show the CI -->
+        ${[-15,-10,-5,0,5,10,15].map(v => {
+          const x = 350 + v * 18;
+          const isLimit = Math.abs(v) === 10;
+          return `<line x1="${x}" y1="52" x2="${x}" y2="68" stroke="${isLimit ? '#f0c040' : '#8b949e'}" stroke-width="${isLimit ? 2 : 1}"/>
+                  <text x="${x}" y="85" fill="${isLimit ? '#f0c040' : '#8b949e'}" font-size="${isLimit ? 12 : 10}" text-anchor="middle" font-family="${isLimit ? 'Permanent Marker' : 'Patrick Hand'}">${v > 0 ? '+' : ''}${v}</text>`;
+        }).join('')}
+
+        <!-- Equivalence zone -->
+        <rect x="${350-10*18}" y="40" width="${20*18}" height="40" rx="6" fill="#3fb950" opacity="0.1"/>
+
+        <!-- 90% CI bar - extends beyond +10 -->
+        <line x1="${350 + ci90_lower * 18}" y1="60" x2="${350 + ci90_upper * 18}" y2="60" stroke="#f85149" stroke-width="8" stroke-linecap="round"/>
+        <!-- portion inside bounds in blue -->
+        <line x1="${350 + ci90_lower * 18}" y1="60" x2="${350 + 10 * 18}" y2="60" stroke="#58a6ff" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="${350 + diff * 18}" cy="60" r="5" fill="#e6edf3"/>
+
+        <!-- CI labels -->
+        <text x="${350 + ci90_lower * 18}" y="35" fill="#58a6ff" font-size="10" text-anchor="middle" font-family="Permanent Marker">${r(ci90_lower,2)}</text>
+        <text x="${350 + ci90_upper * 18}" y="35" fill="#f85149" font-size="10" text-anchor="middle" font-family="Permanent Marker">${r(ci90_upper,2)}</text>
+        <text x="${350 + diff * 18}" y="110" fill="#e6edf3" font-size="11" text-anchor="middle" font-family="Permanent Marker">&Delta; = ${diff}</text>
+
+        <!-- Overshoot annotation -->
+        <line x1="${350 + 10*18}" y1="44" x2="${350 + ci90_upper*18}" y2="44" stroke="#f85149" stroke-width="2"/>
+        <text x="${350 + (10 + ci90_upper)/2 * 18}" y="38" fill="#f85149" font-size="9" text-anchor="middle" font-family="Permanent Marker">excede!</text>
+
+        <!-- Result -->
+        <text x="350" y="125" fill="#f0c040" font-size="13" text-anchor="middle" font-family="Bangers">&#10007; IC ULTRAPASSA +SESOI &mdash; INCONCLUSIVO</text>
+      </svg>
+    </div>
+  `;
+}
+
+function step5() {
+  return `
+    <div class="step-title">Passo 5: Os 4 Quadrantes NHST x TOST</div>
+
+    <p class="step-subtitle">O cruzamento que todo pesquisador precisa entender</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Quando cruzamos os resultados do NHST (teste t classico) com os do TOST, surgem <strong>quatro cenarios possiveis</strong>. Cada um tem uma interpretacao diferente &mdash; e apenas dois sao conclusivos.')}
+
+    <div class="quadrant-grid">
+      <!-- Header row -->
+      <div class="quadrant-header" style="background:var(--bg-dark)"></div>
+      <div class="quadrant-header" style="color:var(--success)">TOST: Equivalente</div>
+      <div class="quadrant-header" style="color:var(--thor-red)">TOST: Nao Equivalente</div>
+
+      <!-- Row 1: NHST Not Significant -->
+      <div class="quadrant-header">NHST: p &gt; 0,05<br><span style="font-size:0.8rem;color:var(--text-dim)">(nao significativo)</span></div>
+      <div class="quadrant-cell q-green">
+        <span class="quadrant-emoji">&#10003;</span>
+        <span style="font-family:'Permanent Marker';color:var(--success);font-size:1.1rem">Equivalente</span><br>
+        <span style="font-size:0.9rem">Sem diferenca significativa<br><strong>E</strong> equivalencia confirmada.<br>O cenario ideal.</span>
+      </div>
+      <div class="quadrant-cell q-gray">
+        <span class="quadrant-emoji">&#10067;</span>
+        <span style="font-family:'Permanent Marker';color:var(--text-dim);font-size:1.1rem">Inconclusivo</span><br>
+        <span style="font-size:0.9rem">Sem diferenca significativa<br><strong>MAS</strong> sem equivalencia.<br>Falta de poder amostral?</span>
+      </div>
+
+      <!-- Row 2: NHST Significant -->
+      <div class="quadrant-header">NHST: p &le; 0,05<br><span style="font-size:0.8rem;color:var(--text-dim)">(significativo)</span></div>
+      <div class="quadrant-cell q-yellow">
+        <span class="quadrant-emoji">&#9888;&#65039;</span>
+        <span style="font-family:'Permanent Marker';color:var(--gold);font-size:1.1rem">Trivialmente Diferente</span><br>
+        <span style="font-size:0.9rem">Diferenca significativa<br><strong>MAS</strong> equivalente (SESOI).<br>Diferenca real, porem irrelevante.</span>
+      </div>
+      <div class="quadrant-cell q-red">
+        <span class="quadrant-emoji">&#10007;</span>
+        <span style="font-family:'Permanent Marker';color:var(--thor-red);font-size:1.1rem">Diferente</span><br>
+        <span style="font-size:0.9rem">Diferenca significativa<br><strong>E</strong> nao equivalente.<br>Diferenca real e relevante.</span>
+      </div>
+    </div>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Espera &mdash; pode ser significativo E equivalente ao mesmo tempo?!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Sim! Com amostras muito grandes, uma diferenca minuscula (digamos, 0,3 graus) pode dar p < 0,05 no NHST, mas o TOST confirma equivalencia porque 0,3 esta bem dentro de &plusmn;10. E a diferenca entre <strong>significancia estatistica</strong> e <strong>relevancia pratica</strong> &mdash; o calcanhar de Aquiles do NHST.')}
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'O quadrante mais perigoso e o <strong>inconclusivo</strong> (p > 0,05 no NHST, sem equivalencia no TOST). E onde a maioria dos pesquisadores para &mdash; dizendo "nao ha diferenca" sem ter provado nada. O TOST transforma essa zona cinzenta em transparencia.')}
+
+    <div class="info-card" style="border-color:var(--gold)">
+      <div class="info-card-title" style="color:var(--gold)">Nosso resultado das forjas</div>
+      <p>NHST: p = 0,53 (nao significativo) + TOST: IC<sub>90%</sub> [${r(ci90_lower,2)} ; ${r(ci90_upper,2)}] <strong>ultrapassa</strong> +SESOI (nao equivalente)<br>
+      <strong>&rarr; Quadrante superior-direito: <span class="hl-gold">Inconclusivo!</span></strong> Sem diferenca significativa, mas tambem sem equivalencia. Precisamos de mais dados.</p>
+    </div>
+  `;
+}
+
+function step6() {
+  return `
+    <div class="step-title">Passo 6: TOST Pareado</div>
+
+    <p class="step-subtitle">Quando os mesmos guerreiros sao testados duas vezes</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'O TOST independente compara dois grupos distintos. Mas e se os mesmos guerreiros testarem as duas forjas? Nesse caso, usamos o <strong>TOST pareado</strong> &mdash; baseado nas diferencas individuais.')}
+
+    <div class="info-card">
+      <div class="info-card-title">Cenario Pareado</div>
+      <p>20 guerreiros forjaram uma espada em cada forja. Para cada guerreiro, calculamos:<br>
+      <span class="hl-gold">d<sub>i</sub> = temperatura<sub>Asgard</sub> &minus; temperatura<sub>Alfheim</sub></span></p>
+    </div>
+
+    <table class="data-table" style="font-size:0.9rem">
+      <tr>
+        <th>Guerreiro</th>
+        <th>Asgard</th>
+        <th>Alfheim</th>
+        <th>d<sub>i</sub></th>
+      </tr>
+      <tr><td>Bjorn</td><td>755</td><td>750</td><td style="color:var(--gold)">+5</td></tr>
+      <tr><td>Ragnar</td><td>748</td><td>752</td><td style="color:var(--gold)">&minus;4</td></tr>
+      <tr><td>Sigurd</td><td>760</td><td>755</td><td style="color:var(--gold)">+5</td></tr>
+      <tr><td>Ivar</td><td>745</td><td>743</td><td style="color:var(--gold)">+2</td></tr>
+      <tr><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+      <tr class="mean-row">
+        <td colspan="3" style="text-align:right">M<sub>d</sub> =</td>
+        <td style="color:var(--gold)">3,5</td>
+      </tr>
+    </table>
+
+    <div class="formula">
+      <div class="formula-label">Formulas do TOST Pareado</div>
+      SE<sub>d</sub> = SD<sub>d</sub> / &radic;n<br><br>
+      t&#8321; = (M<sub>d</sub> &minus; (&minus;SESOI)) / SE<sub>d</sub><br>
+      t&#8322; = (M<sub>d</sub> &minus; (+SESOI)) / SE<sub>d</sub><br><br>
+      df = n &minus; 1
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'A logica e identica ao TOST independente &mdash; dois testes unilaterais, ambos devem rejeitar. A unica diferenca e que usamos a <strong>media e o desvio-padrao das diferencas pareadas</strong> em vez das medias dos grupos. O IC de 90% da diferenca media deve caber dentro de [&minus;SESOI, +SESOI].')}
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Ah, entao e so trocar os numeros e rodar a mesma coisa?')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Essencialmente sim, mas cuidado: o TOST pareado costuma ter <strong>mais poder</strong> que o independente porque elimina a variabilidade entre sujeitos. Se cada guerreiro serve como seu proprio controle, o SD<sub>d</sub> tende a ser menor que os SDs dos grupos.')}
+  `;
+}
+
+function step7() {
+  return `
+    <div class="step-title">Passo 7: Escolhendo o SESOI</div>
+
+    <p class="step-subtitle">Tres abordagens, um principio</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Definir o SESOI e a decisao mais importante do TOST &mdash; e a que exige mais pensamento. Existem tres abordagens classicas.')}
+
+    <div class="approach-grid">
+      <div class="approach-card" style="border-color:var(--odin-blue)">
+        <h4 style="color:var(--odin-blue)">1. Baseada em Ancora</h4>
+        <p style="font-size:0.95rem">Usa um criterio externo e significativo.<br><br>
+        <em>Exemplo:</em> O mestre ferreiro define que &plusmn;10&#176; nao afeta a tempera do aco. Esse e o limiar pratico &mdash; a "ancora" vem do conhecimento de dominio.</p>
+        <p style="color:var(--success);font-family:'Permanent Marker';margin-top:8px">&#10003; Preferida</p>
+      </div>
+
+      <div class="approach-card" style="border-color:var(--corvo-purple)">
+        <h4 style="color:var(--corvo-purple)">2. Baseada na Distribuicao</h4>
+        <p style="font-size:0.95rem">Usa a variabilidade dos dados como referencia.<br><br>
+        <em>Exemplo:</em> SESOI = 0,5 &times; SD<sub>pooled</sub> (equivale a d = 0,5 de Cohen). E um criterio generico quando falta conhecimento especifico.</p>
+        <p style="color:var(--gold);font-family:'Permanent Marker';margin-top:8px">&#9888; Aceitavel</p>
+      </div>
+
+      <div class="approach-card" style="border-color:var(--success)">
+        <h4 style="color:var(--success)">3. Pratica / Clinica</h4>
+        <p style="font-size:0.95rem">Baseada em consequencias reais.<br><br>
+        <em>Exemplo:</em> Na medicina, a diferenca de 5mmHg na pressao arterial e o limiar para mudar tratamento. Na forja, &plusmn;10&#176; e o limiar para comprometer a espada.</p>
+        <p style="color:var(--success);font-family:'Permanent Marker';margin-top:8px">&#10003; Preferida</p>
+      </div>
+    </div>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Vou definir o SESOI <em>depois</em> de ver os dados. Se a diferenca for 8, coloco SESOI = &plusmn;9. Genial!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', '<strong>Isso e SESOI hacking!</strong> Tao grave quanto p-hacking. O SESOI deve ser definido e justificado <em>antes</em> da coleta de dados &mdash; idealmente no pre-registro do estudo. Definir depois de ver os resultados invalida toda a logica inferencial.')}
+
+    <div class="info-card" style="border-color:var(--thor-red)">
+      <div class="info-card-title" style="color:var(--thor-red)">&#9888; Armadilha: SESOI Hacking</div>
+      <p>Sinais de alerta:</p>
+      <ul style="margin-left:20px;margin-top:6px">
+        <li>SESOI definido depois da coleta</li>
+        <li>SESOI exatamente maior que o IC observado</li>
+        <li>Sem justificativa teorica ou pratica</li>
+        <li>SESOI muda entre estudos sem explicacao</li>
+      </ul>
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'Na duvida, use a regra de ouro: escolha o SESOI <em>mais estreito</em> que ainda faca sentido no seu dominio. Se voce erra para o lado conservador, a conclusao de equivalencia sera mais robusta. Equivalencia com SESOI apertado e muito mais convincente do que com SESOI frouxo.')}
+  `;
+}
+
+function step8() {
+  return `
+    <div class="step-title">Passo 8: Poder do Teste de Equivalencia</div>
+
+    <p class="step-subtitle">Por que voce precisa de MAIS participantes</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Aqui esta a surpresa desagradavel: testes de equivalencia exigem amostras <strong>substancialmente maiores</strong> do que testes de diferenca com o mesmo &alpha; e poder.')}
+
+    <div class="formula">
+      <div class="formula-label">Formula aproximada para n (por grupo)</div>
+      n &ge; (t<sub>&alpha;</sub> + t<sub>&beta;</sub>)&#178; &times; 2&sigma;&#178; / (SESOI &minus; |&Delta;|)&#178;
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'A intuicao: num teste de diferenca, voce busca detectar um efeito. Num teste de equivalencia, voce busca <strong>excluir</strong> efeitos maiores que o SESOI. Excluir exige mais precisao &mdash; e precisao exige mais dados.')}
+
+    <div class="visual-container">
+      <svg viewBox="0 0 700 250" width="700">
+        <text x="350" y="25" fill="#e6edf3" font-size="14" text-anchor="middle" font-family="Bangers">COMPARACAO: n NECESSARIO</text>
+
+        <!-- Bar: Difference test -->
+        <text x="50" y="80" fill="#58a6ff" font-size="12" text-anchor="start" font-family="Permanent Marker">Teste t</text>
+        <text x="50" y="95" fill="#8b949e" font-size="10" text-anchor="start" font-family="Patrick Hand">(detectar d=0,5)</text>
+        <rect x="180" y="67" width="200" height="30" rx="6" fill="#58a6ff" opacity="0.7"/>
+        <text x="395" y="88" fill="#58a6ff" font-size="13" font-family="Permanent Marker">n &#8776; 64/grupo</text>
+
+        <!-- Bar: TOST -->
+        <text x="50" y="145" fill="#3fb950" font-size="12" text-anchor="start" font-family="Permanent Marker">TOST</text>
+        <text x="50" y="160" fill="#8b949e" font-size="10" text-anchor="start" font-family="Patrick Hand">(provar equiv. SESOI=0,5)</text>
+        <rect x="180" y="132" width="380" height="30" rx="6" fill="#3fb950" opacity="0.7"/>
+        <text x="575" y="153" fill="#3fb950" font-size="13" font-family="Permanent Marker">n &#8776; 138/grupo</text>
+
+        <!-- Multiplier annotation -->
+        <line x1="580" y1="82" x2="580" y2="147" stroke="#f0c040" stroke-width="2"/>
+        <line x1="575" y1="82" x2="585" y2="82" stroke="#f0c040" stroke-width="2"/>
+        <line x1="575" y1="147" x2="585" y2="147" stroke="#f0c040" stroke-width="2"/>
+        <text x="610" y="120" fill="#f0c040" font-size="14" font-family="Bangers">~2x</text>
+
+        <!-- Explanation -->
+        <text x="350" y="210" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Patrick Hand">Exemplo: &alpha; = 0,05, poder = 80%, &sigma; = 1, d verdadeiro = 0</text>
+        <text x="350" y="230" fill="#f0c040" font-size="12" text-anchor="middle" font-family="Permanent Marker">TOST exige ~2x mais dados que NHST para o mesmo poder!</text>
+      </svg>
+    </div>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Isso e ridiculo! Mais guerreiros? O Jarl nao vai pagar por isso!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Provar equivalencia e mais dificil do que detectar diferenca &mdash; e justo que seja. Pense: qualquer coisa pode ser "nao significativo" com n = 5. Mas demonstrar equivalencia exige precisao. Essa e a beleza do TOST &mdash; ele impede conclusoes apressadas de igualdade com amostras miseraveis.')}
+
+    <div class="info-card">
+      <div class="info-card-title">Fatores que afetam o poder do TOST</div>
+      <table class="calc-table" style="font-size:0.9rem">
+        <tr><th>Fator</th><th>Efeito no Poder</th></tr>
+        <tr><td>SESOI mais largo</td><td style="color:var(--success)">&uarr; Mais facil provar equivalencia</td></tr>
+        <tr><td>SESOI mais estreito</td><td style="color:var(--thor-red)">&darr; Mais dificil, precisa mais n</td></tr>
+        <tr><td>&Delta; verdadeiro proximo de 0</td><td style="color:var(--success)">&uarr; IC mais centrado</td></tr>
+        <tr><td>&Delta; verdadeiro proximo do SESOI</td><td style="color:var(--thor-red)">&darr; IC no limite</td></tr>
+        <tr><td>Menor variabilidade (&sigma;)</td><td style="color:var(--success)">&uarr; IC mais estreito</td></tr>
+        <tr><td>Maior n</td><td style="color:var(--success)">&uarr; Sempre ajuda</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+function step9() {
+  return `
+    <div class="step-title">Passo 9: Reporte no Formato APA</div>
+
+    <p class="step-subtitle">Como comunicar os resultados</p>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Um reporte completo de TOST inclui: a diferenca observada, o SESOI justificado, ambos os testes unilaterais, o IC de 90%, e a conclusao explicita.')}
+
+    <div class="apa-box">
+      <div class="apa-label">Reporte APA &mdash; TOST para Amostras Independentes</div>
+      <p>A temperatura media da forja de Asgard (<em>M</em> = 752, <em>SD</em> = 18, <em>n</em> = 20) e da forja de Alfheim (<em>M</em> = 748, <em>SD</em> = 20, <em>n</em> = 20) foram comparadas usando o procedimento TOST (Two One-Sided Tests) com limites de equivalencia de &Delta;<sub>L</sub> = &plusmn;10 graus, definidos a priori com base no limiar de alteracao da tempera do aco.</p>
+      <p style="margin-top:10px">A diferenca observada foi <em>&Delta;</em> = 4,00 (SE = ${r(SE, 2)}). O teste unilateral inferior rejeitou H&#8320;&#8321;: &Delta; &le; &minus;10, <em>t</em><sub>1</sub>(${r(df_welch, 1)}) = ${r(t1, 2)}, <em>p</em><sub>1</sub> = 0,013. O teste unilateral superior nao rejeitou H&#8320;&#8322;: &Delta; &ge; +10, <em>t</em><sub>2</sub>(${r(df_welch, 1)}) = ${r(t2, 2)}, <em>p</em><sub>2</sub> = 0,163.</p>
+      <p style="margin-top:10px">O IC de 90% para a diferenca [${r(ci90_lower, 2)}, ${r(ci90_upper, 2)}] <strong>nao</strong> caiu inteiramente dentro dos limites de equivalencia de &plusmn;10. Embora o limite inferior do IC esteja acima de &minus;10, o limite superior (${r(ci90_upper, 2)}) excede +10. Portanto, <strong>a equivalencia nao pode ser declarada</strong> com base neste criterio.</p>
+      <p style="margin-top:10px;color:var(--gold);font-style:normal"><strong>Nota:</strong> O teste unilateral superior nao atingiu significancia (<em>p</em><sub>2</sub> = 0,163 > 0,05), confirmando que nao se pode rejeitar a hipotese de que a diferenca exceda o limite superior. O resultado e <em>inconclusivo</em> quanto a equivalencia.</p>
+    </div>
+
+    ${dialogue('thor', '&#9889; ThorMento', 'Perai! Voce disse que eram equivalentes no Passo 4!')}
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Boa observacao, ThorMento. Vamos verificar com rigor. O IC de 90% e [${r(ci90_lower,2)}, ${r(ci90_upper,2)}]. O limite superior ${r(ci90_upper,2)} esta ${r(ci90_upper,2) > 10 ? "acima" : "abaixo"} de +10. ${r(ci90_upper,2) > 10 ? "Entao a equivalencia NAO pode ser declarada &mdash; o IC ultrapassa o limite superior por " + r(ci90_upper - 10, 2) + " graus." : "Esta dentro! Equivalencia confirmada."}<br><br>Isso mostra como o rigor numerico importa. Arredondar ou "arredondar para o lado que convem" e inaceitavel.')}
+
+    <div class="info-card">
+      <div class="info-card-title">Checklist do Reporte TOST</div>
+      <table class="calc-table" style="font-size:0.9rem">
+        <tr><th>#</th><th>Elemento</th><th>Nosso Exemplo</th></tr>
+        <tr><td>1</td><td>SESOI justificado</td><td>&plusmn;10&#176; (limiar da tempera)</td></tr>
+        <tr><td>2</td><td>Quando definido</td><td>A priori</td></tr>
+        <tr><td>3</td><td>Diferenca observada (&Delta;)</td><td>4,00</td></tr>
+        <tr><td>4</td><td>SE</td><td>${r(SE, 2)}</td></tr>
+        <tr><td>5</td><td>t&#8321; e p&#8321;</td><td>${r(t1, 2)}, p = 0,013</td></tr>
+        <tr><td>6</td><td>t&#8322; e p&#8322;</td><td>${r(t2, 2)}, p = 0,163</td></tr>
+        <tr><td>7</td><td>IC de 90%</td><td>[${r(ci90_lower, 2)}, ${r(ci90_upper, 2)}]</td></tr>
+        <tr><td>8</td><td>Conclusao</td><td style="color:var(--gold)">Inconclusivo</td></tr>
+      </table>
+    </div>
+
+    ${dialogue('corvo', '&#128054;&#8205;&#11035; Muninn sussurra:', 'Note: o p do TOST e o <strong>maior</strong> entre p&#8321; e p&#8322;. Ambos precisam ser < &alpha;. Se apenas um rejeita, a equivalencia nao e declarada. No nosso caso, p&#8321; = 0,013 (rejeitou), mas p&#8322; = 0,163 (nao rejeitou). A forja de Asgard pode estar <em>ate</em> ${r(ci90_upper, 2)} graus acima de Alfheim &mdash; o que ultrapassa o SESOI de +10.')}
+
+    <div class="info-card" style="border-color:var(--success)">
+      <div class="info-card-title" style="color:var(--success)">E se quisessemos declarar equivalencia?</div>
+      <p>Precisariamos de um IC mais estreito. Isso requer mais dados (n maior) ou menor variabilidade. Com n = 35 por grupo (mantendo os mesmos M e SD), o IC de 90% ficaria aproximadamente [0,4 ; 7,6] &mdash; dentro de &plusmn;10, permitindo a declaracao de equivalencia.</p>
+    </div>
+  `;
+}
+
+function step10() {
+  return `
+    <div class="step-title">Licao dos Corvos</div>
+
+    <div class="licao-box">
+      <div class="licao-title">&#128054;&#8205;&#11035; Muninn resume os pontos-chave:</div>
+      <ol style="margin-left:20px;line-height:2">
+        <li><strong>"Nao significativo" &#8800; "equivalente"</strong> &mdash; ausencia de evidencia nao e evidencia de ausencia.</li>
+        <li>O <strong>TOST</strong> (Two One-Sided Tests) e a unica forma correta de testar equivalencia.</li>
+        <li>Defina o <strong>SESOI</strong> (Menor Efeito de Interesse) <em>antes</em> da coleta, baseado no dominio.</li>
+        <li>O TOST faz dois testes unilaterais: &Delta; &gt; &minus;SESOI <strong>e</strong> &Delta; &lt; +SESOI. Ambos devem rejeitar.</li>
+        <li>O <strong>IC de 90%</strong> e equivalente ao TOST com &alpha; = 0,05. Se cai inteiramente dentro de [&minus;SESOI, +SESOI], ha equivalencia.</li>
+        <li>Cruzar NHST com TOST gera 4 cenarios: equivalente, diferente, trivialmente diferente, ou <strong>inconclusivo</strong>.</li>
+        <li>O TOST exige <strong>amostras maiores</strong> que o NHST &mdash; provar igualdade e mais dificil que detectar diferenca.</li>
+        <li>Formato APA: reportar &Delta;, SE, t&#8321;, t&#8322;, ambos os p-values, IC de 90%, e conclusao explicita.</li>
+      </ol>
+    </div>
+
+    <div class="licao-box" style="border-color:var(--odin-blue)">
+      <div class="licao-title" style="color:var(--odin-blue)">&#128054;&#8205;&#11035; Huginn provoca:</div>
+      <p style="font-size:1.1rem;line-height:1.7">
+        <strong>Desafio 1:</strong> Quantos artigos no seu campo dizem "nao houve diferenca significativa" e concluem igualdade? Agora voce sabe que isso e invalido &mdash; nenhum deles fez TOST.<br><br>
+        <strong>Desafio 2:</strong> Se voce definisse um SESOI para a variavel principal do seu mestrado/doutorado, qual seria? Justifique com base no dominio, nao na conveniencia.<br><br>
+        <strong>Desafio 3:</strong> Um colega diz: "p = 0,99, entao os grupos sao certamente iguais." O que voce responde?
+      </p>
+    </div>
+
+    <!-- Decision Tree: When to use TOST vs NHST -->
+    <p class="step-subtitle" style="margin-top:30px">Arvore de Decisao: TOST ou NHST?</p>
+
+    <div class="decision-box question">
+      <strong>Qual e sua pergunta de pesquisa?</strong>
+    </div>
+    <div style="display:flex;gap:20px;justify-content:center">
+      <div style="flex:1;max-width:320px">
+        <div class="decision-arrow">&darr;</div>
+        <div class="decision-box answer-no">
+          "Os grupos sao <strong>diferentes</strong>?"<br>
+          <span style="font-family:'Permanent Marker';color:var(--thor-red)">&rarr; Use NHST</span><br>
+          <span style="font-size:0.9rem">Teste t, ANOVA, etc.</span>
+        </div>
+      </div>
+      <div style="flex:1;max-width:320px">
+        <div class="decision-arrow">&darr;</div>
+        <div class="decision-box answer-yes">
+          "Os grupos sao <strong>equivalentes</strong>?"<br>
+          <span style="font-family:'Permanent Marker';color:var(--success)">&rarr; Use TOST</span><br>
+          <span style="font-size:0.9rem">Defina SESOI a priori</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="decision-arrow" style="margin-top:10px">&darr;</div>
+    <div class="decision-box question" style="max-width:500px;margin:0 auto">
+      <strong>Voce tem SESOI definido a priori?</strong>
+    </div>
+    <div style="display:flex;gap:20px;justify-content:center">
+      <div style="flex:1;max-width:320px">
+        <div class="decision-arrow">&darr;</div>
+        <div class="decision-box answer-yes">
+          <strong>Sim</strong><br>
+          <span style="font-family:'Permanent Marker';color:var(--success)">Rode o TOST!</span><br>
+          <span style="font-size:0.9rem">IC 90% dentro de &plusmn;SESOI?</span>
+        </div>
+      </div>
+      <div style="flex:1;max-width:320px">
+        <div class="decision-arrow">&darr;</div>
+        <div class="decision-box answer-no">
+          <strong>Nao</strong><br>
+          <span style="font-family:'Permanent Marker';color:var(--gold)">Defina o SESOI primeiro!</span><br>
+          <span style="font-size:0.9rem">Ancora, distribuicao ou pratica</span>
+        </div>
+      </div>
+    </div>
+
+    ${dialogue('odin', '&#129497;&#8205;&#9794;&#65039; Odin Dinho', 'Da proxima vez que alguem disser "p > 0,05, entao sao iguais" &mdash; voce saberao o que dizer. A estatistica nao aceita atalhos para igualdade. A ponte de Bifrost so se abre com rigor.')}
+  `;
+}
+
+// ===== RENDER ENGINE =====
+const stepFunctions = [step0, step1, step2, step3, step4, step5, step6, step7, step8, step9, step10];
+
+function renderStep() {
+  const container = document.getElementById('stepContent');
+  container.style.animation = 'none';
+  container.offsetHeight; // trigger reflow
+  container.style.animation = 'fadeIn 0.4s ease';
+  container.innerHTML = stepFunctions[currentStep]();
+
+  // Update progress
+  const pct = (currentStep / (totalSteps - 1)) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = 'Passo ' + currentStep + ' de ' + (totalSteps - 1);
+
+  // Update nav buttons
+  document.getElementById('btnBack').disabled = currentStep === 0;
+  const btnNext = document.getElementById('btnNext');
+  if (currentStep === totalSteps - 1) {
+    btnNext.textContent = '🏁 Fim';
+    btnNext.disabled = true;
+  } else {
+    btnNext.textContent = 'Avançar ▶';
+    btnNext.disabled = false;
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext() {
+  if (currentStep < totalSteps - 1) {
+    currentStep++;
+    renderStep();
+  }
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderStep();
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    goNext();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    goBack();
+  }
+});
+
+// Initial render
+renderStep();
+</script>
+</body>
+</html>
