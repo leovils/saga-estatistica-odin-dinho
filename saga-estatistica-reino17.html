@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 17: Regressão Logística</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}}
+
+/* ── ARMOR SYSTEM ── */
+.armor-panel{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.viking-mini{position:relative;width:120px;height:180px;flex-shrink:0}
+.vm-head{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:#d4a574;border:1.5px solid #b8956a;z-index:5}
+.vm-torso{position:absolute;top:56px;left:50%;transform:translateX(-50%);width:44px;height:58px;background:#8b7355;border-radius:7px 7px 4px 4px;z-index:3}
+.vm-arm-l{position:absolute;top:59px;left:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-arm-r{position:absolute;top:59px;right:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-leg-l{position:absolute;top:111px;left:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-leg-r{position:absolute;top:111px;right:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-slot{position:absolute;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);transform:scale(.3)}
+.vm-slot.on{opacity:1;transform:scale(1)}
+.vm-helm{top:16px;left:50%;transform:translateX(-50%) scale(.3);z-index:8}.vm-helm.on{transform:translateX(-50%) scale(1)}
+.vm-mail{top:57px;left:50%;transform:translateX(-50%) scale(.3);z-index:4}.vm-mail.on{transform:translateX(-50%) scale(1)}
+.vm-cape{top:53px;left:50%;transform:translateX(-50%) scale(.3);z-index:1}.vm-cape.on{transform:translateX(-50%) scale(1)}
+.vm-left{top:66px;left:0;z-index:7}.vm-right{top:56px;right:0;z-index:7}
+.vm-boots{bottom:4px;left:50%;transform:translateX(-50%) scale(.3);z-index:7;display:flex;gap:10px}.vm-boots.on{transform:translateX(-50%) scale(1)}
+.gear-progress{flex:1;display:flex;flex-direction:column;gap:4px}
+.gp-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:.8em;color:var(--text-dim);transition:all .3s}
+.gp-row.earned{color:var(--success);font-weight:bold}
+.gp-row .gp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .3s;flex-shrink:0}
+.gp-row.earned .gp-dot{background:var(--success);border-color:var(--success)}
+.vm-sparks{position:absolute;pointer-events:none;z-index:20}
+.vm-spark{position:absolute;border-radius:50%;animation:vmSp .6s ease-out forwards}
+@keyframes vmSp{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+.vm-flash{animation:vmFl .4s ease}
+@keyframes vmFl{0%{filter:brightness(1)}30%{filter:brightness(1.8) drop-shadow(0 0 12px rgba(240,180,40,.6))}100%{filter:brightness(1)}}
+.result-viking{position:relative;width:160px;height:240px;margin:16px auto}
+.rv-head{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#d4a574;border:2px solid #b8956a;z-index:5}
+.rv-torso{position:absolute;top:73px;left:50%;transform:translateX(-50%);width:56px;height:74px;background:#8b7355;border-radius:9px 9px 5px 5px;z-index:3}
+.rv-arm-l{position:absolute;top:77px;left:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-arm-r{position:absolute;top:77px;right:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-leg-l{position:absolute;top:144px;left:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-leg-r{position:absolute;top:144px;right:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-slot{position:absolute}
+.rv-helm{top:20px;left:50%;transform:translateX(-50%);z-index:8}
+.rv-mail{top:74px;left:50%;transform:translateX(-50%);z-index:4}
+.rv-cape{top:69px;left:50%;transform:translateX(-50%);z-index:1}
+.rv-left{top:86px;left:4px;z-index:7}.rv-right{top:72px;right:4px;z-index:7}
+.rv-boots{bottom:4px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:14px}
+@media(max-width:600px){.armor-panel{flex-direction:column;align-items:center}.viking-mini{width:100px;height:160px}}
+footer{text-align:center;padding:24px 12px;color:var(--text-dim);font-size:.85em;border-top:1px solid var(--border);margin-top:40px}
+footer a{color:var(--odin-blue);text-decoration:none}footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<footer>
+  <a href="index.html">Voltar ao Hub dos Reinos</a><br>
+  Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026
+</footer>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 17
+// REGRESSÃO LOGÍSTICA
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho \u{1F6E1}️',thor:'ThorMento ⚡',muninn:'Muninn \u{1F426}‍⬛',huginn:'Huginn \u{1F426}',narrator:'\u{1F4DC} Narrador'};
+  return `<div class="dialogue-box ${cls[c]||'narrator'}"><div class="char-name ${cls[c]||'narrator'}">${nm[c]||c}</div><div class="dialogue-text">${t}</div></div>`;
+}
+function hintBox(t){return `<div class="hint-box"><div class="hint-label">\u{1F426}‍⬛ Dica de Muninn</div>${t}</div>`;}
+function xpBar(){
+  const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return armorPanelHTML()+`<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${p}%"></div></div><div class="xp-count">${GAME.xp} / ${GAME.maxXP}</div></div>`;
+}
+function updateXPBar(){
+  const b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){const p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=`${GAME.xp} / ${GAME.maxXP}`;}
+}
+function showTitleScreen(){
+  content().innerHTML=`
+  <div class="title-screen">
+    <div class="reino-badge">REINO 17</div>
+    <h1>A Saga Estatística de Odin Dinho</h1>
+    <h2>Reino da Regressão Logística</h2>
+    <p class="subtitle">Diante do Portão dos Dois Caminhos, onde cada destino é sim ou não, vitória ou derrota, Odin Dinho revela a curva sigmoidéia — a única arma capaz de prever resultados binários sem ultrapassar as fronteiras do possível.</p>
+    <div class="difficulty-select">
+      <button class="diff-btn" onclick="startGame('aprendiz')"><div class="diff-label">\u{1F6E1}️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button>
+      <button class="diff-btn" onclick="startGame('mestre')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button>
+    </div>
+  </div>`;
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;gearEarned=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: Chegada ao Portão dos Dois Caminhos ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('narrator','O estudante chega ao <em>Portão dos Dois Caminhos</em> — uma estrutura colossal com duas passagens: uma banhada em luz (vitória) e outra envolta em sombras (derrota). Aqui, toda resposta é binária: 1 ou 0, sim ou não, sobrevive ou perece.')}
+      ${dialogue('odin','Quando a variável dependente é <em>binária</em> — sim/não, vitória/derrota, sobrevive/morre — a regressão linear clássica não serve. Precisamos de uma ferramenta que respeite os limites de 0 e 1.')}
+      ${dialogue('thor','Regressão linear resolve tudo! Só jogar os dados e rodar!')}
+      ${dialogue('odin','Regressão linear num resultado binário gera previsões <em>fora de 0 e 1</em> — probabilidades de −0.3 ou 1.4. Isso não faz sentido nenhum. A <em>regressão logística</em> é a arma correta.')}
+      <button class="continue-btn" onclick="nextScene()">Cruzar o Portão →</button>
+    </div>`});
+
+  // ━━ CENA 2: A Curva Sigmoide ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${dialogue('odin','A regressão linear traça uma reta que pode ir de −∞ a +∞. Para resultados binários, precisamos de uma função que <em>comprima tudo entre 0 e 1</em>. Essa função é a <em>sigmoide</em> — a curva em formato de S.')}
+      <div class="data-display">
+        P(Y=1) = 1 / (1 + e^(−(b₀ + b₁X)))<br><br>
+        Quando b₀ + b₁X → +∞, P → 1<br>
+        Quando b₀ + b₁X → −∞, P → 0
+      </div>
+      ${dialogue('muninn','A sigmoide garante que a probabilidade prevista <em>nunca sai de 0 a 1</em>. No centro (P = 0.5), a curva é íngreme — pequenas mudanças em X causam grandes mudanças em P. Nas extremidades, a curva achata — a probabilidade satura.')}
+      ${dialogue('huginn','A estimação usa <em>Máxima Verossimilhança (MLE)</em>, não Mínimos Quadrados (OLS). MLE encontra os coeficientes que maximizam a probabilidade de observar os dados que realmente temos.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 3: DESAFIO 1 ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Sobreviver (sim/não) é uma variável binária. Qual modelo é apropriado para prever resultados 0/1?'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 1: A Escolha do Modelo</div>
+        <div class="challenge-question">Qual modelo é apropriado para prever se um guerreiro <em>sobrevive</em> (sim/não) a uma batalha, com base na qualidade da armadura?</div>
+        <div class="data-display">
+          VD: Sobrevivência (0 = não, 1 = sim)<br>
+          VI: Qualidade da armadura (escala contínua)
+        </div>
+        ${hint}
+        <div class="options-grid" id="q1-opts">
+          <button class="option-btn" onclick="checkQ(1,this,'a')">Regressão linear — funciona para qualquer tipo de variável dependente, inclusive binária, pois os resíduos se ajustam</button>
+          <button class="option-btn" onclick="checkQ(1,this,'b')">Correlação de Pearson — basta medir a associação entre as variáveis, e a significância do r já indica a previsão</button>
+          <button class="option-btn" onclick="checkQ(1,this,'c')">ANOVA — estamos comparando grupos definidos pela variável dependente, e o teste F resolve a previsão</button>
+          <button class="option-btn" onclick="checkQ(1,this,'d')">Regressão logística — a VD é binária (0/1), e a sigmoide garante previsões entre 0 e 1</button>
+        </div>
+        <div id="q1-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 4: Log-odds, Odds e Probabilidade ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','A regressão logística trabalha em <em>três escalas</em> que se convertem entre si:<br><br>• <em>Probabilidade</em>: P — de 0 a 1<br>• <em>Odds</em>: P/(1−P) — de 0 a +∞<br>• <em>Log-odds (logit)</em>: ln(P/(1−P)) — de −∞ a +∞')}
+      <div class="data-display">
+        Logit: ln(P/(1−P)) = b₀ + b₁X<br><br>
+        Odds Ratio: OR = e^b₁<br>
+        "Para cada unidade de aumento em X,<br>
+        as odds multiplicam por OR"
+      </div>
+      ${dialogue('muninn','O <em>Odds Ratio (OR)</em> é a estrela da interpretação. OR = e^b₁. Se OR = 2.34, significa que para cada unidade de aumento em X, as <em>chances</em> (odds) de Y=1 são multiplicadas por 2.34.')}
+      ${dialogue('huginn','OR = 1 → sem efeito. OR > 1 → aumenta as chances. OR < 1 → diminui as chances. Um OR de 0.50 significa que as odds <em>caem pela metade</em> a cada unidade de X.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 5: DESAFIO 2 — Interpretar OR ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('OR = e^b₁ = e^0.85 = 2.34. OR > 1 significa que o aumento na VI aumenta as odds do resultado. Interprete em termos de "multiplicar as odds por..."'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 2: O Poder da Armadura</div>
+        <div class="challenge-question">b₁ = 0.85 para qualidade da armadura. OR = e^0.85 = 2.34. Interprete.</div>
+        <div class="data-display">
+          b₁ = 0.85 &nbsp;|&nbsp; OR = e^0.85 = 2.34<br>
+          VD: Sobrevivência (0/1)
+        </div>
+        ${hint}
+        <div class="options-grid" id="q2-opts">
+          <button class="option-btn" onclick="checkQ(2,this,'a')">A probabilidade de sobreviver aumenta 2.34% a cada unidade de armadura — o OR é diretamente interpretável como aumento percentual de P</button>
+          <button class="option-btn" onclick="checkQ(2,this,'b')">Para cada unidade de aumento na qualidade da armadura, as odds de sobreviver são multiplicadas por 2.34 (aumentam 134%)</button>
+          <button class="option-btn" onclick="checkQ(2,this,'c')">A sobrevivência é 2.34 vezes mais provável que a morte em termos absolutos — OR equivale à razão direta de probabilidades</button>
+          <button class="option-btn" onclick="checkQ(2,this,'d')">O coeficiente não é significativo porque OR > 1 indica viés de superestimação no modelo — valores distantes de 1 são suspeitos</button>
+        </div>
+        <div id="q2-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 6: DESAFIO 3 — Converter Probabilidade em Odds ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Odds = P/(1−P). Se P = 0.75, então Odds = 0.75/0.25 = ?'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 3: As Três Escalas</div>
+        <div class="challenge-question">Um guerreiro tem probabilidade P = 0.75 de sobreviver. Quais são as odds?</div>
+        <div class="data-display">
+          P = 0.75<br>
+          Odds = P / (1 − P) = ?
+        </div>
+        ${hint}
+        <div class="options-grid" id="q3-opts">
+          <button class="option-btn" onclick="checkQ(3,this,'a')">Odds = 1 − 0.75 = 0.25 — basta subtrair a probabilidade de 1 para obter as odds</button>
+          <button class="option-btn" onclick="checkQ(3,this,'b')">Odds = 0.75 × 0.25 = 0.1875 — odds é o produto de P pelo seu complemento</button>
+          <button class="option-btn" onclick="checkQ(3,this,'c')">Odds = 0.75 / 0.25 = 3 (ou 3:1 a favor da sobrevivência)</button>
+          <button class="option-btn" onclick="checkQ(3,this,'d')">Odds = ln(0.75) = −0.288 — o logaritmo natural converte probabilidade diretamente em odds</button>
+        </div>
+        <div id="q3-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 7: Avaliação do Modelo ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Como avaliamos o modelo logístico? Não temos R² clássico! Usamos:<br><br>• <em>Pseudo-R²</em> (Nagelkerke, McFadden) — aproximações, NÃO são R² verdadeiro<br>• <em>Hosmer-Lemeshow</em> — teste de ajuste (p > .05 = bom ajuste)<br>• <em>Tabela de classificação</em> — sensibilidade e especificidade')}
+      <div class="data-display">
+        Matriz de Confusão:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Previsto 1 &nbsp; Previsto 0<br>
+        Real 1: &nbsp; TP &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FN<br>
+        Real 0: &nbsp; FP &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TN<br><br>
+        Sensibilidade = TP/(TP+FN)<br>
+        Especificidade = TN/(TN+FP)
+      </div>
+      ${dialogue('thor','R² = 0.72! Meu modelo é ótimo!')}
+      ${dialogue('odin','Cuidado! Na regressão logística <em>não existe R² clássico</em>. O que temos são pseudo-R² (Nagelkerke, McFadden), que não se interpretam como proporção de variância explicada. Reportar R² de regressão linear para modelo logístico é erro grave!')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 8: DESAFIO 4 — Matriz de Confusão ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Sensibilidade = TP/(TP+FN) = 45/(45+15). Especificidade = TN/(TN+FP) = 30/(30+10).'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 4: A Matriz do Destino</div>
+        <div class="challenge-question">TP=45, FP=10, FN=15, TN=30. Calcule sensibilidade e especificidade.</div>
+        <div class="data-display">
+          TP = 45 &nbsp;|&nbsp; FP = 10<br>
+          FN = 15 &nbsp;|&nbsp; TN = 30<br><br>
+          Sensibilidade = TP/(TP+FN) = ?<br>
+          Especificidade = TN/(TN+FP) = ?
+        </div>
+        ${hint}
+        <div class="options-grid" id="q4-opts">
+          <button class="option-btn" onclick="checkQ(4,this,'a')">Sensibilidade = 75/100 = 0.75; Especificidade = 25/100 = 0.25 — somando TP+FP no numerador</button>
+          <button class="option-btn" onclick="checkQ(4,this,'b')">Sensibilidade = 45/55 = 0.82; Especificidade = 30/45 = 0.67 — usando colunas em vez de linhas da matriz</button>
+          <button class="option-btn" onclick="checkQ(4,this,'c')">Sensibilidade = 45/100 = 0.45; Especificidade = 30/100 = 0.30 — dividindo pelo N total da amostra</button>
+          <button class="option-btn" onclick="checkQ(4,this,'d')">Sensibilidade = 45/60 = 0.75 (75%); Especificidade = 30/40 = 0.75 (75%)</button>
+        </div>
+        <div id="q4-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 9: DESAFIO 5 — Pseudo-R² ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Pseudo-R² não é R² verdadeiro. Não se interpreta como "proporção de variância explicada". Valores tendem a ser menores que em regressão linear.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 5: O Falso R²</div>
+        <div class="challenge-question">Nagelkerke R² = 0.38 em um modelo logístico. O que isso significa?</div>
+        <div class="data-display">
+          Nagelkerke R² = 0.38
+        </div>
+        ${hint}
+        <div class="options-grid" id="q5-opts">
+          <button class="option-btn" onclick="checkQ(5,this,'a')">O modelo explica 38% da variância da VD — igual ao R² de regressão linear, pois Nagelkerke é apenas outro nome para o mesmo indicador</button>
+          <button class="option-btn" onclick="checkQ(5,this,'b')">O modelo é ruim porque R² < 0.50 — na regressão logística, assim como na linear, o patamar mínimo aceitável é 0.50</button>
+          <button class="option-btn" onclick="checkQ(5,this,'c')">É um pseudo-R² — indica ajuste razoável, mas NÃO se interpreta como proporção de variância explicada. Valores de pseudo-R² tendem a ser menores que R² de OLS</button>
+          <button class="option-btn" onclick="checkQ(5,this,'d')">O modelo está errado porque o pseudo-R² de Nagelkerke só é válido quando supera 0.50 — abaixo disso o ajuste é insuficiente para uso</button>
+        </div>
+        <div id="q5-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 10: Pressupostos ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('odin','Os pressupostos da regressão logística são <em>diferentes</em> dos da regressão linear:<br><br>• <em>Ausência de multicolinearidade</em> entre os preditores<br>• <em>Linearidade do logit</em> — relação linear entre X e ln(P/(1−P))<br>• <em>Independência das observações</em><br>• <em>Amostra adequada</em> — regra prática: mínimo 10 eventos por preditor')}
+      ${dialogue('muninn','A regressão logística <em>NÃO exige</em>: normalidade dos resíduos, homocedasticidade, relação linear entre X e Y. Essas são exigências da regressão linear!')}
+      ${dialogue('huginn','Para reportar em APA: <em>OR = 2.34, 95% CI [1.45, 3.78], p = .003</em>. Sempre inclua OR, intervalo de confiança e p-value. O IC do OR que não contém 1 indica significância.')}
+      <button class="continue-btn" onclick="nextScene()">Continuar →</button>
+    </div>`});
+
+  // ━━ CENA 11: DESAFIO 6 — Armadilha de ThorMento ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('Na regressão logística não existe R² clássico. Reportar R² de OLS para modelo logístico é um erro fundamental.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 6: A Armadilha do R²</div>
+        <div class="challenge-question">Um pesquisador roda regressão logística e reporta "R² = 0.72". Qual é o problema?</div>
+        <div class="data-display">
+          Modelo: Regressão Logística<br>
+          Reportado: "R² = 0.72"
+        </div>
+        ${hint}
+        <div class="options-grid" id="q6-opts">
+          <button class="option-btn" onclick="checkQ(6,this,'a')">Nenhum problema — R² = 0.72 é excelente e se interpreta normalmente como proporção de variância explicada, independente do tipo de regressão</button>
+          <button class="option-btn" onclick="checkQ(6,this,'b')">R² clássico (de OLS) não existe na regressão logística. O pesquisador deveria reportar pseudo-R² (Nagelkerke ou McFadden) e deixar claro que não é R² verdadeiro</button>
+          <button class="option-btn" onclick="checkQ(6,this,'c')">O problema é que R² = 0.72 é alto demais para ser verdade em ciências sociais — valores acima de 0.50 sugerem overfitting ou erro de cálculo</button>
+          <button class="option-btn" onclick="checkQ(6,this,'d')">Basta mudar para R² ajustado — ele corrige a superestimação do R² padrão na logística, assim como faz na regressão linear</button>
+        </div>
+        <div id="q6-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ CENA 12: DESAFIO 7 — Interpretar Saída Completa ━━
+  GAME.scenes.push({type:'challenge',html:()=>{
+    const hint=GAME.difficulty==='aprendiz'?hintBox('OR = 1.92, IC 95% [1.15, 3.21] não contém 1, e p = .013 < .05. O preditor é significativo e cada unidade multiplica as odds por 1.92.'):'';
+    return `
+    <div class="scene">
+      ${xpBar()}
+      <div class="challenge-box">
+        <div class="challenge-title">⚔️ Desafio 7: O Pergaminho Completo</div>
+        <div class="challenge-question">Interprete a saída da regressão logística: Preditor "Experiência em combate": b = 0.65, OR = 1.92, 95% CI [1.15, 3.21], p = .013.</div>
+        <div class="data-display">
+          Preditor: Experiência em combate<br>
+          b = 0.65 &nbsp;|&nbsp; OR = 1.92<br>
+          95% CI [1.15, 3.21] &nbsp;|&nbsp; p = .013
+        </div>
+        ${hint}
+        <div class="options-grid" id="q7-opts">
+          <button class="option-btn" onclick="checkQ(7,this,'a')">Significativo (p = .013 < .05). Cada unidade de experiência multiplica as odds de sobreviver por 1.92 (aumento de 92%). IC [1.15, 3.21] não contém 1, confirmando significância</button>
+          <button class="option-btn" onclick="checkQ(7,this,'b')">Não significativo — OR próximo de 2 não é relevante na prática, pois apenas OR acima de 3 indica efeito substancial em estudos de sobrevivência</button>
+          <button class="option-btn" onclick="checkQ(7,this,'c')">A probabilidade de sobreviver aumenta 1.92% por unidade de experiência — o OR se converte diretamente em aumento percentual da probabilidade</button>
+          <button class="option-btn" onclick="checkQ(7,this,'d')">O IC é muito largo (de 1.15 a 3.21), portanto o resultado não é confiável — intervalos que excedem 2 unidades indicam imprecisão inaceitável</button>
+        </div>
+        <div id="q7-fb"></div>
+      </div>
+    </div>`;}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: Classificação Complexa
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre 8: O Tribunal da Classificação</div>
+          <div class="challenge-question">Um modelo logístico com cutoff = 0.50 tem: Sensibilidade = 0.90 e Especificidade = 0.40. O custo de um falso negativo (não detectar guerreiro ferido) é muito maior que o de um falso positivo. O que fazer?</div>
+          <div class="data-display">
+            Cutoff = 0.50<br>
+            Sensibilidade = 0.90 &nbsp;|&nbsp; Especificidade = 0.40<br>
+            Custo FN >> Custo FP
+          </div>
+          <div class="options-grid" id="q8-opts">
+            <button class="option-btn" onclick="checkQ(8,this,'a')">Manter cutoff = 0.50 — é o padrão universal recomendado para regressão logística, independentemente do custo relativo dos erros de classificação. Alterar o cutoff introduz viés subjetivo na análise</button>
+            <button class="option-btn" onclick="checkQ(8,this,'b')">Aumentar o cutoff para 0.70 — melhora a especificidade e reduz falsos positivos, que é sempre a prioridade principal em qualquer modelo preditivo. Sensibilidade alta sem especificidade não tem valor prático</button>
+            <button class="option-btn" onclick="checkQ(8,this,'c')">A sensibilidade já está alta (0.90), mas a especificidade está baixa (0.40). Como FN é mais custoso, manter sensibilidade alta é prioritário. Pode-se diminuir o cutoff (ex: 0.30) para aumentar ainda mais a sensibilidade, aceitando mais FP</button>
+            <button class="option-btn" onclick="checkQ(8,this,'d')">Descartar o modelo — especificidade abaixo de 0.50 é inaceitável em qualquer contexto, pois significa que o modelo erra mais que acerta nos negativos. Um modelo útil precisa de ambas as métricas acima de 0.50</button>
+          </div>
+          <div id="q8-fb"></div>
+        </div>
+      </div>`});
+
+    // DESAFIO 9: Análise Completa
+    GAME.scenes.push({type:'challenge',html:()=>`
+      <div class="scene">
+        ${xpBar()}
+        <div class="challenge-box">
+          <div class="challenge-title">⚔️ Desafio Mestre 9: O Desenho Completo</div>
+          <div class="challenge-question">Um pesquisador quer prever se aldeias serão atacadas (sim/não) com 3 preditores: distância da costa, número de guerreiros, e presença de muralha (0/1). N = 200 aldeias, 60 atacadas. Qual o desenho completo da análise?</div>
+          <div class="data-display">
+            VD: Ataque (0/1) &nbsp;|&nbsp; N = 200 &nbsp;|&nbsp; Eventos = 60<br>
+            VI: Distância, Guerreiros, Muralha (0/1)<br>
+            3 preditores &nbsp;|&nbsp; 60 eventos → 20 EPP
+          </div>
+          <div class="options-grid" id="q9-opts">
+            <button class="option-btn" onclick="checkQ(9,this,'a')">Regressão logística binária. Verificar: multicolinearidade (VIF), linearidade do logit (Box-Tidwell), amostra adequada (60 eventos / 3 preditores = 20 EPP, adequado). Reportar: OR com IC 95%, pseudo-R² (Nagelkerke), Hosmer-Lemeshow, tabela de classificação</button>
+            <button class="option-btn" onclick="checkQ(9,this,'b')">Regressão linear múltipla com R² e teste F — a VD codificada como 0/1 pode ser tratada como contínua, o teste F avalia a significância global do modelo, e o R² informa a variância explicada. Os pressupostos de normalidade se aplicam ao resíduo, não à VD</button>
+            <button class="option-btn" onclick="checkQ(9,this,'c')">Qui-quadrado de independência para cada preditor separadamente — testar um a um é mais rigoroso porque evita multicolinearidade, e depois se aplica correção de Bonferroni para controlar o erro tipo I. Não é necessário um modelo multivariado</button>
+            <button class="option-btn" onclick="checkQ(9,this,'d')">Análise discriminante — mais poderosa para classificação que a logística, pois maximiza a separação entre grupos com base na distância de Mahalanobis. É preferível quando a VD é binária e os preditores incluem variáveis contínuas e categóricas</button>
+          </div>
+          <div id="q9-fb"></div>
+        </div>
+      </div>`});
+  }
+
+  // ━━ CENA FINAL: Lição dos Corvos ━━
+  GAME.scenes.push({type:'narrative',html:()=>`
+    <div class="scene">
+      ${xpBar()}
+      ${dialogue('narrator','O Portão dos Dois Caminhos se abre por completo. A curva sigmoide brilha no horizonte como um arco de luz — cada probabilidade prevista ancorada entre 0 e 1, cada odds ratio contando sua história.')}
+      ${dialogue('odin','Você conquistou o <em>Reino da Regressão Logística</em>! Agora domina a arte de prever resultados binários com a precisão da sigmoide.')}
+      ${dialogue('thor','Tá bom, admito... jogar regressão linear num resultado binário era uma péssima ideia. Mas OR = e^b é confuso demais!')}
+      ${dialogue('muninn','<strong>Lição dos Corvos — Muninn resume:</strong><br>• VD binária (0/1) → regressão logística, NÃO linear<br>• Sigmoide: P(Y=1) = 1/(1+e^(−z)), garante P entre 0 e 1<br>• OR = e^b: para cada unidade de X, odds multiplicam por OR<br>• Pseudo-R² (Nagelkerke, McFadden) ≠ R² verdadeiro<br>• Classificação: sensibilidade = TP/(TP+FN), especificidade = TN/(TN+FP)<br>• Hosmer-Lemeshow: p > .05 = bom ajuste')}
+      ${dialogue('huginn','<strong>Lição dos Corvos — Huginn desafia:</strong><br>• NUNCA use R² de OLS para modelo logístico<br>• OR ≠ probabilidade — interprete como <em>multiplicador das odds</em><br>• IC do OR que contém 1 = não significativo<br>• Ajuste o cutoff conforme o custo dos erros (FP vs FN)<br>• Mínimo 10 eventos por preditor (EPP)')}
+      <button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚔️</button>
+    </div>`});
+}
+
+// ════════════════════════════════════════════════════
+const ANSWERS={1:'d',2:'b',3:'c',4:'d',5:'c',6:'b',7:'a',8:'c',9:'a'};
+const EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! Sobrevivência (sim/não) é binária. A <em>regressão logística</em> é o modelo correto — a sigmoide garante que as previsões fiquem entre 0 e 1, ao contrário da regressão linear que pode prever valores impossíveis.',
+    wrong:'❌ Sobrevivência (0/1) é uma variável binária. O modelo correto é a <em>regressão logística</em> — a sigmoide garante previsões entre 0 e 1.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Interpretação impecável! OR = 2.34 significa que para cada unidade de aumento na qualidade da armadura, as <em>odds de sobreviver são multiplicadas por 2.34</em> (aumento de 134%). Cuidado: OR não é aumento de probabilidade!',
+    wrong:'❌ OR = 2.34 significa que as <em>odds</em> (não a probabilidade!) de sobreviver são multiplicadas por 2.34 para cada unidade de X. OR ≠ aumento percentual de probabilidade.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Exato! Odds = P/(1−P) = 0.75/0.25 = <em>3</em>. Isso significa 3:1 a favor da sobrevivência — para cada 1 derrota esperada, há 3 sobrevivências.',
+    wrong:'❌ Odds = P/(1−P) = 0.75/0.25 = <em>3</em>. Odds são a razão entre P e (1−P), não multiplicação nem subtração.',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Cálculo perfeito! Sensibilidade = TP/(TP+FN) = 45/(45+15) = 45/60 = <em>0.75</em>. Especificidade = TN/(TN+FP) = 30/(30+10) = 30/40 = <em>0.75</em>. O modelo classifica igualmente bem positivos e negativos!',
+    wrong:'❌ Sensibilidade = TP/(TP+FN) = 45/60 = <em>0.75</em>. Especificidade = TN/(TN+FP) = 30/40 = <em>0.75</em>. Cuidado com os denominadores: sensibilidade usa a linha dos reais positivos, especificidade usa a linha dos reais negativos.',
+    charC:'muninn',charW:'thor'
+  },
+  5:{
+    correct:'✅ Correto! Pseudo-R² de Nagelkerke = 0.38 indica ajuste razoável, mas <em>não se interpreta como proporção de variância explicada</em>. Valores de pseudo-R² tendem a ser menores que R² de OLS — comparar diretamente é um erro.',
+    wrong:'❌ Pseudo-R² <em>não é R² verdadeiro</em>. Nagelkerke R² = 0.38 indica ajuste razoável, mas não se interpreta como "38% da variância explicada". Valores tendem a ser menores que R² de OLS.',
+    charC:'odin',charW:'thor'
+  },
+  6:{
+    correct:'✅ Excelente! R² clássico (de OLS) <em>não existe</em> na regressão logística. O pesquisador deveria usar <em>pseudo-R²</em> (Nagelkerke ou McFadden) e deixar explícito que não é R² verdadeiro. Essa é a armadilha clássica de ThorMento!',
+    wrong:'❌ Na regressão logística, <em>R² clássico não existe</em>. O correto é reportar pseudo-R² (Nagelkerke ou McFadden), especificando que não é R² verdadeiro.',
+    charC:'huginn',charW:'thor'
+  },
+  7:{
+    correct:'✅ Interpretação completa! p = .013 < .05, significativo. OR = 1.92: cada unidade de experiência <em>multiplica as odds de sobreviver por 1.92</em> (aumento de 92%). IC [1.15, 3.21] não contém 1, confirmando a significância. Reportação APA perfeita!',
+    wrong:'❌ p = .013 é significativo. OR = 1.92 multiplica as <em>odds</em> (não a probabilidade!) por 1.92 a cada unidade. IC [1.15, 3.21] não contém 1 → significativo.',
+    charC:'odin',charW:'thor'
+  },
+  8:{
+    correct:'✅ Análise sofisticada! Quando FN é mais custoso que FP, priorizar <em>sensibilidade</em> é correto. Diminuir o cutoff (ex: 0.30) aumenta a sensibilidade à custa de mais falsos positivos — um tradeoff aceitável quando não detectar é grave.',
+    wrong:'❌ Quando o custo de FN >> FP, priorize <em>sensibilidade</em>. Diminuir o cutoff aumenta a sensibilidade (detecta mais positivos), aceitando mais FP. O cutoff ideal depende do <em>custo relativo dos erros</em>.',
+    charC:'muninn',charW:'thor'
+  },
+  9:{
+    correct:'✅ Desenho completo! VD binária → <em>regressão logística</em>. Verificar multicolinearidade (VIF), linearidade do logit (Box-Tidwell), amostra adequada (60 eventos / 3 preditores = 20 EPP — acima do mínimo de 10). Reportar OR com IC, pseudo-R², Hosmer-Lemeshow e tabela de classificação.',
+    wrong:'❌ VD binária (0/1) exige <em>regressão logística</em>. Pressupostos: VIF, Box-Tidwell, EPP. Report: OR + IC, pseudo-R², Hosmer-Lemeshow, classificação.',
+    charC:'odin',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  const opts=document.querySelectorAll(`#q${q}-opts .option-btn`);
+  opts.forEach(b=>{b.classList.add('disabled');b.onclick=null;});
+  const fb=document.getElementById(`q${q}-fb`),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();earnGear();
+    fb.innerHTML=`<div class="feedback-box correct">${dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }else{
+    btn.classList.add('wrong');
+    const ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box wrong">${dialogue(exp.charW,exp.wrong)}<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>`;
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();restoreGear();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  const pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  let rank,rc;
+  if(pct>=90){rank='\u{1F3C6} Senhor da Sigmoide';rc='#f0c040';}
+  else if(pct>=70){rank='\u{1F4DC} Mestre das Odds';rc='#58a6ff';}
+  else if(pct>=50){rank='\u{1F6E1}️ Aprendiz do Logit';rc='#8b949e';}
+  else{rank='⛓️ Servo da Regressão Linear';rc='#f85149';}
+  content().innerHTML=`
+  <div class="result-screen">
+    <div class="reino-badge">REINO 17 — COMPLETO</div>
+    <h2>Resultado da Aventura</h2>
+    ${resultVikingHTML()}
+    <div class="result-rank" style="color:${rc}">${rank}</div>
+    <div class="result-stats">
+      <div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">${GAME.difficulty==='mestre'?'⚔️ Mestre':'\u{1F6E1}️ Aprendiz'}</span></div>
+      <div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">${GAME.hits} / ${GAME.total}</span></div>
+      <div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">${pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">${GAME.xp} / ${GAME.maxXP}</span></div>
+    </div>
+    ${dialogue('odin',pct>=70
+      ?'A curva sigmoide se inclina diante de você! Odds Ratios, pseudo-R², matrizes de confusão — todas as armas da regressão logística estão no seu arsenal. Vá e preveja os destinos binários com confiança!'
+      :'O Portão dos Dois Caminhos ainda guarda segredos... Volte e revise: a diferença entre probabilidade, odds e log-odds; a interpretação do OR; pseudo-R² vs R² verdadeiro; e a matriz de confusão. A sigmoide espera sua segunda tentativa!'
+    )}
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">
+      <button class="continue-btn" onclick="showTitleScreen()">\u{1F504} Jogar Novamente</button>
+    </div>
+  </div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+// ════════════════════════════════════════════════════
+// ARMOR SYSTEM
+// ════════════════════════════════════════════════════
+var GEAR_ITEMS=[
+  {s:'boots',n:'Botas Sigmoides',h:'<div style="display:flex;gap:14px"><div style="background:linear-gradient(#4a6a8a,#2a3a5a);width:16px;height:12px;border-radius:3px 3px 2px 2px;border:1.5px solid #1a2a4a;position:relative"><span style="position:absolute;top:1px;left:2px;font-size:5px;color:#f0c040;font-weight:bold">S</span></div><div style="background:linear-gradient(#4a6a8a,#2a3a5a);width:16px;height:12px;border-radius:3px 3px 2px 2px;border:1.5px solid #1a2a4a;position:relative"><span style="position:absolute;top:1px;left:2px;font-size:5px;color:#f0c040;font-weight:bold">S</span></div></div>'},
+  {s:'mail',n:'Cota de Odds',h:'<div style="width:46px;height:42px;background:linear-gradient(135deg,#6a6a7a,#4a4a5a);clip-path:polygon(50% 0%,100% 30%,100% 100%,0 100%,0 30%);border:1.5px solid #8a8a9a;position:relative"><div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:9px;color:#f0c040;font-weight:bold;font-family:serif">OR</div></div>'},
+  {s:'right',n:'Espada do Logit',h:'<div style="display:flex;flex-direction:column;align-items:center"><div style="width:12px;height:4px;background:linear-gradient(#c0c0c0,#808080);border-radius:2px"></div><div style="width:3px;height:32px;background:linear-gradient(#e0e0e0,#a0a0a0);border:1px solid #707070;position:relative"><span style="position:absolute;top:6px;left:-8px;font-size:6px;color:#58a6ff;font-weight:bold">ln</span></div><div style="width:10px;height:6px;background:#5a3a1a;border-radius:1px;border:1px solid #3a2a10"></div></div>'},
+  {s:'left',n:'Escudo da Classificação',h:'<div style="width:28px;height:32px;background:radial-gradient(circle,#4a6a8a,#2a3a5a);border-radius:50% 50% 50% 50% / 45% 45% 55% 55%;border:2px solid #6a8aaa;position:relative"><div style="position:absolute;top:4px;left:3px;display:grid;grid-template-columns:1fr 1fr;gap:1px;font-size:5px;color:#f0c040;font-weight:bold"><span>T</span><span>F</span><span>F</span><span>T</span></div></div>'},
+  {s:'cape',n:'Capa da Verossimilhança',h:'<div style="width:58px;height:52px;background:linear-gradient(180deg,#2a2a3a,#1a1a2a);clip-path:polygon(15% 0%,85% 0%,100% 100%,0% 100%);opacity:.85;position:relative"><div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:13px;color:#bc8cff;font-weight:bold;font-family:serif">L</div></div>'},
+  {s:'helm',n:'Elmo Binário',h:'<div style="width:38px;height:22px;background:linear-gradient(#6a6a7a,#4a4a5a);clip-path:polygon(5% 100%,15% 30%,50% 0%,85% 30%,95% 100%);border-bottom:3px solid #8a8a9a;position:relative"><div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:8px;color:#f0c040;font-weight:bold;font-family:monospace">0|1</div></div>'}
+];
+var gearEarned=0;
+function armorPanelHTML(){
+  var rows='';
+  for(var i=0;i<GEAR_ITEMS.length;i++){rows+='<div class="gp-row'+(i<gearEarned?' earned':'')+'" id="gprow'+i+'"><span class="gp-dot"></span><span>'+GEAR_ITEMS[i].n+'</span></div>';}
+  var sl='<div class="vm-sparks" id="vmsparks"></div>';
+  sl+='<div class="vm-slot vm-cape" id="vmslot-cape"></div>';
+  sl+='<div class="vm-head"></div><div class="vm-arm-l"></div><div class="vm-arm-r"></div><div class="vm-torso"></div><div class="vm-leg-l"></div><div class="vm-leg-r"></div>';
+  sl+='<div class="vm-slot vm-boots" id="vmslot-boots"></div><div class="vm-slot vm-mail" id="vmslot-mail"></div>';
+  sl+='<div class="vm-slot vm-left" id="vmslot-left"></div><div class="vm-slot vm-right" id="vmslot-right"></div>';
+  sl+='<div class="vm-slot vm-helm" id="vmslot-helm"></div>';
+  return '<div class="armor-panel"><div class="viking-mini" id="vmini">'+sl+'</div><div class="gear-progress">'+rows+'</div></div>';
+}
+function restoreGear(){for(var i=0;i<gearEarned&&i<GEAR_ITEMS.length;i++){var g=GEAR_ITEMS[i],el=document.getElementById('vmslot-'+g.s);if(el){el.innerHTML=g.h;el.classList.add('on');}}}
+function earnGear(){
+  if(gearEarned>=GEAR_ITEMS.length)return;
+  var g=GEAR_ITEMS[gearEarned],el=document.getElementById('vmslot-'+g.s);
+  if(el){el.innerHTML=g.h;el.classList.add('on','vm-flash');setTimeout(function(){el.classList.remove('vm-flash')},500);spawnVMSparks(el);}
+  var row=document.getElementById('gprow'+gearEarned);if(row)row.classList.add('earned');
+  gearEarned++;
+}
+function spawnVMSparks(el){
+  var sc=document.getElementById('vmsparks');if(!sc||!el)return;
+  var r=el.getBoundingClientRect(),sr=document.getElementById('vmini').getBoundingClientRect();
+  var cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+  var cols=['#f0c040','#f08030','#f0e080','#ff6040','#ffd060'];
+  for(var i=0;i<10;i++){var s=document.createElement('div');s.className='vm-spark';
+    var a=Math.random()*Math.PI*2,d=20+Math.random()*30;
+    s.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+cols[Math.floor(Math.random()*5)]+';--sx:'+(Math.cos(a)*d)+'px;--sy:'+(Math.sin(a)*d)+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px';
+    sc.appendChild(s);setTimeout(function(x){x.remove()},700,s);}
+}
+function resultVikingHTML(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var ti=[];if(pct>=90)ti=GEAR_ITEMS;else if(pct>=70)ti=GEAR_ITEMS.slice(0,5);else if(pct>=50)ti=GEAR_ITEMS.slice(0,2);
+  var html='<div class="result-viking">';
+  html+='<div class="rv-slot rv-cape" id="rvs-cape"></div>';
+  html+='<div class="rv-head"></div><div class="rv-arm-l"></div><div class="rv-arm-r"></div><div class="rv-torso"></div><div class="rv-leg-l"></div><div class="rv-leg-r"></div>';
+  html+='<div class="rv-slot rv-boots" id="rvs-boots"></div><div class="rv-slot rv-mail" id="rvs-mail"></div>';
+  html+='<div class="rv-slot rv-left" id="rvs-left"></div><div class="rv-slot rv-right" id="rvs-right"></div>';
+  html+='<div class="rv-slot rv-helm" id="rvs-helm"></div></div>';
+  setTimeout(function(){ti.forEach(function(g){var e=document.getElementById('rvs-'+g.s);if(e)e.innerHTML=g.h;});},100);
+  return html;
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>

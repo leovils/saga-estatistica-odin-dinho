@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Saga Estatística de Odin Dinho — Reino 15: Correlação e Regressão Linear Simples</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--bg-dark:#0d1117;--bg-card:#161b22;--bg-panel:#1c2333;--odin-blue:#58a6ff;--thor-red:#f85149;--corvo-purple:#bc8cff;--gold:#f0c040;--silver:#8b949e;--text:#e6edf3;--text-dim:#8b949e;--success:#3fb950;--border:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',cursive;font-size:18px;min-height:100vh;overflow-x:hidden}
+#game-container{max-width:800px;margin:0 auto;padding:20px;min-height:100vh}
+.title-screen{text-align:center;padding:60px 20px;animation:fadeIn 1s ease}
+.title-screen h1{font-family:'Bangers',cursive;font-size:2.8em;color:var(--gold);text-shadow:2px 2px 8px rgba(240,192,64,.3);line-height:1.1;margin-bottom:8px}
+.title-screen h2{font-family:'Permanent Marker',cursive;font-size:1.5em;color:var(--odin-blue);margin-bottom:30px}
+.title-screen .subtitle{color:var(--text-dim);font-size:1.1em;margin-bottom:40px}
+.reino-badge{display:inline-block;background:linear-gradient(135deg,var(--odin-blue),var(--corvo-purple));padding:6px 20px;border-radius:20px;font-family:'Bangers',cursive;font-size:1em;color:#fff;margin-bottom:16px}
+.difficulty-select{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.diff-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Bangers',cursive;font-size:1.2em;padding:16px 32px;border-radius:12px;cursor:pointer;transition:all .3s;min-width:180px}
+.diff-btn:hover{border-color:var(--odin-blue);transform:translateY(-2px)}
+.diff-btn .diff-label{font-size:1.3em}.diff-btn .diff-desc{font-family:'Patrick Hand',cursive;font-size:.65em;color:var(--text-dim);margin-top:4px}
+.scene{animation:slideIn .5s ease;padding:10px 0}
+.dialogue-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative}
+.dialogue-box.odin{border-left:4px solid var(--odin-blue)}.dialogue-box.thor{border-left:4px solid var(--thor-red)}.dialogue-box.corvo{border-left:4px solid var(--corvo-purple)}.dialogue-box.narrator{border-left:4px solid var(--gold)}
+.char-name{font-family:'Bangers',cursive;font-size:1.1em;margin-bottom:6px}
+.char-name.odin{color:var(--odin-blue)}.char-name.thor{color:var(--thor-red)}.char-name.corvo{color:var(--corvo-purple)}.char-name.narrator{color:var(--gold)}
+.dialogue-text{line-height:1.5;font-size:1.05em}.dialogue-text em{color:var(--gold);font-style:normal;font-weight:bold}
+.challenge-box{background:var(--bg-panel);border:2px solid var(--gold);border-radius:12px;padding:24px;margin:20px 0;animation:pulse-border 2s ease infinite}
+@keyframes pulse-border{0%,100%{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,64,.15)}50%{border-color:#f0c040cc;box-shadow:0 0 16px rgba(240,192,64,.3)}}
+.challenge-title{font-family:'Bangers',cursive;font-size:1.4em;color:var(--gold);margin-bottom:12px;text-align:center}
+.challenge-question{margin-bottom:16px;line-height:1.5}
+.data-display{background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;font-family:'Courier New',monospace;font-size:1em;color:var(--odin-blue);text-align:center;letter-spacing:1px;line-height:1.6}
+.options-grid{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.option-btn{background:var(--bg-card);border:2px solid var(--border);color:var(--text);font-family:'Patrick Hand',cursive;font-size:1.05em;padding:14px 18px;border-radius:10px;cursor:pointer;text-align:left;transition:all .25s;line-height:1.4}
+.option-btn:hover:not(.disabled){border-color:var(--odin-blue);background:#1a2233}
+.option-btn.correct{border-color:var(--success);background:#0d2818;color:var(--success)}
+.option-btn.wrong{border-color:var(--thor-red);background:#2d1116;color:var(--thor-red)}
+.option-btn.disabled{cursor:default;opacity:.7}
+.feedback-box{border-radius:10px;padding:16px 20px;margin:16px 0;animation:fadeIn .4s ease;line-height:1.5}
+.feedback-box.correct{background:#0d2818;border:1px solid var(--success);color:var(--success)}
+.feedback-box.wrong{background:#2d1116;border:1px solid var(--thor-red);color:var(--thor-red)}
+.xp-badge{display:inline-block;background:var(--gold);color:var(--bg-dark);font-family:'Bangers',cursive;padding:2px 10px;border-radius:6px;font-size:.9em;margin-left:6px}
+.xp-bar-container{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.xp-label{font-family:'Bangers',cursive;color:var(--gold);font-size:1em;white-space:nowrap}
+.xp-bar-bg{flex:1;height:14px;background:var(--bg-dark);border-radius:7px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--odin-blue),var(--gold));border-radius:7px;transition:width .6s ease}
+.xp-count{font-family:'Bangers',cursive;color:var(--text);font-size:1em;min-width:60px;text-align:right}
+.continue-btn{display:block;margin:20px auto 0;background:transparent;border:2px solid var(--odin-blue);color:var(--odin-blue);font-family:'Bangers',cursive;font-size:1.15em;padding:12px 36px;border-radius:10px;cursor:pointer;transition:all .25s}
+.continue-btn:hover{background:var(--odin-blue);color:var(--bg-dark)}
+.result-screen{text-align:center;padding:40px 20px;animation:fadeIn .8s ease}
+.result-screen h2{font-family:'Bangers',cursive;font-size:2.2em;color:var(--gold);margin-bottom:8px}
+.result-rank{font-family:'Permanent Marker',cursive;font-size:1.5em;margin:16px 0}
+.result-stats{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:left}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-dim)}.stat-value{font-family:'Bangers',cursive;color:var(--odin-blue)}
+.hint-box{background:#1a1530;border:1px solid var(--corvo-purple);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:.95em;color:var(--corvo-purple);animation:fadeIn .5s ease}
+.hint-box .hint-label{font-family:'Bangers',cursive;font-size:1em;margin-bottom:4px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.title-screen h1{font-size:2em}.title-screen h2{font-size:1.2em}.difficulty-select{flex-direction:column;align-items:center}#game-container{padding:12px}.challenge-box{padding:16px}}
+
+/* ── ARMOR SYSTEM ── */
+.armor-panel{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+.viking-mini{position:relative;width:120px;height:180px;flex-shrink:0}
+.vm-head{position:absolute;top:28px;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:#d4a574;border:1.5px solid #b8956a;z-index:5}
+.vm-torso{position:absolute;top:56px;left:50%;transform:translateX(-50%);width:44px;height:58px;background:#8b7355;border-radius:7px 7px 4px 4px;z-index:3}
+.vm-arm-l{position:absolute;top:59px;left:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-arm-r{position:absolute;top:59px;right:18px;width:14px;height:34px;background:#8b7355;border-radius:5px;z-index:2}
+.vm-leg-l{position:absolute;top:111px;left:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-leg-r{position:absolute;top:111px;right:40px;width:16px;height:42px;background:#6b5b43;border-radius:0 0 4px 4px;z-index:2}
+.vm-slot{position:absolute;opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);transform:scale(.3)}
+.vm-slot.on{opacity:1;transform:scale(1)}
+.vm-helm{top:16px;left:50%;transform:translateX(-50%) scale(.3);z-index:8}.vm-helm.on{transform:translateX(-50%) scale(1)}
+.vm-mail{top:57px;left:50%;transform:translateX(-50%) scale(.3);z-index:4}.vm-mail.on{transform:translateX(-50%) scale(1)}
+.vm-cape{top:53px;left:50%;transform:translateX(-50%) scale(.3);z-index:1}.vm-cape.on{transform:translateX(-50%) scale(1)}
+.vm-left{top:66px;left:0;z-index:7}.vm-right{top:56px;right:0;z-index:7}
+.vm-boots{bottom:4px;left:50%;transform:translateX(-50%) scale(.3);z-index:7;display:flex;gap:10px}.vm-boots.on{transform:translateX(-50%) scale(1)}
+.gear-progress{flex:1;display:flex;flex-direction:column;gap:4px}
+.gp-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:.8em;color:var(--text-dim);transition:all .3s}
+.gp-row.earned{color:var(--success);font-weight:bold}
+.gp-row .gp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border);background:transparent;transition:all .3s;flex-shrink:0}
+.gp-row.earned .gp-dot{background:var(--success);border-color:var(--success)}
+.vm-sparks{position:absolute;pointer-events:none;z-index:20}
+.vm-spark{position:absolute;border-radius:50%;animation:vmSp .6s ease-out forwards}
+@keyframes vmSp{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+.vm-flash{animation:vmFl .4s ease}
+@keyframes vmFl{0%{filter:brightness(1)}30%{filter:brightness(1.8) drop-shadow(0 0 12px rgba(240,180,40,.6))}100%{filter:brightness(1)}}
+.result-viking{position:relative;width:160px;height:240px;margin:16px auto}
+.rv-head{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background:#d4a574;border:2px solid #b8956a;z-index:5}
+.rv-torso{position:absolute;top:73px;left:50%;transform:translateX(-50%);width:56px;height:74px;background:#8b7355;border-radius:9px 9px 5px 5px;z-index:3}
+.rv-arm-l{position:absolute;top:77px;left:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-arm-r{position:absolute;top:77px;right:22px;width:18px;height:44px;background:#8b7355;border-radius:6px;z-index:2}
+.rv-leg-l{position:absolute;top:144px;left:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-leg-r{position:absolute;top:144px;right:52px;width:20px;height:54px;background:#6b5b43;border-radius:0 0 5px 5px;z-index:2}
+.rv-slot{position:absolute}
+.rv-helm{top:20px;left:50%;transform:translateX(-50%);z-index:8}
+.rv-mail{top:74px;left:50%;transform:translateX(-50%);z-index:4}
+.rv-cape{top:69px;left:50%;transform:translateX(-50%);z-index:1}
+.rv-left{top:86px;left:4px;z-index:7}.rv-right{top:72px;right:4px;z-index:7}
+.rv-boots{bottom:4px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:14px}
+@media(max-width:600px){.armor-panel{flex-direction:column;align-items:center}.viking-mini{width:100px;height:160px}}
+footer{text-align:center;padding:24px 12px;color:var(--text-dim);font-size:.85em;border-top:1px solid var(--border);margin-top:40px}
+footer a{color:var(--odin-blue);text-decoration:none}footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="game-container"><div id="game-content"></div></div>
+<footer>
+  <a href="index.html">Voltar ao Hub dos Reinos</a><br>
+  Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026
+</footer>
+<script>
+// ════════════════════════════════════════════════════
+// A SAGA ESTATÍSTICA DE ODIN DINHO — REINO 15
+// CORRELAÇÃO E REGRESSÃO LINEAR SIMPLES
+// ════════════════════════════════════════════════════
+const GAME={difficulty:null,xp:0,maxXP:0,hits:0,total:0,currentScene:0,scenes:[]};
+const content=()=>document.getElementById('game-content');
+function dialogue(c,t){
+  const cls={odin:'odin',thor:'thor',muninn:'corvo',huginn:'corvo',narrator:'narrator'};
+  const nm={odin:'Odin Dinho \u{1F9D9}‍♂️',thor:'ThorMento ⚡',muninn:'Muninn \u{1F426}‍⬛',huginn:'Huginn \u{1F426}',narrator:'\u{1F4DC} Narrador'};
+  return '<div class="dialogue-box '+(cls[c]||'narrator')+'"><div class="char-name '+(cls[c]||'narrator')+'">'+(nm[c]||c)+'</div><div class="dialogue-text">'+t+'</div></div>';
+}
+function hintBox(t){return '<div class="hint-box"><div class="hint-label">\u{1F426}‍⬛ Dica de Muninn</div>'+t+'</div>';}
+function xpBar(){
+  var p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;
+  return armorPanelHTML()+'<div class="xp-bar-container"><div class="xp-label">⚡ XP</div><div class="xp-bar-bg"><div class="xp-bar-fill" style="width:'+p+'%"></div></div><div class="xp-count">'+GAME.xp+' / '+GAME.maxXP+'</div></div>';
+}
+function updateXPBar(){
+  var b=document.querySelector('.xp-bar-fill'),c=document.querySelector('.xp-count');
+  if(b&&c){var p=GAME.maxXP>0?Math.round((GAME.xp/GAME.maxXP)*100):0;b.style.width=p+'%';c.textContent=GAME.xp+' / '+GAME.maxXP;}
+}
+function showTitleScreen(){
+  content().innerHTML='<div class="title-screen"><div class="reino-badge">REINO 15</div><h1>A Saga Estatística de Odin Dinho</h1><h2>Reino da Correlação e Regressão Linear Simples</h2><p class="subtitle">Do alto da Ponte Bifröst, Odin Dinho observa os padrões de comércio entre os Nove Reinos. Onde há relação entre duas variáveis, há uma reta esperando para ser traçada — e resíduos esperando para serem examinados.</p><div class="difficulty-select"><button class="diff-btn" onclick="startGame(\'aprendiz\')"><div class="diff-label">\u{1F6E1}️ Aprendiz</div><div class="diff-desc">Graduação — com dicas de Muninn</div></button><button class="diff-btn" onclick="startGame(\'mestre\')"><div class="diff-label">⚔️ Mestre</div><div class="diff-desc">Pós-graduação — sem dicas, desafios extras</div></button></div></div>';
+}
+function startGame(d){
+  GAME.difficulty=d;GAME.xp=0;GAME.hits=0;GAME.total=0;GAME.currentScene=0;gearEarned=0;
+  buildScenes();GAME.maxXP=countMaxXP();renderScene();
+}
+
+// ════════════════════════════════════════════════════
+function buildScenes(){
+  GAME.scenes=[];
+
+  // ━━ CENA 1: Chegada ao Observatório de Bifröst ━━
+  GAME.scenes.push({type:'narrative',html:function(){return '<div class="scene">'+
+    dialogue('narrator','A Ponte <em>Bifröst</em> resplandece em arco-íris sobre o abismo. Do alto do observatório, Odin Dinho aponta para as rotas comerciais que cruzam os Nove Reinos — cada rota, um par de variáveis. A pergunta é simples: quando uma sobe, a outra sobe também? Desce? Ou não há relação alguma?')+
+    dialogue('odin','<em>Correlação</em> mede a força e a direção da relação linear entre duas variáveis. O <em>scatterplot</em> (gráfico de dispersão) é sempre o primeiro passo — antes de qualquer número, olhe para os pontos!')+
+    dialogue('muninn','No scatterplot, observe: <em>direção</em> (positiva, negativa, nenhuma), <em>força</em> (forte, moderada, fraca) e <em>linearidade</em> (os pontos seguem uma reta ou uma curva?).')+
+    dialogue('thor','Scatterplot? Eu prefiro olhar para os números direto!')+
+    dialogue('odin','Sem o scatterplot, você pode confundir correlação forte com uma relação curvilinear — ou pior, não perceber um outlier que distorce tudo. <em>Sempre visualize primeiro</em>.')+
+    '<button class="continue-btn" onclick="nextScene()">Subir ao Observatório →</button></div>';}});
+
+  // ━━ CENA 2: Pearson r e r² ━━
+  GAME.scenes.push({type:'narrative',html:function(){return '<div class="scene">'+
+    dialogue('odin','O <em>coeficiente de correlação de Pearson (r)</em> varia de −1 a +1. Quanto mais próximo dos extremos, mais forte a relação linear.<br><br>• <em>r = +1</em>: correlação positiva perfeita<br>• <em>r = 0</em>: nenhuma relação linear<br>• <em>r = −1</em>: correlação negativa perfeita')+
+    '<div class="data-display">Benchmarks de Cohen (1988):<br>|r| ≈ 0.10 → fraco<br>|r| ≈ 0.30 → moderado<br>|r| ≈ 0.50 → forte</div>'+
+    dialogue('muninn','O <em>coeficiente de determinação r²</em> é a proporção da variância de Y explicada por X. Se r = 0.70, então r² = 0.49 — X explica 49% da variabilidade de Y. Os outros 51%? Resíduos, erro, outras variáveis.')+
+    dialogue('huginn','Correlação não é causalidade! Duas variáveis podem estar correlacionadas por causa de uma terceira variável oculta. Cuidado com interpretações apressadas!')+
+    '<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>';}});
+
+  // ━━ CENA 3: DESAFIO 1 — Interpretar Correlação ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('r = 0.85 está próximo de +1, e |r| > 0.50 é considerado forte por Cohen. Positivo = quando X sobe, Y sobe.'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 1: As Rotas de Comércio</div>'+
+      '<div class="challenge-question">Um mercador analisou 8 rotas comerciais entre reinos e encontrou r = 0.85 entre a distância da rota e o lucro obtido. Interprete esse resultado.</div>'+
+      '<div class="data-display">n = 8 rotas &nbsp;|&nbsp; r = 0.85</div>'+hint+
+      '<div class="options-grid" id="q1-opts">'+
+      '<button class="option-btn" onclick="checkQ(1,this,\'a\')">Correlação positiva forte — rotas mais longas tendem a gerar lucros maiores. r² = 0.72, ou seja, 72% da variância do lucro é explicada pela distância</button>'+
+      '<button class="option-btn" onclick="checkQ(1,this,\'b\')">Correlação fraca — 0.85 ainda está longe do valor perfeito de 1.0, e pela tabela de Cohen se enquadra como moderada no melhor dos casos</button>'+
+      '<button class="option-btn" onclick="checkQ(1,this,\'c\')">Correlação negativa — o coeficiente alto indica que a relação segue em sentido inverso, ou seja, rotas mais longas geram menos lucro</button>'+
+      '<button class="option-btn" onclick="checkQ(1,this,\'d\')">Impossivel interpretar sem o p-value — sem significancia estatistica confirmada, o valor de r pode ser artefato do acaso amostral</button>'+
+      '</div><div id="q1-fb"></div></div></div>';}});
+
+  // ━━ CENA 4: Regressão Linear Simples ━━
+  GAME.scenes.push({type:'narrative',html:function(){return '<div class="scene">'+xpBar()+
+    dialogue('odin','A <em>regressão linear simples</em> vai além da correlação: ela traça a <em>reta de melhor ajuste</em> que minimiza a soma dos quadrados dos resíduos. O modelo: <em>Y = b₀ + b₁X + ε</em>')+
+    '<div class="data-display">Y = b₀ + b₁X + ε<br><br>b₀ = intercepto (Y quando X = 0)<br>b₁ = inclinação (mudança em Y por unidade de X)<br>ε = resíduo (erro)</div>'+
+    dialogue('muninn','O <em>método dos mínimos quadrados (OLS)</em> encontra b₀ e b₁ que minimizam Σ(Yᵢ − Ŷᵢ)² — a soma dos quadrados dos resíduos. R² mede a proporção da variância total explicada pelo modelo.')+
+    dialogue('odin','Exemplo viking: a cada hora extra de forja (X), a resistência da espada (Y) aumenta b₁ unidades. O intercepto b₀ é a resistência base quando o tempo de forja é zero.')+
+    '<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>';}});
+
+  // ━━ CENA 5: DESAFIO 2 — Calcular Y previsto ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('Substitua X = 5 na equação: Ŷ = 12.5 + 3.2(5) = 12.5 + 16.0'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 2: A Predição do Ferreiro</div>'+
+      '<div class="challenge-question">A regressão entre horas de forja (X) e resistência da espada (Y) resultou em: Ŷ = 12.5 + 3.2X. Qual a resistência prevista para 5 horas de forja?</div>'+
+      '<div class="data-display">Ŷ = 12.5 + 3.2X<br>X = 5 horas &nbsp;→&nbsp; Ŷ = ?</div>'+hint+
+      '<div class="options-grid" id="q2-opts">'+
+      '<button class="option-btn" onclick="checkQ(2,this,\'a\')">Y previsto = 12.5 + 5 = 17.5, pois basta somar X ao intercepto sem multiplicar pelo coeficiente</button>'+
+      '<button class="option-btn" onclick="checkQ(2,this,\'b\')">Y previsto = 3.2(5) = 16.0, pois o intercepto nao entra no calculo da previsao — ele serve apenas como referencia</button>'+
+      '<button class="option-btn" onclick="checkQ(2,this,\'c\')">Y previsto = 12.5 x 3.2 x 5 = 200, pois na regressao todos os termos da equacao devem ser multiplicados entre si</button>'+
+      '<button class="option-btn" onclick="checkQ(2,this,\'d\')">Ŷ = 12.5 + 3.2(5) = 12.5 + 16.0 = 28.5 unidades de resistência</button>'+
+      '</div><div id="q2-fb"></div></div></div>';}});
+
+  // ━━ CENA 6: DESAFIO 3 — Interpretar R² ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('R² = proporção da variância de Y explicada pelo modelo. 0.72 = 72%.'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 3: A Proporção Explicada</div>'+
+      '<div class="challenge-question">A regressão entre chuva (X) e produção de grãos (Y) em 12 aldeias resultou em R² = 0.72. Qual a interpretação?</div>'+
+      '<div class="data-display">n = 12 aldeias &nbsp;|&nbsp; R² = 0.72</div>'+hint+
+      '<div class="options-grid" id="q3-opts">'+
+      '<button class="option-btn" onclick="checkQ(3,this,\'a\')">72% das aldeias apresentam boa producao de graos, pois R-quadrado indica a proporcao de casos acima da media no modelo</button>'+
+      '<button class="option-btn" onclick="checkQ(3,this,\'b\')">A correlacao de Pearson entre chuva e graos e exatamente 0.72, pois o R-quadrado e o proprio valor do coeficiente de correlacao</button>'+
+      '<button class="option-btn" onclick="checkQ(3,this,\'c\')">72% da variabilidade na produção de grãos é explicada pela quantidade de chuva. Os 28% restantes se devem a outros fatores não incluídos no modelo</button>'+
+      '<button class="option-btn" onclick="checkQ(3,this,\'d\')">O modelo esta errado — R-quadrado deveria ser 1.0 para um bom ajuste, e qualquer valor abaixo disso indica falha grave na especificacao</button>'+
+      '</div><div id="q3-fb"></div></div></div>';}});
+
+  // ━━ CENA 7: PRESSUPOSTOS DOS RESÍDUOS ━━
+  GAME.scenes.push({type:'narrative',html:function(){return '<div class="scene">'+xpBar()+
+    dialogue('narrator','Odin Dinho desce ao <em>Hall dos Resíduos</em> — a sala mais importante da regressão. Aqui, os pressupostos não são sobre Y nem sobre X, mas sobre os <em>resíduos (ε)</em>.')+
+    dialogue('odin','Três pressupostos fundamentais dos <em>RESÍDUOS</em> (Barker & Shaw, 2015):<br><br>1. <em>Independência</em> — resíduos não correlacionados entre si. Teste: Durbin-Watson. Gráfico: resíduo vs. resíduo defasado (lag-1).<br><br>2. <em>Normalidade</em> — resíduos normalmente distribuídos. Teste: Shapiro-Wilk. Gráfico: Q-Q plot.<br><br>3. <em>Homocedasticidade</em> — variância constante dos resíduos. Testes: Breusch-Pagan, White. Gráfico: resíduos vs. valores ajustados — padrão de "leque" = problema!')+
+    dialogue('thor','Basta checar se Y é normal e está tudo certo!')+
+    dialogue('odin','<strong>ERRADO!</strong> Os pressupostos são sobre os <em>RESÍDUOS</em>, não sobre Y nem sobre X! Nem Y nem X precisam ser normais. Você ajusta o modelo, extrai os resíduos e examina <em>eles</em>. Essa é a armadilha clássica que ThorMento adora montar!')+
+    dialogue('huginn','Grave isso: <em>pressupostos da regressão = pressupostos dos resíduos</em>. Checar Y ou X para normalidade é irrelevante para validar o modelo.')+
+    '<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>';}});
+
+  // ━━ CENA 8: DESAFIO 4 — Heterocedasticidade ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('Padrão de "leque" (fan-shaped) no gráfico de resíduos vs. valores ajustados = variância não constante.'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 4: O Leque Proibido</div>'+
+      '<div class="challenge-question">Ao plotar resíduos vs. valores ajustados, o pesquisador observou um padrão de leque: os resíduos se espalham mais conforme os valores ajustados aumentam. Qual pressuposto está sendo violado?</div>'+
+      '<div class="data-display">Resíduos vs. Valores Ajustados:<br>◁ pontos se abrem como um leque ▷<br>Variância cresce com Ŷ</div>'+hint+
+      '<div class="options-grid" id="q4-opts">'+
+      '<button class="option-btn" onclick="checkQ(4,this,\'a\')">Normalidade — o padrao de leque no grafico de residuos indica que os residuos nao seguem distribuicao normal, e Shapiro-Wilk confirmaria isso</button>'+
+      '<button class="option-btn" onclick="checkQ(4,this,\'b\')">Homocedasticidade — padrão de leque indica variância crescente dos resíduos (heterocedasticidade). Testes: Breusch-Pagan ou White</button>'+
+      '<button class="option-btn" onclick="checkQ(4,this,\'c\')">Independencia — o padrao de leque mostra que residuos consecutivos estao correlacionados entre si, e o teste de Durbin-Watson confirmaria a violacao</button>'+
+      '<button class="option-btn" onclick="checkQ(4,this,\'d\')">Linearidade — o padrao de leque demonstra que a relacao entre X e Y segue uma curva e nao uma reta, exigindo termos quadraticos</button>'+
+      '</div><div id="q4-fb"></div></div></div>';}});
+
+  // ━━ CENA 9: DESAFIO 5 — Autocorrelação ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('Resíduos com padrão quando plotados contra resíduos defasados = autocorrelação. Teste: Durbin-Watson.'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 5: O Padrão Oculto</div>'+
+      '<div class="challenge-question">Os resíduos mostram um padrão claro quando plotados contra os resíduos defasados (lag-1): resíduos positivos são seguidos por positivos, negativos por negativos. Qual pressuposto está violado?</div>'+
+      '<div class="data-display">Resíduo(t) vs. Resíduo(t−1):<br>Padrão systemático detectável<br>Durbin-Watson = 0.85 (longe de 2)</div>'+hint+
+      '<div class="options-grid" id="q5-opts">'+
+      '<button class="option-btn" onclick="checkQ(5,this,\'a\')">Homocedasticidade — o padrao de residuos positivos seguidos de positivos indica que a variancia dos residuos nao e constante ao longo dos valores ajustados</button>'+
+      '<button class="option-btn" onclick="checkQ(5,this,\'b\')">Normalidade — residuos que seguem um padrao sistematico no grafico lag-1 indicam distribuicao nao-normal, e Shapiro-Wilk confirmaria a violacao</button>'+
+      '<button class="option-btn" onclick="checkQ(5,this,\'c\')">Independência — resíduos autocorrelacionados. Durbin-Watson longe de 2 confirma a violação. Resíduos consecutivos não deveriam apresentar padrão</button>'+
+      '<button class="option-btn" onclick="checkQ(5,this,\'d\')">Nenhum pressuposto foi violado — esse padrao e esperado quando os dados possuem estrutura temporal, e o Durbin-Watson abaixo de 2 e aceitavel</button>'+
+      '</div><div id="q5-fb"></div></div></div>';}});
+
+  // ━━ CENA 10: Remédios para Violações ━━
+  GAME.scenes.push({type:'narrative',html:function(){return '<div class="scene">'+xpBar()+
+    dialogue('odin','Quando os pressupostos são violados, não entre em pânico — existem remédios:<br><br>• <em>Transformação Box-Cox</em> — estabiliza variância e melhora normalidade dos resíduos<br>• <em>Regressão robusta</em> — menos sensível a outliers e violações<br>• <em>Bootstrapping</em> — inferência sem pressupor distribuição dos resíduos<br>• <em>Mínimos Quadrados Ponderados (WLS)</em> — corrige heterocedasticidade<br>• <em>Modelos Lineares Generalizados (GLM)</em> — para quando a relação não é linear')+
+    dialogue('muninn','Box-Cox para não normalidade e heterocedasticidade. WLS especificamente para heterocedasticidade. Bootstrapping quando nada funciona. O remédio depende do diagnóstico!')+
+    '<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>';}});
+
+  // ━━ CENA 11: DESAFIO 6 — Armadilha de ThorMento ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('Shapiro-Wilk na variável Y é irrelevante para a regressão. O pressuposto de normalidade é sobre os RESÍDUOS, não sobre Y.'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 6: A Armadilha de ThorMento</div>'+
+      '<div class="challenge-question">Um pesquisador rodou Shapiro-Wilk em Y (variável dependente) e obteve p > .05. Ele concluiu: "O pressuposto de normalidade da regressão está satisfeito." Essa conclusão está correta?</div>'+
+      '<div class="data-display">Shapiro-Wilk em Y: p = 0.34 (> .05)<br>"Normalidade OK!" — disse o pesquisador</div>'+hint+
+      '<div class="options-grid" id="q6-opts">'+
+      '<button class="option-btn" onclick="checkQ(6,this,\'a\')">Sim — se a variavel dependente Y segue distribuicao normal, os residuos do modelo obrigatoriamente herdam essa propriedade por definicao</button>'+
+      '<button class="option-btn" onclick="checkQ(6,this,\'b\')">Depende do tamanho da amostra — com n grande, o Teorema Central do Limite garante normalidade dos residuos sem necessidade de teste</button>'+
+      '<button class="option-btn" onclick="checkQ(6,this,\'c\')">Sim — Shapiro-Wilk e o teste definitivo para normalidade, e como deu p > .05 em Y, o pressuposto esta validado independentemente de onde foi aplicado</button>'+
+      '<button class="option-btn" onclick="checkQ(6,this,\'d\')">NÃO! O pressuposto de normalidade se refere aos RESÍDUOS, não a Y. Deve-se ajustar o modelo, extrair os resíduos e testar a normalidade deles com Shapiro-Wilk</button>'+
+      '</div><div id="q6-fb"></div></div></div>';}});
+
+  // ━━ CENA 12: DESAFIO 7 — Reporte APA ━━
+  GAME.scenes.push({type:'challenge',html:function(){
+    var hint=GAME.difficulty==='aprendiz'?hintBox('r² = (0.68)² = 0.4624 ≈ 0.46. Formato APA: r(gl) = valor, p < .05, R² = valor.'):'';
+    return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio 7: O Pergaminho APA</div>'+
+      '<div class="challenge-question">Regressão com n = 30 aldeias. r = 0.68, p < .001. Como reportar em formato APA incluindo R²?</div>'+
+      '<div class="data-display">n = 30 &nbsp;|&nbsp; r = 0.68 &nbsp;|&nbsp; p < .001<br>R² = ?</div>'+hint+
+      '<div class="options-grid" id="q7-opts">'+
+      '<button class="option-btn" onclick="checkQ(7,this,\'a\')">r(28) = .68, p < .001, R² = .46 — 46% da variância explicada (gl = n − 2 = 28)</button>'+
+      '<button class="option-btn" onclick="checkQ(7,this,\'b\')">r = 0.68, significativo — basta reportar o coeficiente e a significancia, sem graus de liberdade ou R-quadrado</button>'+
+      '<button class="option-btn" onclick="checkQ(7,this,\'c\')">R-quadrado = 0.68, p < .001 — pois R-quadrado e o proprio r, e o formato APA exige apenas esses dois valores</button>'+
+      '<button class="option-btn" onclick="checkQ(7,this,\'d\')">r(30) = .46, p < .001 — usando n como graus de liberdade e reportando R-quadrado no lugar de r</button>'+
+      '</div><div id="q7-fb"></div></div></div>';}});
+
+  // ━━ DESAFIOS MESTRE ━━
+  if(GAME.difficulty==='mestre'){
+    // DESAFIO 8: Remédio para Violação
+    GAME.scenes.push({type:'challenge',html:function(){return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio Mestre 8: O Remédio do Curandeiro</div>'+
+      '<div class="challenge-question">O gráfico de resíduos vs. valores ajustados mostra heterocedasticidade clara (padrão de leque). O Q-Q plot dos resíduos também mostra desvios nas caudas. Qual sequência de ações remediativas é mais adequada?</div>'+
+      '<div class="data-display">Diagnóstico:<br>• Heterocedasticidade (Breusch-Pagan p = .003)<br>• Não normalidade residual (Shapiro-Wilk p = .02)<br>• Independência OK (Durbin-Watson = 1.95)</div>'+
+      '<div class="options-grid" id="q8-opts">'+
+      '<button class="option-btn" onclick="checkQ(8,this,\'a\')">Ignorar — OLS e robusto a todas as violacoes de pressupostos quando a amostra e suficientemente grande, entao nao ha necessidade de remedios</button>'+
+      '<button class="option-btn" onclick="checkQ(8,this,\'b\')">Transformação Box-Cox para estabilizar variância e melhorar normalidade. Se persistir, usar WLS para heterocedasticidade ou bootstrapping para inferência robusta</button>'+
+      '<button class="option-btn" onclick="checkQ(8,this,\'c\')">Trocar para o teste nao-parametrico de Spearman, que nao exige nenhum pressuposto distribucional e resolve tanto heterocedasticidade quanto nao-normalidade</button>'+
+      '<button class="option-btn" onclick="checkQ(8,this,\'d\')">Remover outliers iterativamente ate que Shapiro-Wilk e Breusch-Pagan retornem p > .05, pois outliers sao sempre a causa principal de violacoes</button>'+
+      '</div><div id="q8-fb"></div></div></div>';}});
+
+    // DESAFIO 9: Interpretação Completa
+    GAME.scenes.push({type:'challenge',html:function(){return '<div class="scene">'+xpBar()+
+      '<div class="challenge-box"><div class="challenge-title">⚔️ Desafio Mestre 9: A Forja Completa</div>'+
+      '<div class="challenge-question">Regressão: Ŷ = 4.3 + 2.1X, R² = .58, F(1,18) = 24.86, p < .001. Resíduos: Shapiro-Wilk p = .42, Breusch-Pagan p = .31, Durbin-Watson = 2.05. Interprete completamente.</div>'+
+      '<div class="data-display">n = 20 &nbsp;|&nbsp; Ŷ = 4.3 + 2.1X &nbsp;|&nbsp; R² = .58<br>F(1,18) = 24.86 &nbsp;|&nbsp; p < .001<br>Shapiro-Wilk(res) p = .42 | BP p = .31 | DW = 2.05</div>'+
+      '<div class="options-grid" id="q9-opts">'+
+      '<button class="option-btn" onclick="checkQ(9,this,\'a\')">O modelo e significativo mas os pressupostos falharam — Shapiro-Wilk p = .42 esta abaixo do ideal de p > .95, e Breusch-Pagan p = .31 tambem indica problemas</button>'+
+      '<button class="option-btn" onclick="checkQ(9,this,\'b\')">Precisa testar normalidade de Y e de X com Shapiro-Wilk antes de concluir, pois os pressupostos da regressao exigem que todas as variaveis sejam normais</button>'+
+      '<button class="option-btn" onclick="checkQ(9,this,\'c\')">R-quadrado = .58 e baixo para ciencias sociais — valores abaixo de .70 indicam que o modelo nao tem poder explicativo suficiente e deve ser descartado</button>'+
+      '<button class="option-btn" onclick="checkQ(9,this,\'d\')">Modelo significativo, F(1,18) = 24.86, p < .001. Cada unidade de X aumenta Y em 2.1. R² = .58 (58% da variância explicada). Todos os pressupostos satisfeitos: normalidade (SW p = .42), homocedasticidade (BP p = .31) e independência (DW = 2.05 ≈ 2)</button>'+
+      '</div><div id="q9-fb"></div></div></div>';}});
+  }
+
+  // ━━ CENA FINAL: Lição dos Corvos ━━
+  GAME.scenes.push({type:'narrative',html:function(){return '<div class="scene">'+xpBar()+
+    dialogue('narrator','A Ponte Bifröst brilha mais forte. O estudante dominou a arte de ver relações nos dados, traçar retas e — acima de tudo — examinar os resíduos antes de confiar no modelo.')+
+    dialogue('odin','Você conquistou o <em>Reino da Correlação e Regressão</em>! Lembre-se: a reta é tão boa quanto seus resíduos.')+
+    dialogue('thor','Tá, tá... eu aprendi que checar Y para normalidade não serve. São os resíduos. Mas que saco!')+
+    dialogue('muninn','<strong>Lição dos Corvos — Muninn resume:</strong><br>• Pearson r: força e direção da relação linear (−1 a +1)<br>• r²: proporção da variância explicada<br>• Regressão: Y = b₀ + b₁X + ε (OLS minimiza Σε²)<br>• Pressupostos dos RESÍDUOS: independência, normalidade, homocedasticidade<br>• NÃO checar Y ou X — checar os RESÍDUOS<br>• Remédios: Box-Cox, WLS, bootstrapping, regressão robusta')+
+    dialogue('huginn','<strong>Lição dos Corvos — Huginn desafia:</strong><br>• Sempre visualize o scatterplot ANTES de calcular r<br>• Correlação ≠ causalidade<br>• R² alto não valida o modelo — os resíduos validam<br>• Reporte SEMPRE em formato APA: r(gl) = valor, p, R²<br>• A armadilha de ThorMento: checar Y em vez dos resíduos')+
+    '<button class="continue-btn" onclick="showResults()">Ver Resultado Final ⚔️</button></div>';}});
+}
+
+// ════════════════════════════════════════════════════
+var ANSWERS={1:'a',2:'d',3:'c',4:'b',5:'c',6:'d',7:'a',8:'b',9:'d'};
+var EXPLANATIONS={
+  1:{
+    correct:'✅ Perfeito! r = 0.85 é correlação positiva forte (|r| > 0.50). r² = 0.85² = <em>0.72</em>, ou seja, 72% da variância do lucro é explicada pela distância da rota. Correlação positiva: rotas mais longas, lucros maiores.',
+    wrong:'❌ r = 0.85 é uma correlação <em>positiva forte</em> (|r| > 0.50 por Cohen). r² = 0.72 significa que 72% da variância do lucro é explicada pela distância.',
+    charC:'odin',charW:'thor'
+  },
+  2:{
+    correct:'✅ Cálculo perfeito! Ŷ = 12.5 + 3.2(5) = 12.5 + 16.0 = <em>28.5</em>. Cada hora extra de forja (b₁ = 3.2) aumenta a resistência em 3.2 unidades, e o intercepto (b₀ = 12.5) é a resistência base.',
+    wrong:'❌ Substituindo X = 5: Ŷ = 12.5 + 3.2(5) = 12.5 + 16.0 = <em>28.5</em>. Não esqueça de somar o intercepto (b₀) ao produto b₁ × X.',
+    charC:'muninn',charW:'thor'
+  },
+  3:{
+    correct:'✅ Excelente! R² = 0.72 significa que <em>72% da variabilidade</em> na produção de grãos é explicada pela quantidade de chuva. Os 28% restantes refletem outros fatores (solo, sementes, técnicas de plantio...).',
+    wrong:'❌ R² = 0.72 indica que <em>72% da variância de Y</em> é explicada pelo modelo. Atenção: R² não é a correlação (r), mas sim o <em>quadrado</em> da correlação (r = √0.72 ≈ 0.85).',
+    charC:'odin',charW:'thor'
+  },
+  4:{
+    correct:'✅ Correto! Padrão de leque (fan-shaped) nos resíduos vs. valores ajustados é o sinal clássico de <em>heterocedasticidade</em> — a variância dos resíduos não é constante. Confirmar com Breusch-Pagan ou White.',
+    wrong:'❌ Padrão de leque = <em>heterocedasticidade</em> (variância não constante dos resíduos). Testes formais: Breusch-Pagan ou White. Remédios: WLS, transformação Box-Cox, ou bootstrapping.',
+    charC:'muninn',charW:'thor'
+  },
+  5:{
+    correct:'✅ Exato! Resíduos com padrão systemático no gráfico lag-1 = violação da <em>independência</em> (autocorrelação). Durbin-Watson = 0.85 (longe de 2) confirma. Comum em dados temporais.',
+    wrong:'❌ Resíduos consecutivos com padrão = <em>autocorrelação</em> (violação da independência). Durbin-Watson longe de 2 confirma. Valores perto de 0 = autocorrelação positiva; perto de 4 = negativa.',
+    charC:'odin',charW:'thor'
+  },
+  6:{
+    correct:'✅ A armadilha clássica! Testar normalidade em Y é <em>irrelevante</em> para a regressão. O pressuposto é sobre os <em>RESÍDUOS</em>. Primeiro ajuste o modelo, extraia os resíduos (ε = Y − Ŷ), e teste a normalidade <em>deles</em>.',
+    wrong:'❌ NÃO! Testar Y para normalidade não valida a regressão. Os pressupostos são sobre os <em>RESÍDUOS</em> (ε = Y − Ŷ). Ajuste o modelo primeiro, depois examine os resíduos.',
+    charC:'huginn',charW:'thor'
+  },
+  7:{
+    correct:'✅ Reporte APA impecável! <em>r(28) = .68, p < .001, R² = .46</em>. Graus de liberdade = n − 2 = 28. R² = 0.68² = 0.4624 ≈ .46 (46% da variância explicada).',
+    wrong:'❌ Formato APA correto: <em>r(28) = .68, p < .001, R² = .46</em>. gl = n − 2 = 28. R² = (0.68)² = .46. Sempre inclua gl, valor de r, p e R².',
+    charC:'odin',charW:'thor'
+  },
+  8:{
+    correct:'✅ Sequência remediativa correta! (1) <em>Box-Cox</em> para atacar heterocedasticidade e não normalidade simultaneamente. (2) Se persistir, <em>WLS</em> para heterocedasticidade específica. (3) <em>Bootstrapping</em> como último recurso para inferência robusta.',
+    wrong:'❌ Com heterocedasticidade + não normalidade residual: (1) <em>Box-Cox</em> primeiro (ataca ambos). (2) <em>WLS</em> se heterocedasticidade persistir. (3) <em>Bootstrapping</em> como alternativa robusta.',
+    charC:'muninn',charW:'thor'
+  },
+  9:{
+    correct:'✅ Interpretação completa! Modelo significativo F(1,18) = 24.86, p < .001. b₁ = 2.1 (cada unidade de X → +2.1 em Y). R² = .58 (58% explicado). <em>Todos os pressupostos satisfeitos</em>: normalidade (SW p = .42 > .05), homocedasticidade (BP p = .31 > .05), independência (DW = 2.05 ≈ 2).',
+    wrong:'❌ O modelo está completo: F significativo, R² = .58, e todos os pressupostos dos resíduos satisfeitos (SW p = .42, BP p = .31, DW = 2.05). Não é necessário testar Y ou X para normalidade!',
+    charC:'odin',charW:'thor'
+  }
+};
+
+function checkQ(q,btn,ans){
+  var opts=document.querySelectorAll('#q'+q+'-opts .option-btn');
+  opts.forEach(function(b){b.classList.add('disabled');b.onclick=null;});
+  var fb=document.getElementById('q'+q+'-fb'),cor=ANSWERS[q],exp=EXPLANATIONS[q];
+  GAME.total++;
+  if(ans===cor){
+    btn.classList.add('correct');GAME.hits++;GAME.xp+=20;updateXPBar();earnGear();
+    fb.innerHTML='<div class="feedback-box correct">'+dialogue(exp.charC,exp.correct+' <span class="xp-badge">+20 XP</span>')+'<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>';
+  }else{
+    btn.classList.add('wrong');
+    var ci=['a','b','c','d'].indexOf(cor);if(opts[ci])opts[ci].classList.add('correct');
+    fb.innerHTML='<div class="feedback-box wrong">'+dialogue(exp.charW,exp.wrong)+'<button class="continue-btn" onclick="nextScene()">Continuar →</button></div>';
+  }
+}
+
+function countMaxXP(){return (GAME.difficulty==='mestre'?9:7)*20;}
+function renderScene(){if(GAME.currentScene<GAME.scenes.length){content().innerHTML=GAME.scenes[GAME.currentScene].html();restoreGear();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextScene(){GAME.currentScene++;renderScene();}
+
+function showResults(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var rank,rc;
+  if(pct>=90){rank='\u{1F3C6} Senhor da Reta de Bifröst';rc='#f0c040';}
+  else if(pct>=70){rank='\u{1F4DC} Mestre dos Resíduos';rc='#58a6ff';}
+  else if(pct>=50){rank='\u{1F6E1}️ Aprendiz de Correlações';rc='#8b949e';}
+  else{rank='⛓️ Servo da Heterocedasticidade';rc='#f85149';}
+  content().innerHTML='<div class="result-screen"><div class="reino-badge">REINO 15 — COMPLETO</div><h2>Resultado da Aventura</h2>'+resultVikingHTML()+
+    '<div class="result-rank" style="color:'+rc+'">'+rank+'</div>'+
+    '<div class="result-stats">'+
+    '<div class="stat-row"><span class="stat-label">Dificuldade</span><span class="stat-value">'+(GAME.difficulty==='mestre'?'⚔️ Mestre':'\u{1F6E1}️ Aprendiz')+'</span></div>'+
+    '<div class="stat-row"><span class="stat-label">Desafios Corretos</span><span class="stat-value">'+GAME.hits+' / '+GAME.total+'</span></div>'+
+    '<div class="stat-row"><span class="stat-label">Precisão</span><span class="stat-value">'+pct+'%</span></div>'+
+    '<div class="stat-row"><span class="stat-label">XP Conquistado</span><span class="stat-value">'+GAME.xp+' / '+GAME.maxXP+'</span></div></div>'+
+    dialogue('odin',pct>=70
+      ?'A Ponte Bifröst se curva diante de você! Correlação, regressão, R² e os pressupostos dos resíduos — tudo dominado. Vá e trace retas com confiança, mas nunca esqueça de examinar os resíduos!'
+      :'Bifröst não perdoa quem ignora os resíduos... Revise: Pearson r e r², a equação da regressão, e acima de tudo — os três pressupostos dos RESÍDUOS (independência, normalidade, homocedasticidade). Lembre-se: checar Y não é checar os resíduos!'
+    )+
+    '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px"><button class="continue-btn" onclick="showTitleScreen()">\u{1F504} Jogar Novamente</button></div></div>';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ════════════════════════════════════════════════════
+// ARMOR SYSTEM
+// ════════════════════════════════════════════════════
+var GEAR_ITEMS=[
+  {s:'boots',n:'Botas da Correlação',h:'<div style="display:flex;gap:14px"><div style="background:linear-gradient(#2a5a8a,#1a3a5a);width:16px;height:12px;border-radius:3px 3px 2px 2px;border:1.5px solid #0a2a4a;position:relative"><span style="position:absolute;top:1px;left:3px;font-size:6px;color:#f0c040;font-weight:bold">r</span></div><div style="background:linear-gradient(#2a5a8a,#1a3a5a);width:16px;height:12px;border-radius:3px 3px 2px 2px;border:1.5px solid #0a2a4a;position:relative"><span style="position:absolute;top:1px;left:3px;font-size:6px;color:#f0c040;font-weight:bold">r</span></div></div>'},
+  {s:'mail',n:'Cota da Regressão',h:'<div style="width:46px;height:42px;background:linear-gradient(135deg,#4a6a8a,#2a4a6a);clip-path:polygon(50% 0%,100% 30%,100% 100%,0 100%,0 30%);border:1.5px solid #6a8aaa;position:relative"><div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:28px;height:2px;background:#f0c040;transform-origin:left;transform:translateX(-50%) rotate(-15deg)"></div><div style="position:absolute;top:22px;left:8px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div><div style="position:absolute;top:18px;left:16px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div><div style="position:absolute;top:14px;left:24px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div></div>'},
+  {s:'right',n:'Espada de Pearson',h:'<div style="display:flex;flex-direction:column;align-items:center"><div style="width:12px;height:4px;background:linear-gradient(#c0c0c0,#808080);border-radius:2px"></div><div style="width:3px;height:32px;background:linear-gradient(#e0e0e0,#a0a0a0);border:1px solid #707070;position:relative"><span style="position:absolute;top:6px;left:-6px;font-size:7px;color:#58a6ff;font-weight:bold">r²</span></div><div style="width:10px;height:6px;background:#5a3a1a;border-radius:1px;border:1px solid #3a2a10"></div></div>'},
+  {s:'left',n:'Escudo Residual',h:'<div style="width:28px;height:32px;background:radial-gradient(circle,#3a5a3a,#1a3a1a);border-radius:50% 50% 50% 50% / 45% 45% 55% 55%;border:2px solid #4a7a4a;position:relative"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:#f0c040;font-weight:bold;font-family:serif">ε</div></div>'},
+  {s:'cape',n:'Capa do Scatterplot',h:'<div style="width:58px;height:52px;background:linear-gradient(180deg,#1a2a3a,#0a1a2a);clip-path:polygon(15% 0%,85% 0%,100% 100%,0% 100%);opacity:.85;position:relative"><div style="position:absolute;top:12px;left:14px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div><div style="position:absolute;top:20px;left:22px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div><div style="position:absolute;top:16px;left:30px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div><div style="position:absolute;top:28px;left:36px;width:3px;height:3px;border-radius:50%;background:#58a6ff"></div><div style="position:absolute;top:24px;left:18px;width:3px;height:3px;border-radius:50%;background:#bc8cff"></div></div>'},
+  {s:'helm',n:'Elmo dos Pressupostos',h:'<div style="width:38px;height:22px;background:linear-gradient(#5a7a5a,#3a5a3a);clip-path:polygon(5% 100%,15% 30%,50% 0%,85% 30%,95% 100%);border-bottom:3px solid #6a9a6a;position:relative"><div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:9px;color:#f0c040;font-weight:bold">✓</div></div>'}
+];
+var gearEarned=0;
+function armorPanelHTML(){
+  var rows='';
+  for(var i=0;i<GEAR_ITEMS.length;i++){rows+='<div class="gp-row'+(i<gearEarned?' earned':'')+'" id="gprow'+i+'"><span class="gp-dot"></span><span>'+GEAR_ITEMS[i].n+'</span></div>';}
+  var sl='<div class="vm-sparks" id="vmsparks"></div>';
+  sl+='<div class="vm-slot vm-cape" id="vmslot-cape"></div>';
+  sl+='<div class="vm-head"></div><div class="vm-arm-l"></div><div class="vm-arm-r"></div><div class="vm-torso"></div><div class="vm-leg-l"></div><div class="vm-leg-r"></div>';
+  sl+='<div class="vm-slot vm-boots" id="vmslot-boots"></div><div class="vm-slot vm-mail" id="vmslot-mail"></div>';
+  sl+='<div class="vm-slot vm-left" id="vmslot-left"></div><div class="vm-slot vm-right" id="vmslot-right"></div>';
+  sl+='<div class="vm-slot vm-helm" id="vmslot-helm"></div>';
+  return '<div class="armor-panel"><div class="viking-mini" id="vmini">'+sl+'</div><div class="gear-progress">'+rows+'</div></div>';
+}
+function restoreGear(){for(var i=0;i<gearEarned&&i<GEAR_ITEMS.length;i++){var g=GEAR_ITEMS[i],el=document.getElementById('vmslot-'+g.s);if(el){el.innerHTML=g.h;el.classList.add('on');}}}
+function earnGear(){
+  if(gearEarned>=GEAR_ITEMS.length)return;
+  var g=GEAR_ITEMS[gearEarned],el=document.getElementById('vmslot-'+g.s);
+  if(el){el.innerHTML=g.h;el.classList.add('on','vm-flash');setTimeout(function(){el.classList.remove('vm-flash')},500);spawnVMSparks(el);}
+  var row=document.getElementById('gprow'+gearEarned);if(row)row.classList.add('earned');
+  gearEarned++;
+}
+function spawnVMSparks(el){
+  var sc=document.getElementById('vmsparks');if(!sc||!el)return;
+  var r=el.getBoundingClientRect(),sr=document.getElementById('vmini').getBoundingClientRect();
+  var cx=r.left-sr.left+r.width/2,cy=r.top-sr.top+r.height/2;
+  var cols=['#f0c040','#f08030','#f0e080','#ff6040','#ffd060'];
+  for(var i=0;i<10;i++){var s=document.createElement('div');s.className='vm-spark';
+    var a=Math.random()*Math.PI*2,d=20+Math.random()*30;
+    s.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+cols[Math.floor(Math.random()*5)]+';--sx:'+(Math.cos(a)*d)+'px;--sy:'+(Math.sin(a)*d)+'px;width:'+(2+Math.random()*3)+'px;height:'+(2+Math.random()*3)+'px';
+    sc.appendChild(s);setTimeout(function(x){x.remove()},700,s);}
+}
+function resultVikingHTML(){
+  var pct=GAME.total>0?Math.round((GAME.hits/GAME.total)*100):0;
+  var ti=[];if(pct>=90)ti=GEAR_ITEMS;else if(pct>=70)ti=GEAR_ITEMS.slice(0,5);else if(pct>=50)ti=GEAR_ITEMS.slice(0,2);
+  var html='<div class="result-viking">';
+  html+='<div class="rv-slot rv-cape" id="rvs-cape"></div>';
+  html+='<div class="rv-head"></div><div class="rv-arm-l"></div><div class="rv-arm-r"></div><div class="rv-torso"></div><div class="rv-leg-l"></div><div class="rv-leg-r"></div>';
+  html+='<div class="rv-slot rv-boots" id="rvs-boots"></div><div class="rv-slot rv-mail" id="rvs-mail"></div>';
+  html+='<div class="rv-slot rv-left" id="rvs-left"></div><div class="rv-slot rv-right" id="rvs-right"></div>';
+  html+='<div class="rv-slot rv-helm" id="rvs-helm"></div></div>';
+  setTimeout(function(){ti.forEach(function(g){var e=document.getElementById('rvs-'+g.s);if(e)e.innerHTML=g.h;});},100);
+  return html;
+}
+
+showTitleScreen();
+</script>
+</body>
+</html>
