@@ -173,6 +173,14 @@ body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',curs
     <div class="trilha-node param">MANCOVA</div>
     <div class="trilha-arrow">→</div>
     <div class="trilha-node nparam">Não-Param.</div>
+    <div class="trilha-arrow">→</div>
+    <div class="trilha-node" style="border-color:var(--success);color:var(--success)">Correlação</div>
+    <div class="trilha-arrow">→</div>
+    <div class="trilha-node" style="border-color:var(--success);color:var(--success)">Reg. Múltipla</div>
+    <div class="trilha-arrow">→</div>
+    <div class="trilha-node" style="border-color:var(--success);color:var(--success)">Reg. Logística</div>
+    <div class="trilha-arrow">→</div>
+    <div class="trilha-node" style="border-color:var(--gold);color:var(--gold)">Bayesiana</div>
   </div>
 
   <!-- Testes de Hipótese e Comparação -->
@@ -281,6 +289,60 @@ body{background:var(--bg-dark);color:var(--text);font-family:'Patrick Hand',curs
         <span>11 passos</span>
       </div>
       <div class="card-desc">MANOVA + ANCOVA: a coroa do GLM. Tabela comparativa, parcimônia, hierarquia completa e follow-up.</div>
+    </a>
+  </div>
+
+  <!-- Regressão e Modelagem -->
+  <div class="section-title" style="color:var(--success);border-left-color:var(--success)">Regressão e Modelagem — A Forja de Previsões</div>
+  <div class="cards">
+    <a class="card" href="correlacao-regressao.html">
+      <span class="card-tag param" style="background:rgba(63,185,80,.15);color:var(--success)">Regressão</span>
+      <div class="card-icon">&#128506;</div>
+      <div class="card-title">Correlação e Regressão Linear Simples</div>
+      <div class="card-meta">
+        <span>&#11088;&#11088; Intermediário</span>
+        <span>&#9202; 30-40 min</span>
+        <span>12 passos</span>
+      </div>
+      <div class="card-desc">Pearson r, Spearman ρ, r², scatterplots, mínimos quadrados, reta de regressão, resíduos, SST/SSR/SSE e pressupostos LINE.</div>
+    </a>
+    <a class="card" href="regressao-multipla.html">
+      <span class="card-tag param" style="background:rgba(63,185,80,.15);color:var(--success)">Regressão</span>
+      <div class="card-icon">&#128200;</div>
+      <div class="card-title">Regressão Linear Múltipla</div>
+      <div class="card-meta">
+        <span>&#11088;&#11088;&#11088; Avançado</span>
+        <span>&#9202; 35-45 min</span>
+        <span>12 passos</span>
+      </div>
+      <div class="card-desc">Coeficientes parciais, R² ajustado, teste F, testes t individuais, VIF e multicolinearidade, seleção de variáveis e dummies.</div>
+    </a>
+    <a class="card" href="regressao-logistica.html">
+      <span class="card-tag param" style="background:rgba(63,185,80,.15);color:var(--success)">Regressão</span>
+      <div class="card-icon">&#128256;</div>
+      <div class="card-title">Regressão Logística</div>
+      <div class="card-meta">
+        <span>&#11088;&#11088;&#11088; Avançado</span>
+        <span>&#9202; 35-45 min</span>
+        <span>12 passos</span>
+      </div>
+      <div class="card-desc">Função sigmoide, odds e log-odds, razão de chances (OR), máxima verossimilhança, pseudo-R², matriz de confusão e classificação.</div>
+    </a>
+  </div>
+
+  <!-- Inferência Bayesiana -->
+  <div class="section-title" style="color:var(--gold);border-left-color:var(--gold)">Inferência Bayesiana — O Oráculo das Nornas</div>
+  <div class="cards">
+    <a class="card" href="inferencia-bayesiana.html" style="grid-column:1/-1">
+      <span class="card-tag param" style="background:rgba(240,192,64,.15);color:var(--gold)">Bayesiano</span>
+      <div class="card-icon">&#128302;</div>
+      <div class="card-title">Introdução à Inferência Bayesiana</div>
+      <div class="card-meta">
+        <span>&#11088;&#11088;&#11088; Avançado</span>
+        <span>&#9202; 30-40 min</span>
+        <span>12 passos</span>
+      </div>
+      <div class="card-desc">Teorema de Bayes, prior/likelihood/posterior, atualização sequencial, intervalos de credibilidade vs. confiança, Fator de Bayes e quando usar Bayesiana.</div>
     </a>
   </div>
 
