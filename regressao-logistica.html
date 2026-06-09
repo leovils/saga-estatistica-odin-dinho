@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regressão Logística — Passo a Passo | Odin Dinho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0d1117;
+  --bg-card: #161b22;
+  --bg-panel: #1c2333;
+  --odin-blue: #58a6ff;
+  --thor-red: #f85149;
+  --corvo-purple: #bc8cff;
+  --gold: #f0c040;
+  --silver: #8b949e;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --success: #3fb950;
+  --border: #30363d;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* PROGRESS BAR */
+.progress-bar-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-dark);
+  padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-label {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-panel);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--odin-blue), var(--gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* STEP CONTENT */
+.step-content {
+  min-height: 60vh;
+  padding: 30px 0;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+  font-family: 'Bangers', cursive;
+  font-size: 2.2rem;
+  color: var(--gold);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.step-subtitle {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.3rem;
+  color: var(--odin-blue);
+  margin-bottom: 15px;
+}
+
+/* DIALOGUE BOXES */
+.dialogue-box {
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.dialogue-box.odin {
+  background: rgba(88,166,255,0.08);
+  border-left-color: var(--odin-blue);
+}
+.dialogue-box.thor {
+  background: rgba(248,81,73,0.08);
+  border-left-color: var(--thor-red);
+}
+.dialogue-box.corvo {
+  background: rgba(188,140,255,0.08);
+  border-left-color: var(--corvo-purple);
+}
+
+.char-name {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.char-name.odin { color: var(--odin-blue); }
+.char-name.thor { color: var(--thor-red); }
+.char-name.corvo { color: var(--corvo-purple); }
+
+.dialogue-text {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* DATA TABLE */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1rem;
+}
+
+.data-table th, .data-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.data-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+}
+
+.data-table td {
+  background: var(--bg-card);
+  transition: background 0.2s;
+}
+
+.data-table tr:hover td {
+  background: rgba(88,166,255,0.1);
+}
+
+/* CALC TABLE */
+.calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 0.95rem;
+}
+
+.calc-table th, .calc-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.calc-table th {
+  background: var(--bg-panel);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.calc-table td {
+  background: var(--bg-card);
+}
+
+/* FORMULA */
+.formula {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 1.15rem;
+  text-align: center;
+  font-family: 'Patrick Hand', cursive;
+  color: var(--gold);
+}
+
+.formula-label {
+  font-family: 'Permanent Marker', cursive;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+/* SVG VISUALS */
+.visual-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.visual-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* CONCEPT GRID */
+.concept-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.concept-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.concept-card h4 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+/* COMPARISON GRID */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.comparison-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.comparison-title {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.comparison-result {
+  font-size: 1.4rem;
+  font-family: 'Bangers', cursive;
+}
+
+/* APA BOX */
+.apa-box {
+  background: var(--bg-panel);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.apa-label {
+  font-family: 'Bangers', cursive;
+  color: var(--gold);
+  font-style: normal;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+/* WARNING BOX */
+.warning-box {
+  background: rgba(248,81,73,0.06);
+  border: 2px solid var(--thor-red);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.warning-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--thor-red);
+  margin-bottom: 12px;
+}
+
+/* CORRECT BOX */
+.correct-box {
+  background: rgba(63,185,80,0.06);
+  border: 2px solid var(--success);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.correct-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--success);
+  margin-bottom: 12px;
+}
+
+/* RAVENS LESSON */
+.licao-box {
+  background: rgba(188,140,255,0.06);
+  border: 2px solid var(--corvo-purple);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.licao-title {
+  font-family: 'Bangers', cursive;
+  font-size: 1.4rem;
+  color: var(--corvo-purple);
+  margin-bottom: 12px;
+}
+
+/* TRAP GRID */
+.trap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.trap-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.trap-card h4 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 0.95rem;
+  color: var(--thor-red);
+  margin-bottom: 8px;
+}
+
+/* NAVIGATION */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 40px;
+  gap: 12px;
+}
+
+.nav-btn {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.1rem;
+  padding: 12px 28px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  border-color: var(--odin-blue);
+  background: rgba(88,166,255,0.1);
+}
+
+.nav-btn.primary {
+  background: var(--odin-blue);
+  color: var(--bg-dark);
+  border-color: var(--odin-blue);
+}
+
+.nav-btn.primary:hover {
+  background: #79bbff;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* SIGNATURE */
+.signature {
+  text-align: center;
+  padding: 30px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* HIGHLIGHTS */
+.hl-gold { color: var(--gold); font-weight: bold; }
+.hl-blue { color: var(--odin-blue); }
+.hl-red { color: var(--thor-red); }
+.hl-green { color: var(--success); }
+.hl-purple { color: var(--corvo-purple); }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .step-title { font-size: 1.6rem; }
+  .concept-grid, .comparison-grid, .trap-grid { grid-template-columns: 1fr; }
+  .nav-btn { padding: 10px 18px; font-size: 0.95rem; }
+  body { font-size: 16px; }
+}
+
+.fade-in { animation: fadeIn 0.6s ease both; }
+.fade-in-delay { animation: fadeIn 0.6s ease 0.3s both; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="progress-bar-container">
+    <div class="progress-label" id="progressLabel">Passo 0 de 11</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="step-content" id="stepContent"></div>
+
+  <div class="nav-buttons">
+    <button class="nav-btn" id="btnBack" onclick="goBack()" disabled>&#9664; Voltar</button>
+    <button class="nav-btn primary" id="btnNext" onclick="goNext()">Pr&oacute;ximo &#9654;</button>
+  </div>
+
+  <div class="signature">
+    Prof. Dr. Leonardo Vils &middot; PPGA &middot; UNINOVE &middot; MTPQI &middot; 2026
+  </div>
+</div>
+
+<script>
+// ===== DADOS =====
+// 20 guerreiros nórdicos: Treino (anos), Qualidade da Armadura (1-10), Escudo (0/1), Experiência em Batalha (campanhas), Sobreviveu (0/1)
+var guerreiros = [
+  'Bjorn Lado-de-Ferro','Sigurd Olho-de-Serpente','Ivar o Desossado','Halfdan Ragnarsson','Ubba',
+  'Rollo da Normandia','Leif o Sortudo','Erik Machado-Sangrento','Harald Cabelo-Bonito','Ragnar Lothbrok',
+  'Gunnar Hamundarson','Floki o Construtor','Arne o Bravo','Thorfinn Quebra-Crânio','Olaf Tryggvason',
+  'Egil Skallagrimsson','Ketill Nariz-Chato','Ulf o Destemido','Astrid Donzela-Escudo','Freydis Eiriksdottir'
+];
+var Treino = [8, 5, 3, 6, 2, 7, 4, 9, 10, 6, 3, 1, 5, 8, 7, 4, 2, 6, 9, 7]; // Anos de treino
+var Armadura = [9, 6, 4, 7, 3, 8, 5, 8, 10, 7, 5, 2, 6, 9, 8, 3, 4, 7, 9, 6]; // Qualidade 1-10
+var Escudo = [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0]; // Tem escudo
+var ExpBat = [12, 7, 5, 8, 1, 10, 3, 14, 15, 9, 4, 0, 6, 11, 9, 2, 1, 8, 13, 5]; // Campanhas
+var Sobrev = [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0]; // Sobreviveu
+var n = guerreiros.length;
+
+// ===== AUXILIARES =====
+function sum(arr) { return arr.reduce(function(a,b){return a+b;},0); }
+function mean(arr) { return sum(arr) / arr.length; }
+function rf(v, d) { return Number(v).toFixed(d === undefined ? 2 : d); }
+function r4(v) { return Number(v).toFixed(4); }
+
+// ===== REGRESSÃO LOGÍSTICA VIA IRLS =====
+function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+var Xmat = [];
+for (var i = 0; i < n; i++) {
+  Xmat.push([1, Treino[i], Armadura[i], Escudo[i], ExpBat[i]]);
+}
+
+function fitLogistic(X, y, maxIter, tol) {
+  var p = X[0].length;
+  var nn = X.length;
+  var beta = [];
+  for (var j = 0; j < p; j++) beta[j] = 0;
+
+  for (var iter = 0; iter < maxIter; iter++) {
+    var pHat = [];
+    for (var i2 = 0; i2 < nn; i2++) {
+      var z = 0;
+      for (var j2 = 0; j2 < p; j2++) z += beta[j2] * X[i2][j2];
+      pHat[i2] = sigmoid(z);
+    }
+
+    var grad = [];
+    for (var j3 = 0; j3 < p; j3++) {
+      var s = 0;
+      for (var i3 = 0; i3 < nn; i3++) s += X[i3][j3] * (y[i3] - pHat[i3]);
+      grad[j3] = s;
+    }
+
+    var H = [];
+    for (var a = 0; a < p; a++) {
+      H[a] = [];
+      for (var b = 0; b < p; b++) {
+        var ss = 0;
+        for (var i4 = 0; i4 < nn; i4++) {
+          var w = pHat[i4] * (1 - pHat[i4]);
+          ss -= X[i4][a] * w * X[i4][b];
+        }
+        H[a][b] = ss;
+      }
+    }
+
+    var Hinv = invertMatrix(H);
+    if (!Hinv) break;
+
+    var betaNew = [];
+    var maxDiff = 0;
+    for (var j4 = 0; j4 < p; j4++) {
+      var delta = 0;
+      for (var j5 = 0; j5 < p; j5++) delta += Hinv[j4][j5] * grad[j5];
+      betaNew[j4] = beta[j4] - delta;
+      maxDiff = Math.max(maxDiff, Math.abs(betaNew[j4] - beta[j4]));
+    }
+    beta = betaNew;
+    if (maxDiff < tol) break;
+  }
+  return beta;
+}
+
+function invertMatrix(M) {
+  var sz = M.length;
+  var aug = [];
+  for (var i = 0; i < sz; i++) {
+    aug[i] = [];
+    for (var j = 0; j < sz; j++) aug[i][j] = M[i][j];
+    for (var j2 = 0; j2 < sz; j2++) aug[i][sz + j2] = (i === j2) ? 1 : 0;
+  }
+  for (var col = 0; col < sz; col++) {
+    var maxRow = col;
+    for (var row = col + 1; row < sz; row++) {
+      if (Math.abs(aug[row][col]) > Math.abs(aug[maxRow][col])) maxRow = row;
+    }
+    var tmp = aug[col]; aug[col] = aug[maxRow]; aug[maxRow] = tmp;
+    var pivot = aug[col][col];
+    if (Math.abs(pivot) < 1e-12) return null;
+    for (var j3 = 0; j3 < 2 * sz; j3++) aug[col][j3] /= pivot;
+    for (var row2 = 0; row2 < sz; row2++) {
+      if (row2 !== col) {
+        var factor = aug[row2][col];
+        for (var j4 = 0; j4 < 2 * sz; j4++) aug[row2][j4] -= factor * aug[col][j4];
+      }
+    }
+  }
+  var inv = [];
+  for (var i2 = 0; i2 < sz; i2++) {
+    inv[i2] = [];
+    for (var j5 = 0; j5 < sz; j5++) inv[i2][j5] = aug[i2][sz + j5];
+  }
+  return inv;
+}
+
+var betas = fitLogistic(Xmat, Sobrev, 100, 1e-8);
+var b0 = betas[0], b1 = betas[1], b2 = betas[2], b3 = betas[3], b4 = betas[4];
+
+// Probabilidades preditas
+var pHat = [];
+for (var i = 0; i < n; i++) {
+  var z = b0 + b1*Treino[i] + b2*Armadura[i] + b3*Escudo[i] + b4*ExpBat[i];
+  pHat[i] = sigmoid(z);
+}
+
+// Razões de chances
+var OR1 = Math.exp(b1), OR2 = Math.exp(b2), OR3 = Math.exp(b3), OR4 = Math.exp(b4);
+
+// Log-verossimilhança
+var LL = 0;
+for (var i2 = 0; i2 < n; i2++) {
+  var pi = pHat[i2];
+  if (pi < 1e-10) pi = 1e-10;
+  if (pi > 1 - 1e-10) pi = 1 - 1e-10;
+  LL += Sobrev[i2] * Math.log(pi) + (1 - Sobrev[i2]) * Math.log(1 - pi);
+}
+
+// Log-verossimilhança do modelo nulo
+var pBar = mean(Sobrev);
+var LL0 = 0;
+for (var i3 = 0; i3 < n; i3++) {
+  LL0 += Sobrev[i3] * Math.log(pBar) + (1 - Sobrev[i3]) * Math.log(1 - pBar);
+}
+
+// Deviance
+var deviance = -2 * LL;
+var nullDeviance = -2 * LL0;
+
+// Pseudo-R2
+var coxSnellR2 = 1 - Math.exp((2/n) * (LL0 - LL));
+var maxCoxSnell = 1 - Math.exp((2/n) * LL0);
+var nagelkerkeR2 = coxSnellR2 / maxCoxSnell;
+
+// AIC
+var AIC = -2 * LL + 2 * 5;
+
+// Classificação (corte = 0.5)
+var TP = 0, TN = 0, FP = 0, FN = 0;
+var predClass = [];
+for (var i4 = 0; i4 < n; i4++) {
+  predClass[i4] = pHat[i4] >= 0.5 ? 1 : 0;
+  if (Sobrev[i4] === 1 && predClass[i4] === 1) TP++;
+  else if (Sobrev[i4] === 0 && predClass[i4] === 0) TN++;
+  else if (Sobrev[i4] === 0 && predClass[i4] === 1) FP++;
+  else FN++;
+}
+var sensibilidade = TP / (TP + FN);
+var especificidade = TN / (TN + FP);
+var acuracia = (TP + TN) / n;
+
+// ===== HELPER DE DIÁLOGO =====
+function dialogue(character, name, text) {
+  return '<div class="dialogue-box ' + character + '">' +
+    '<div class="char-name ' + character + '">' + name + '</div>' +
+    '<div class="dialogue-text">' + text + '</div>' +
+  '</div>';
+}
+
+// ===== SVG: CURVA SIGMOIDE =====
+function buildSigmoidSVG() {
+  var w = 680, h = 340;
+  var pad = { top: 30, right: 40, bottom: 50, left: 60 };
+  var pw = w - pad.left - pad.right;
+  var ph = h - pad.top - pad.bottom;
+
+  var xMin = -8, xMax = 8;
+  var yMin = 0, yMax = 1;
+  function sx(v) { return pad.left + (v - xMin) / (xMax - xMin) * pw; }
+  function sy(v) { return pad.top + ph - (v - yMin) / (yMax - yMin) * ph; }
+
+  var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+
+  for (var gy = 0; gy <= 1; gy += 0.25) {
+    svg += '<line x1="' + pad.left + '" y1="' + sy(gy) + '" x2="' + (pad.left + pw) + '" y2="' + sy(gy) + '" stroke="#30363d" stroke-width="0.5" opacity="0.5"/>';
+    svg += '<text x="' + (pad.left - 10) + '" y="' + (sy(gy) + 4) + '" fill="#8b949e" font-size="11" text-anchor="end" font-family="Patrick Hand">' + gy.toFixed(2) + '</text>';
+  }
+
+  svg += '<line x1="' + pad.left + '" y1="' + (pad.top + ph) + '" x2="' + (pad.left + pw) + '" y2="' + (pad.top + ph) + '" stroke="#8b949e" stroke-width="1.5"/>';
+  svg += '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (pad.top + ph) + '" stroke="#8b949e" stroke-width="1.5"/>';
+
+  svg += '<line x1="' + pad.left + '" y1="' + sy(0.5) + '" x2="' + (pad.left + pw) + '" y2="' + sy(0.5) + '" stroke="#f0c040" stroke-width="1" stroke-dasharray="6,4" opacity="0.6"/>';
+  svg += '<text x="' + (pad.left + pw + 5) + '" y="' + (sy(0.5) + 4) + '" fill="#f0c040" font-size="11" font-family="Patrick Hand">0,50</text>';
+
+  var path = 'M';
+  for (var x = xMin; x <= xMax; x += 0.1) {
+    var yy = 1 / (1 + Math.exp(-x));
+    path += (x === xMin ? '' : ' L') + rf(sx(x), 1) + ' ' + rf(sy(yy), 1);
+  }
+  svg += '<path d="' + path + '" fill="none" stroke="#58a6ff" stroke-width="3"/>';
+
+  svg += '<text x="' + (pad.left + pw/2) + '" y="' + (h - 5) + '" fill="#8b949e" font-size="13" text-anchor="middle" font-family="Permanent Marker">z = b₀ + b₁x₁ + ... + bₖxₖ</text>';
+  svg += '<text x="15" y="' + (pad.top + ph/2) + '" fill="#8b949e" font-size="13" text-anchor="middle" font-family="Permanent Marker" transform="rotate(-90,15,' + (pad.top + ph/2) + ')">P(Y=1)</text>';
+
+  for (var gx = -6; gx <= 6; gx += 2) {
+    svg += '<text x="' + sx(gx) + '" y="' + (pad.top + ph + 20) + '" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">' + gx + '</text>';
+  }
+
+  svg += '<text x="' + sx(3.5) + '" y="' + (sy(0.95) - 12) + '" fill="#58a6ff" font-size="13" font-family="Permanent Marker">Curva S sigmoide</text>';
+  svg += '<text x="' + sx(-5) + '" y="' + (sy(0.05) + 20) + '" fill="#f85149" font-size="11" font-family="Patrick Hand">Tende a 0 assintoticamente</text>';
+  svg += '<text x="' + sx(4) + '" y="' + (sy(0.95) + 8) + '" fill="#3fb950" font-size="11" font-family="Patrick Hand">Tende a 1 assintoticamente</text>';
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ===== SVG: LINEAR vs LOGÍSTICA =====
+function buildComparisonSVG() {
+  var w = 680, h = 340;
+  var pad = { top: 30, right: 40, bottom: 50, left: 60 };
+  var pw = w - pad.left - pad.right;
+  var ph = h - pad.top - pad.bottom;
+
+  var xMin = 0, xMax = 12;
+  var yMin = -0.3, yMax = 1.3;
+  function sx(v) { return pad.left + (v - xMin) / (xMax - xMin) * pw; }
+  function sy(v) { return pad.top + ph - (v - yMin) / (yMax - yMin) * ph; }
+
+  var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+
+  svg += '<rect x="' + pad.left + '" y="' + sy(1) + '" width="' + pw + '" height="' + (sy(0) - sy(1)) + '" fill="rgba(63,185,80,0.04)" />';
+  svg += '<rect x="' + pad.left + '" y="' + pad.top + '" width="' + pw + '" height="' + (sy(1) - pad.top) + '" fill="rgba(248,81,73,0.04)" />';
+  svg += '<rect x="' + pad.left + '" y="' + sy(0) + '" width="' + pw + '" height="' + (pad.top + ph - sy(0)) + '" fill="rgba(248,81,73,0.04)" />';
+
+  svg += '<line x1="' + pad.left + '" y1="' + sy(0) + '" x2="' + (pad.left + pw) + '" y2="' + sy(0) + '" stroke="#8b949e" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>';
+  svg += '<line x1="' + pad.left + '" y1="' + sy(1) + '" x2="' + (pad.left + pw) + '" y2="' + sy(1) + '" stroke="#8b949e" stroke-width="1" stroke-dasharray="4,4" opacity="0.6"/>';
+  svg += '<text x="' + (pad.left - 10) + '" y="' + (sy(0) + 4) + '" fill="#8b949e" font-size="11" text-anchor="end" font-family="Patrick Hand">0</text>';
+  svg += '<text x="' + (pad.left - 10) + '" y="' + (sy(1) + 4) + '" fill="#8b949e" font-size="11" text-anchor="end" font-family="Patrick Hand">1</text>';
+
+  svg += '<line x1="' + pad.left + '" y1="' + (pad.top + ph) + '" x2="' + (pad.left + pw) + '" y2="' + (pad.top + ph) + '" stroke="#8b949e" stroke-width="1.5"/>';
+  svg += '<line x1="' + pad.left + '" y1="' + pad.top + '" x2="' + pad.left + '" y2="' + (pad.top + ph) + '" stroke="#8b949e" stroke-width="1.5"/>';
+
+  var ptsX = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 9.5, 10, 10.5, 11];
+  var ptsY = [0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1];
+  for (var i = 0; i < ptsX.length; i++) {
+    var col = ptsY[i] === 1 ? '#3fb950' : '#f85149';
+    svg += '<circle cx="' + sx(ptsX[i]) + '" cy="' + sy(ptsY[i]) + '" r="5" fill="' + col + '" stroke="#0d1117" stroke-width="1.5" opacity="0.85"/>';
+  }
+
+  var lSlope = 0.09;
+  var lInt = -0.15;
+  svg += '<line x1="' + sx(0) + '" y1="' + sy(lInt) + '" x2="' + sx(12) + '" y2="' + sy(lInt + 12 * lSlope) + '" stroke="#f85149" stroke-width="2.5" stroke-dasharray="8,4" opacity="0.8"/>';
+
+  var logPath = 'M';
+  for (var x = 0; x <= 12; x += 0.15) {
+    var zz = -4.5 + 0.75 * x;
+    var yy = 1 / (1 + Math.exp(-zz));
+    logPath += (x === 0 ? '' : ' L') + rf(sx(x), 1) + ' ' + rf(sy(yy), 1);
+  }
+  svg += '<path d="' + logPath + '" fill="none" stroke="#58a6ff" stroke-width="3"/>';
+
+  svg += '<text x="' + sx(11) + '" y="' + (sy(lInt + 11 * lSlope) - 10) + '" fill="#f85149" font-size="12" font-family="Permanent Marker">Reta MQO</text>';
+  svg += '<text x="' + sx(9.5) + '" y="' + (sy(0.85) - 14) + '" fill="#58a6ff" font-size="12" font-family="Permanent Marker">Logística</text>';
+  svg += '<text x="' + (pad.left + pw/2) + '" y="' + (h - 5) + '" fill="#8b949e" font-size="13" text-anchor="middle" font-family="Permanent Marker">Treino (anos)</text>';
+
+  svg += '<text x="' + (pad.left + pw - 5) + '" y="' + (sy(1.15)) + '" fill="#f85149" font-size="10" text-anchor="end" font-family="Patrick Hand">Previsões > 1 (impossível!)</text>';
+  svg += '<text x="' + (pad.left + 5) + '" y="' + (sy(-0.15)) + '" fill="#f85149" font-size="10" font-family="Patrick Hand">Previsões < 0 (impossível!)</text>';
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ===== SVG: MATRIZ DE CONFUSÃO =====
+function buildConfusionMatrixSVG() {
+  var w = 500, h = 400;
+  var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+
+  svg += '<text x="250" y="25" fill="#f0c040" font-size="16" text-anchor="middle" font-family="Permanent Marker">Matriz de Confusão</text>';
+
+  svg += '<text x="300" y="55" fill="#8b949e" font-size="14" text-anchor="middle" font-family="Permanent Marker">Predito</text>';
+  svg += '<text x="225" y="80" fill="#3fb950" font-size="12" text-anchor="middle" font-family="Patrick Hand">Sobreviveu (1)</text>';
+  svg += '<text x="375" y="80" fill="#f85149" font-size="12" text-anchor="middle" font-family="Patrick Hand">Caiu (0)</text>';
+
+  svg += '<text x="70" y="155" fill="#8b949e" font-size="14" text-anchor="middle" font-family="Permanent Marker" transform="rotate(-90,70,155)">Real</text>';
+  svg += '<text x="105" y="140" fill="#3fb950" font-size="12" text-anchor="middle" font-family="Patrick Hand" transform="rotate(-90,105,140)">Sobreviveu (1)</text>';
+  svg += '<text x="105" y="280" fill="#f85149" font-size="12" text-anchor="middle" font-family="Patrick Hand" transform="rotate(-90,105,280)">Caiu (0)</text>';
+
+  // VP
+  svg += '<rect x="150" y="90" width="150" height="110" rx="8" fill="rgba(63,185,80,0.15)" stroke="#3fb950" stroke-width="2"/>';
+  svg += '<text x="225" y="135" fill="#3fb950" font-size="28" text-anchor="middle" font-family="Bangers">' + TP + '</text>';
+  svg += '<text x="225" y="160" fill="#3fb950" font-size="13" text-anchor="middle" font-family="Patrick Hand">Verdadeiro Positivo</text>';
+  svg += '<text x="225" y="180" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">(Acerto)</text>';
+
+  // FN
+  svg += '<rect x="300" y="90" width="150" height="110" rx="8" fill="rgba(248,81,73,0.12)" stroke="#f85149" stroke-width="2"/>';
+  svg += '<text x="375" y="135" fill="#f85149" font-size="28" text-anchor="middle" font-family="Bangers">' + FN + '</text>';
+  svg += '<text x="375" y="160" fill="#f85149" font-size="13" text-anchor="middle" font-family="Patrick Hand">Falso Negativo</text>';
+  svg += '<text x="375" y="180" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">(Erro Tipo II)</text>';
+
+  // FP
+  svg += '<rect x="150" y="200" width="150" height="110" rx="8" fill="rgba(248,81,73,0.12)" stroke="#f85149" stroke-width="2"/>';
+  svg += '<text x="225" y="245" fill="#f85149" font-size="28" text-anchor="middle" font-family="Bangers">' + FP + '</text>';
+  svg += '<text x="225" y="270" fill="#f85149" font-size="13" text-anchor="middle" font-family="Patrick Hand">Falso Positivo</text>';
+  svg += '<text x="225" y="290" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">(Alarme Falso)</text>';
+
+  // VN
+  svg += '<rect x="300" y="200" width="150" height="110" rx="8" fill="rgba(63,185,80,0.15)" stroke="#3fb950" stroke-width="2"/>';
+  svg += '<text x="375" y="245" fill="#3fb950" font-size="28" text-anchor="middle" font-family="Bangers">' + TN + '</text>';
+  svg += '<text x="375" y="270" fill="#3fb950" font-size="13" text-anchor="middle" font-family="Patrick Hand">Verdadeiro Negativo</text>';
+  svg += '<text x="375" y="290" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Patrick Hand">(Rejeição Correta)</text>';
+
+  svg += '<text x="250" y="345" fill="#f0c040" font-size="13" text-anchor="middle" font-family="Permanent Marker">Sensibilidade = ' + rf(sensibilidade * 100, 1) + '% | Especificidade = ' + rf(especificidade * 100, 1) + '% | Acurácia = ' + rf(acuracia * 100, 1) + '%</text>';
+  svg += '<text x="250" y="375" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Patrick Hand">Ponto de corte = 0,50</text>';
+
+  svg += '</svg>';
+  return svg;
+}
+
+
+// =============================================
+// FUNÇÕES DOS PASSOS
+// =============================================
+
+function step0() {
+  return '<div class="step-title">Os Portões de Valhalla: Quem Sobrevive à Batalha?</div>' +
+
+    '<p>Nos portões de <span class="hl-gold">Valhalla</span>, as Valquírias precisam decidir quais guerreiros sobreviveram à grande batalha e quais tombaram. O Pai de Todos quer <em>prever</em> a sobrevivência \x96 não julgar depois do fato. As características de um guerreiro \x96 treino, armadura, escudo e experiência \x96 podem nos dizer a probabilidade de sobrevivência?</p>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Estamos diante de um <strong>desfecho binário</strong> \x96 o guerreiro sobreviveu (1) ou tombou (0). Não existe meio-termo. A regressão linear não funciona aqui. Precisamos de uma ferramenta projetada para previsões do tipo sim/não. Apresento a <span class="hl-gold">regressão logística</span>.') +
+
+    dialogue('thor', '🔨 ThorMento', 'Binário? Usa regressão normal e arredonda pra 0 ou 1! Problema resolvido.') +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Essa é a abordagem ingênua, ThorMento. E ela falha espetacularmente. Um modelo linear pode prever probabilidades de \x960,3 ou 1,4 \x96 o que não faz sentido algum para uma probabilidade. Precisamos de uma função que <em>restrinja</em> a saída entre 0 e 1.') +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', '<strong>Regressão logística</strong> foi desenvolvida pelo estatístico David Cox em 1958, baseando-se na função logística descoberta por Pierre-François Verhulst em 1845. Ela modela a probabilidade de um desfecho binário como função de um ou mais preditores. A variável dependente é categórica (0/1), não contínua.') +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">A Pergunta</h4>' +
+        '<p>Qual é a <strong>probabilidade</strong> de um guerreiro sobreviver, dadas suas características?</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">A Ferramenta</h4>' +
+        '<p><strong>Regressão logística</strong> \x96 mapeia qualquer combinação linear para uma probabilidade entre 0 e 1.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">Y = 1</h4>' +
+        '<p>O guerreiro <strong>sobreviveu</strong> à batalha. O evento de interesse ocorreu.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--thor-red)">Y = 0</h4>' +
+        '<p>O guerreiro <strong>tombou</strong> em batalha. O evento de interesse não ocorreu.</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Huginn provoca:', 'Pense nisso: se você usasse MQO em dados binários, seus resíduos violariam <em>todos</em> os pressupostos \x96 normalidade, homocedasticidade, linearidade. As previsões seriam sem sentido fora do intervalo observado. A regressão logística resolve tudo isso com um truque elegante: a função sigmoide.');
+}
+
+function step1() {
+  return '<div class="step-title">Passo 1: Por Que Não Regressão Linear?</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Antes de aprender regressão logística, precisamos entender <em>por que</em> a regressão linear comum falha com desfechos binários. Vou mostrar o problema fundamental.') +
+
+    '<p>Suponha que tentamos prever sobrevivência (0 ou 1) usando apenas <span class="hl-blue">anos de treino</span> com uma reta:</p>' +
+
+    '<div class="visual-container">' + buildComparisonSVG() + '</div>' +
+
+    '<div class="warning-box">' +
+      '<div class="warning-title">⚠️ Três Problemas Fatais do MQO em Dados Binários</div>' +
+      '<p><strong>1. Valores previstos escapam de [0, 1].</strong> Um modelo linear prevê alegremente P = 1,3 ou P = \x960,2. Isso não faz sentido para uma probabilidade.</p>' +
+      '<p style="margin-top:8px"><strong>2. Resíduos não-normais.</strong> Quando Y é 0 ou 1, os resíduos se agrupam em dois níveis. O pressuposto de normalidade é destruído.</p>' +
+      '<p style="margin-top:8px"><strong>3. Heterocedasticidade por construção.</strong> A variância de uma variável binária depende de sua média: Var = p(1\x96p). Conforme a probabilidade prevista muda, a variância também muda.</p>' +
+    '</div>' +
+
+    dialogue('thor', '🔨 ThorMento', 'Tá, a reta sobe e desce demais. Só cortar no 0 e no 1!') +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Cortar cria regiões planas onde a derivada é zero \x96 o modelo para de aprender. E as estimativas cortadas continuam enviesadas. A solução elegante é usar uma função que <em>naturalmente</em> vive entre 0 e 1: a <span class="hl-gold">função sigmoide</span>.') +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--thor-red)">MQO no Y Binário</h4>' +
+        '<p>Chamado de <strong>Modelo de Probabilidade Linear (MPL)</strong>. Às vezes usado por simplicidade, mas tem falhas graves.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">Regressão Logística</h4>' +
+        '<p>Usa a <strong>função link logit</strong> para restringir previsões a [0, 1]. Modelo probabilístico correto.</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', 'O Modelo de Probabilidade Linear ainda é usado em economia para inferência causal porque os coeficientes são fáceis de interpretar. Mas para previsão e inferência adequada sobre probabilidades, a regressão logística é o padrão em administração, psicologia e ciências da saúde.');
+}
+
+function step2() {
+  return '<div class="step-title">Passo 2: A Função Logística \x96 A Curva S</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'O coração da regressão logística é a <strong>função sigmoide</strong> (também chamada de função logística). Ela pega qualquer número real e o comprime no intervalo (0, 1).') +
+
+    '<div class="formula">' +
+      '<div class="formula-label">A Função Sigmoide / Logística</div>' +
+      'σ(z) = 1 / (1 + e<sup>\x96z</sup>)' +
+    '</div>' +
+
+    '<div class="visual-container">' + buildSigmoidSVG() + '</div>' +
+
+    '<p>A variável <span class="hl-gold">z</span> é o <strong>preditor linear</strong>: z = b₀ + b₁x₁ + ... + bₖxₖ. A sigmoide transforma z em uma probabilidade P(Y=1).</p>' +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">Quando z = 0</h4>' +
+        '<p>σ(0) = 1/(1+1) = <strong>0,50</strong>. O ponto de inflexão. Chances iguais.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">Quando z → +∞</h4>' +
+        '<p>σ(z) → <strong>1</strong>. A função se aproxima da certeza de Y=1.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--thor-red)">Quando z → \x96∞</h4>' +
+        '<p>σ(z) → <strong>0</strong>. Quase certeza de que Y=0.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">A Inversa: Logit</h4>' +
+        '<p>logit(p) = ln(p / (1\x96p)). Mapeia uma probabilidade de volta para (\x96∞, +∞).</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Huginn provoca:', 'A sigmoide é simétrica em torno de z = 0. Isso significa que o efeito de ir de z = \x962 para z = 0 na escala de probabilidade é o <em>mesmo</em> que ir de z = 0 para z = +2. Mas o efeito na probabilidade <strong>não é linear</strong> \x96 a mudança mais acentuada acontece perto de z = 0. Guarde isso para quando interpretar coeficientes.') +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'A função logit \x96 a inversa da sigmoide \x96 é o elo fundamental. Ela transforma uma probabilidade em um número real, que é exatamente o que nosso modelo linear produz. Por isso chamamos de <em>função link logit</em>.');
+}
+
+function step3() {
+  return '<div class="step-title">Passo 3: Os Dados \x96 Guerreiros dos Nove Reinos</div>' +
+
+    '<p>Odin Dinho registrou o destino de <span class="hl-gold">20 guerreiros</span> da última grande batalha. Para cada guerreiro, sabemos seu <span class="hl-blue">treino</span> (anos), <span class="hl-green">qualidade da armadura</span> (1\x9610), se carregava <span class="hl-purple">escudo</span> (0/1) e sua <span class="hl-gold">experiência em batalha</span> (campanhas). O desfecho: sobreviveu?</p>' +
+
+    '<div style="overflow-x:auto">' +
+    '<table class="data-table">' +
+    '<tr><th>#</th><th>Guerreiro</th><th>Treino (anos)</th><th>Armadura (1\x9610)</th><th>Escudo (0/1)</th><th>Experiência</th><th>Sobreviveu</th></tr>' +
+    guerreiros.map(function(w, i) {
+      var survColor = Sobrev[i] === 1 ? 'color:var(--success)' : 'color:var(--thor-red)';
+      return '<tr><td>' + (i+1) + '</td><td style="text-align:left">' + w + '</td><td>' + Treino[i] + '</td><td>' + Armadura[i] + '</td><td>' + Escudo[i] + '</td><td>' + ExpBat[i] + '</td><td style="' + survColor + ';font-weight:bold">' + Sobrev[i] + '</td></tr>';
+    }).join('') +
+    '</table>' +
+    '</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Observe: a coluna de desfecho é estritamente <span class="hl-green">1</span> (sobreviveu) ou <span class="hl-red">0</span> (tombou). Nada de meia-sobrevivência. Esta é a variável dependente binária para a qual a regressão logística foi construída.') +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">Preditores Contínuos</h4>' +
+        '<p>Treino (anos), Qualidade da Armadura (1\x9610), Experiência em Batalha (campanhas)</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">Preditor Binário</h4>' +
+        '<p>Escudo (0 = não, 1 = sim). Uma variável dummy dentro do modelo.</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Huginn provoca:', 'Com 20 observações e 4 preditores, temos 5 <strong>eventos por variável</strong> (EPV = 10 eventos / 4 vars = 2,5). Espera \x96 isso está abaixo do recomendado EPV ≥ 10. Voltaremos a essa preocupação no passo de pressupostos. Por enquanto, trate esses resultados como ilustrativos.');
+}
+
+function step4() {
+  return '<div class="step-title">Passo 4: Chances e Log-Chances \x96 A Linguagem da Regressão Logística</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Antes de ajustar o modelo, precisamos falar a linguagem da regressão logística. Três conceitos se constroem um sobre o outro: <span class="hl-gold">probabilidade</span>, <span class="hl-blue">chances (odds)</span> e <span class="hl-purple">log-chances (logit)</span>.') +
+
+    '<p>Nos nossos dados, <span class="hl-gold">' + sum(Sobrev) + ' de ' + n + '</span> guerreiros sobreviveram. A probabilidade base é:</p>' +
+
+    '<div class="formula">' +
+      '<div class="formula-label">Probabilidade Base</div>' +
+      'P(Sobreviveu) = ' + sum(Sobrev) + ' / ' + n + ' = ' + rf(pBar, 2) +
+    '</div>' +
+
+    '<div class="formula">' +
+      '<div class="formula-label">Chances (Odds) = P / (1 \x96 P)</div>' +
+      'Chances = ' + rf(pBar, 2) + ' / ' + rf(1 - pBar, 2) + ' = ' + rf(pBar / (1 - pBar), 4) +
+    '</div>' +
+
+    '<div class="formula">' +
+      '<div class="formula-label">Log-Chances (Logit) = ln(Chances)</div>' +
+      'Logit = ln(' + rf(pBar / (1 - pBar), 4) + ') = ' + rf(Math.log(pBar / (1 - pBar)), 4) +
+    '</div>' +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">Probabilidade</h4>' +
+        '<p>Varia de <strong>0 a 1</strong>. A linguagem da previsão. P = ' + rf(pBar, 2) + '</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">Chances (Odds)</h4>' +
+        '<p>Varia de <strong>0 a ∞</strong>. "Quanto mais provável é o sucesso que o fracasso?" Chances = ' + rf(pBar / (1 - pBar), 2) + '</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">Log-Chances (Logit)</h4>' +
+        '<p>Varia de <strong>\x96∞ a +∞</strong>. É isso que o modelo linear prevê! Logit = ' + rf(Math.log(pBar / (1 - pBar)), 2) + '</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">Por Que Log-Chances?</h4>' +
+        '<p>Porque vivem na mesma escala de uma equação linear: (\x96∞, +∞). Um encaixe perfeito para b₀ + b₁x.</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('thor', '🔨 ThorMento', 'Chances, log-chances, probabilidades \x96 tô confuso. Por que não prever a probabilidade direto?') +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Porque probabilidade é limitada (0 a 1), mas uma equação linear não é. A transformação logit mapeia a probabilidade limitada para a reta real ilimitada. O modelo trabalha no espaço de log-chances, depois convertemos de volta para probabilidades quando queremos previsões.') +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', 'Pense como um processo de três passos: <strong>1)</strong> O modelo calcula um log-chances (z). <strong>2)</strong> Exponenciamos para obter chances: e<sup>z</sup>. <strong>3)</strong> Convertemos chances em probabilidade: p = chances / (1 + chances). Essa cadeia é a função logística.');
+}
+
+function step5() {
+  return '<div class="step-title">Passo 5: O Modelo Logístico \x96 Prevendo Log-Chances</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Agora juntamos tudo. O modelo de regressão logística diz que o <strong>log-chances do desfecho</strong> é uma função linear dos preditores.') +
+
+    '<div class="formula">' +
+      '<div class="formula-label">O Modelo de Regressão Logística</div>' +
+      'logit(p) = ln(p / (1\x96p)) = b₀ + b₁x₁ + b₂x₂ + ... + bₖxₖ' +
+    '</div>' +
+
+    '<p>Para nossos dados de guerreiros, o modelo ajustado é:</p>' +
+
+    '<div class="formula">' +
+      '<div class="formula-label">Modelo Ajustado</div>' +
+      'logit(P[Sobreviveu]) = ' + rf(b0, 4) + ' + ' + rf(b1, 4) + '(Treino) + ' + rf(b2, 4) + '(Armadura) + ' + rf(b3, 4) + '(Escudo) + ' + rf(b4, 4) + '(Experiência)' +
+    '</div>' +
+
+    '<div style="overflow-x:auto">' +
+    '<table class="calc-table">' +
+    '<tr><th>Coeficiente</th><th>Variável</th><th>Estimativa (b)</th><th>Interpretação (em log-chances)</th></tr>' +
+    '<tr><td>b₀</td><td>Intercepto</td><td>' + rf(b0, 4) + '</td><td>Log-chances quando todos os preditores = 0</td></tr>' +
+    '<tr><td>b₁</td><td>Treino (anos)</td><td>' + rf(b1, 4) + '</td><td>Cada ano extra de treino altera log-chances em ' + rf(b1, 4) + '</td></tr>' +
+    '<tr><td>b₂</td><td>Qualidade da Armadura</td><td>' + rf(b2, 4) + '</td><td>Cada unidade de armadura altera log-chances em ' + rf(b2, 4) + '</td></tr>' +
+    '<tr><td>b₃</td><td>Escudo (0/1)</td><td>' + rf(b3, 4) + '</td><td>Ter escudo altera log-chances em ' + rf(b3, 4) + '</td></tr>' +
+    '<tr><td>b₄</td><td>Experiência em Batalha</td><td>' + rf(b4, 4) + '</td><td>Cada campanha extra altera log-chances em ' + rf(b4, 4) + '</td></tr>' +
+    '</table>' +
+    '</div>' +
+
+    dialogue('thor', '🔨 ThorMento', 'Espera \x96 um coeficiente de ' + rf(b1, 4) + ' significa o quê? Um aumento de ' + rf(b1, 4) + ' na probabilidade?') +
+
+    '<div class="warning-box">' +
+      '<div class="warning-title">⚠️ Distinção Crítica!</div>' +
+      '<p>Na regressão logística, os coeficientes são mudanças em <strong>log-chances</strong>, NÃO mudanças em probabilidade! Um coeficiente de ' + rf(b1, 2) + ' significa que o log-chances aumenta ' + rf(b1, 2) + ' para cada unidade de aumento no preditor. O efeito na probabilidade depende de <em>onde você está na curva</em>.</p>' +
+    '</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Este é o erro mais comum com regressão logística. O coeficiente informa a mudança em <span class="hl-gold">log-chances</span>, não em probabilidade. Para torná-los mais intuitivos, convertemos em <span class="hl-blue">razões de chances</span> \x96 que é o que faremos no próximo passo.') +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', 'O sinal do coeficiente indica a direção: positivo significa que valores maiores de X aumentam a probabilidade de Y=1, negativo significa que diminuem. A magnitude indica a força. Mas sempre em unidades de log-chances.');
+}
+
+function step6() {
+  return '<div class="step-title">Passo 6: Razões de Chances (Odds Ratio) \x96 A Ferramenta Interpretativa</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Como log-chances são difíceis de interpretar intuitivamente, exponenciamos os coeficientes para obter <strong>razões de chances (OR)</strong>. Uma razão de chances diz: para cada unidade de aumento em X, por quanto as <em>chances</em> se multiplicam?') +
+
+    '<div class="formula">' +
+      '<div class="formula-label">De Coeficiente para Razão de Chances</div>' +
+      'OR = e<sup>b</sup>' +
+    '</div>' +
+
+    '<div style="overflow-x:auto">' +
+    '<table class="data-table">' +
+    '<tr><th>Variável</th><th>b</th><th>OR = e<sup>b</sup></th><th>Interpretação</th></tr>' +
+    '<tr><td>Treino (anos)</td><td>' + rf(b1, 4) + '</td><td><span class="hl-gold">' + rf(OR1, 4) + '</span></td><td>Cada ano extra de treino multiplica as chances de sobreviver por ' + rf(OR1, 2) + '</td></tr>' +
+    '<tr><td>Qualidade da Armadura</td><td>' + rf(b2, 4) + '</td><td><span class="hl-gold">' + rf(OR2, 4) + '</span></td><td>Cada unidade de armadura multiplica as chances por ' + rf(OR2, 2) + '</td></tr>' +
+    '<tr><td>Escudo (0/1)</td><td>' + rf(b3, 4) + '</td><td><span class="hl-gold">' + rf(OR3, 4) + '</span></td><td>Ter escudo multiplica as chances por ' + rf(OR3, 2) + '</td></tr>' +
+    '<tr><td>Experiência em Batalha</td><td>' + rf(b4, 4) + '</td><td><span class="hl-gold">' + rf(OR4, 4) + '</span></td><td>Cada campanha extra multiplica as chances por ' + rf(OR4, 2) + '</td></tr>' +
+    '</table>' +
+    '</div>' +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">OR > 1</h4>' +
+        '<p>O preditor <strong>aumenta</strong> as chances do evento. Quanto maior o OR, mais forte o efeito positivo.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--thor-red)">OR < 1</h4>' +
+        '<p>O preditor <strong>diminui</strong> as chances do evento. Ex.: OR = 0,5 significa que as chances caem pela metade.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">OR = 1</h4>' +
+        '<p><strong>Sem efeito</strong>. O preditor não altera as chances de forma alguma (b = 0).</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">Preditores Binários</h4>' +
+        '<p>Para Escudo (0/1): OR compara as chances de sobreviver <em>com</em> escudo vs. <em>sem</em> escudo.</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('thor', '🔨 ThorMento', 'Então se a razão de chances do treino é ' + rf(OR1, 2) + ', isso quer dizer que cada ano extra aumenta a probabilidade em ' + rf((OR1 - 1) * 100, 0) + '%?') +
+
+    '<div class="warning-box">' +
+      '<div class="warning-title">⚠️ Chances ≠ Probabilidade!</div>' +
+      '<p>Um OR de ' + rf(OR1, 2) + ' significa que as <strong>chances</strong> se multiplicam por ' + rf(OR1, 2) + ' \x96 NÃO que a probabilidade aumenta ' + rf((OR1 - 1) * 100, 0) + '%. Chances e probabilidade são escalas diferentes. Quando a probabilidade base é baixa, chances e probabilidade são próximas. Quando é alta, divergem drasticamente.</p>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', 'Clínicos e epidemiologistas adoram razões de chances porque são simétricas e têm um valor nulo natural (OR=1). Em estudos de eventos raros, OR aproxima o <strong>risco relativo</strong>. Mas para eventos comuns (prevalência > 10%), essa aproximação falha.');
+}
+
+function step7() {
+  return '<div class="step-title">Passo 7: Estimação por Máxima Verossimilhança \x96 Como o Modelo Aprende</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Na regressão por MQO, minimizamos a soma dos quadrados dos resíduos. Na regressão logística, não existe solução de forma fechada. Em vez disso, usamos <strong>Estimação por Máxima Verossimilhança (EMV)</strong> \x96 encontramos os coeficientes que tornam os dados observados mais prováveis.') +
+
+    '<div class="formula">' +
+      '<div class="formula-label">O Princípio da Verossimilhança</div>' +
+      'L(β) = ∏ P(Yᵢ | Xᵢ, β)' +
+    '</div>' +
+
+    '<p>Para cada guerreiro, o modelo prevê uma probabilidade de sobrevivência. Se o guerreiro realmente sobreviveu (Y=1), essa probabilidade prevista contribui diretamente para a verossimilhança. Se tombou (Y=0), então (1 \x96 probabilidade prevista) contribui.</p>' +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">A Intuição</h4>' +
+        '<p>EMV encontra coeficientes que atribuem <strong>altas probabilidades ao que realmente aconteceu</strong>. Se um guerreiro sobreviveu e o modelo dá P = 0,95, ótimo. Se P = 0,10, péssimo.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">Log-Verossimilhança</h4>' +
+        '<p>Trabalhamos com o <strong>log</strong> da verossimilhança (somas em vez de produtos). LL = ∑[Yᵢ ln(p̂ᵢ) + (1\x96Yᵢ) ln(1\x96p̂ᵢ)]</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">Algoritmo Iterativo</h4>' +
+        '<p>Não existe solução de forma fechada. O computador usa <strong>Newton-Raphson</strong> ou IRLS para convergir nos melhores coeficientes.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">Deviance = \x962LL</h4>' +
+        '<p>A <strong>deviance</strong> é \x962 × log-verossimilhança. Menor deviance = melhor ajuste. Ela faz o papel que o SQR faz no MQO.</p>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="formula">' +
+      '<div class="formula-label">Log-Verossimilhança do Nosso Modelo</div>' +
+      'LL(modelo) = ' + rf(LL, 4) +
+    '</div>' +
+
+    '<div class="formula">' +
+      '<div class="formula-label">Log-Verossimilhança do Modelo Nulo (só intercepto)</div>' +
+      'LL(nulo) = ' + rf(LL0, 4) +
+    '</div>' +
+
+    dialogue('thor', '🔨 ThorMento', 'Então não minimizamos erros \x96 maximizamos o quão "provável" os dados são? Parece ao contrário.') +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'É a mesma filosofia, só de ângulo diferente. MQO minimiza erros de previsão. EMV maximiza a probabilidade de observar o que realmente observamos. Para modelos com distribuição normal, dão a mesma resposta. Para desfechos binários, EMV é a abordagem correta.') +
+
+    dialogue('corvo', '🪶 Huginn provoca:', 'Detalhe crucial: como EMV é iterativa, às vezes pode <strong>não convergir</strong>. Isso acontece quando os dados separam perfeitamente as classes (chamado "separação completa") ou quando a amostra é muito pequena. Se seu software avisar sobre convergência, leve a sério.');
+}
+
+function step8() {
+  return '<div class="step-title">Passo 8: Avaliação do Modelo \x96 Quão Bom É o Modelo?</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Não existe um R² único na regressão logística como no MQO. Em vez disso, temos múltiplos índices de ajuste, cada um capturando uma dimensão diferente da qualidade do modelo.') +
+
+    '<div class="comparison-grid">' +
+      '<div class="comparison-card">' +
+        '<div class="comparison-title" style="color:var(--gold)">Deviance Nula</div>' +
+        '<div class="comparison-result" style="color:var(--gold)">' + rf(nullDeviance, 2) + '</div>' +
+        '<p style="font-size:0.85rem;color:var(--text-dim)">\x962 × LL(nulo)</p>' +
+      '</div>' +
+      '<div class="comparison-card">' +
+        '<div class="comparison-title" style="color:var(--odin-blue)">Deviance do Modelo</div>' +
+        '<div class="comparison-result" style="color:var(--odin-blue)">' + rf(deviance, 2) + '</div>' +
+        '<p style="font-size:0.85rem;color:var(--text-dim)">\x962 × LL(modelo)</p>' +
+      '</div>' +
+      '<div class="comparison-card">' +
+        '<div class="comparison-title" style="color:var(--success)">Redução</div>' +
+        '<div class="comparison-result" style="color:var(--success)">' + rf(nullDeviance - deviance, 2) + '</div>' +
+        '<p style="font-size:0.85rem;color:var(--text-dim)">Δ Deviance</p>' +
+      '</div>' +
+    '</div>' +
+
+    '<p>A deviance caiu de <span class="hl-gold">' + rf(nullDeviance, 2) + '</span> (nula) para <span class="hl-blue">' + rf(deviance, 2) + '</span> (modelo), uma redução de <span class="hl-green">' + rf(nullDeviance - deviance, 2) + '</span>. Essa redução é testada com um teste qui-quadrado (gl = ' + 4 + ').</p>' +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">AIC</h4>' +
+        '<p><strong>' + rf(AIC, 2) + '</strong><br>Critério de Informação de Akaike. Menor = melhor. Penaliza complexidade. Útil para comparar modelos.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">R² de Cox & Snell</h4>' +
+        '<p><strong>' + rf(coxSnellR2, 4) + '</strong><br>Não consegue alcançar 1,0. Um pseudo-R² geral.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">R² de Nagelkerke</h4>' +
+        '<p><strong>' + rf(nagelkerkeR2, 4) + '</strong><br>Ajustado para alcançar 1,0. O pseudo-R² mais comumente reportado.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">Hosmer-Lemeshow</h4>' +
+        '<p>Agrupa observações em decis e compara observado vs. esperado. Não-significativo = bom ajuste. Não calculado aqui (precisa de tabelas qui-quadrado).</p>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="warning-box">' +
+      '<div class="warning-title">⚠️ Pseudo-R² ≠ R²</div>' +
+      '<p>Valores de pseudo-R² são tipicamente <strong>muito menores</strong> que R² do MQO. Um Nagelkerke R² de 0,30 na regressão logística é frequentemente considerado um modelo forte. Não compare pseudo-R² com o R² que você conhece da regressão linear!</p>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', 'O teste de Hosmer-Lemeshow divide as probabilidades preditas em grupos (geralmente 10) e compara frequências observadas vs. esperadas em cada grupo usando uma estatística qui-quadrado. Um p-valor não-significativo (p > ,05) indica ajuste adequado. Mas com amostras pequenas, tem baixo poder.');
+}
+
+function step9() {
+  return '<div class="step-title">Passo 9: Classificação \x96 Transformando Probabilidades em Decisões</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'O modelo nos dá <strong>probabilidades preditas</strong>. Mas as Valquírias precisam de uma decisão: sobreviveu ou tombou? Precisamos de um <span class="hl-gold">ponto de corte</span> (threshold) para classificar cada guerreiro.') +
+
+    '<p>Usando o ponto de corte padrão de <span class="hl-gold">0,50</span>: se P̂ ≥ 0,50, prevemos Sobreviveu (1); se P̂ < 0,50, prevemos Tombou (0).</p>' +
+
+    '<div style="overflow-x:auto">' +
+    '<table class="data-table">' +
+    '<tr><th>#</th><th>Guerreiro</th><th>P̂ (Sobrevivência)</th><th>Previsto</th><th>Real</th><th>Correto?</th></tr>' +
+    guerreiros.map(function(w, i) {
+      var pred = predClass[i];
+      var correct = pred === Sobrev[i];
+      var correctIcon = correct ? '<span class="hl-green">✓</span>' : '<span class="hl-red">✗</span>';
+      return '<tr><td>' + (i+1) + '</td><td style="text-align:left">' + w + '</td><td>' + rf(pHat[i], 4) + '</td><td>' + pred + '</td><td>' + Sobrev[i] + '</td><td>' + correctIcon + '</td></tr>';
+    }).join('') +
+    '</table>' +
+    '</div>' +
+
+    '<div class="step-subtitle">Matriz de Confusão</div>' +
+
+    '<div class="visual-container">' + buildConfusionMatrixSVG() + '</div>' +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">Sensibilidade (Recall)</h4>' +
+        '<p>VP / (VP + FN) = ' + TP + ' / ' + (TP + FN) + ' = <strong>' + rf(sensibilidade * 100, 1) + '%</strong><br>Dos que sobreviveram, quantos identificamos corretamente?</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">Especificidade</h4>' +
+        '<p>VN / (VN + FP) = ' + TN + ' / ' + (TN + FP) + ' = <strong>' + rf(especificidade * 100, 1) + '%</strong><br>Dos que tombaram, quantos identificamos corretamente?</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">Acurácia</h4>' +
+        '<p>(VP + VN) / N = ' + (TP + TN) + ' / ' + n + ' = <strong>' + rf(acuracia * 100, 1) + '%</strong><br>Percentual geral de classificações corretas.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">Escolha do Ponto de Corte</h4>' +
+        '<p>0,50 é o padrão mas nem sempre é ótimo. A escolha depende do <strong>custo dos erros</strong>: um falso negativo (perder um sobrevivente) é pior que um falso positivo?</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Huginn provoca:', 'Acurácia pode ser enganosa com classes desbalanceadas. Se 90% dos guerreiros sobrevivem, um modelo que prevê "sobreviveu" para todos alcança 90% de acurácia mas é inútil. Sempre reporte sensibilidade e especificidade junto com acurácia, e considere a <strong>curva ROC</strong> (Área Sob a Curva) para uma medida independente do ponto de corte.');
+}
+
+function step10() {
+  return '<div class="step-title">Passo 10: Pressupostos \x96 O Que a Regressão Logística Exige</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'A regressão logística tem menos pressupostos que o MQO, mas os que tem são críticos. Vamos revisar cada um.') +
+
+    '<div class="concept-grid">' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--gold)">① VD Binária</h4>' +
+        '<p>A variável dependente deve ser <strong>binária</strong> (0/1). Para categorias ordenadas, use regressão logística ordinal. Para 3+ categorias não-ordenadas, use multinomial.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--odin-blue)">② Independência</h4>' +
+        '<p>As observações devem ser <strong>independentes</strong>. Sem medidas repetidas, sem agrupamento sem correção (use logística multinível se necessário).</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--corvo-purple)">③ Sem Multicolinearidade</h4>' +
+        '<p>Preditores não devem ser altamente correlacionados. Verifique <strong>VIF < 10</strong> (mesma regra do MQO). Alta multicolinearidade infla o EP dos coeficientes.</p>' +
+      '</div>' +
+      '<div class="concept-card">' +
+        '<h4 style="color:var(--success)">④ Linearidade do Logit</h4>' +
+        '<p>A relação entre preditores contínuos e o <strong>log-chances</strong> deve ser linear. Testado via <strong>teste de Box-Tidwell</strong>: adicione X·ln(X) ao modelo. Se significativo, o pressuposto é violado.</p>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="warning-box">' +
+      '<div class="warning-title">⚠️ Tamanho Amostral: Eventos por Variável (EPV)</div>' +
+      '<p>O tamanho amostral mínimo recomendado depende do número de eventos (qual desfecho for mais raro). A regra clássica: <strong>EPV ≥ 10</strong> (pelo menos 10 eventos por variável preditora). Alguns pesquisadores sugerem EPV ≥ 20 para estimativas estáveis.</p>' +
+      '<p style="margin-top:8px">Nossos dados: ' + sum(Sobrev) + ' eventos (sobreviveram), 4 preditores → EPV = ' + rf(sum(Sobrev) / 4, 1) + '. ' + (sum(Sobrev) / 4 >= 10 ? '<span class="hl-green">Adequado.</span>' : '<span class="hl-red">Abaixo do limiar! Resultados são apenas ilustrativos.</span>') + '</p>' +
+    '</div>' +
+
+    '<div class="correct-box">' +
+      '<div class="correct-title">✓ O Que a Regressão Logística NÃO Exige</div>' +
+      '<p><strong>Normalidade dos resíduos não é necessária.</strong> Desfechos binários produzem resíduos binários \x96 normalidade não se aplica.</p>' +
+      '<p style="margin-top:6px"><strong>Homocedasticidade não é necessária.</strong> A variância é inerentemente heterogênea: Var = p(1\x96p).</p>' +
+      '<p style="margin-top:6px"><strong>Relação linear entre X e Y não é necessária.</strong> A relação é com o log-chances de Y, não com Y diretamente.</p>' +
+    '</div>' +
+
+    dialogue('corvo', '🪶 Muninn sussurra:', '<strong>Teste de Box-Tidwell para linearidade do logit:</strong> Para cada preditor contínuo X, adicione X·ln(X) como termo adicional. Se a interação for significativa (p < ,05), o pressuposto de linearidade é violado. Remédio: transformar o preditor (log, raiz quadrada) ou adicionar termos polinomiais.') +
+
+    dialogue('corvo', '🪶 Huginn provoca:', 'Fique atento também à <strong>separação completa</strong> \x96 quando um preditor prevê perfeitamente o desfecho. Se todos os guerreiros com Treino ≥ 7 sobreviveram e todos com Treino < 7 tombaram, o algoritmo EMV tentará empurrar o coeficiente para infinito. Seu software vai avisar ou dar coeficientes absurdamente grandes com EP enormes. O remédio: verossimilhança penalizada de Firth ou regressão logística exata.');
+}
+
+function step11() {
+  return '<div class="step-title">Passo 11: Lição dos Corvos</div>' +
+
+    '<div class="licao-box">' +
+      '<div class="licao-title">🐦‍⬛ Lição dos Corvos: Regressão Logística</div>' +
+
+      dialogue('corvo', '🪶 Muninn lembra:', '<strong>Pontos-chave para recordar:</strong><br>' +
+        '• Regressão logística prevê a <strong>probabilidade</strong> de um desfecho binário (0/1)<br>' +
+        '• O modelo prevê <strong>log-chances</strong>, convertidos em probabilidades via função sigmoide<br>' +
+        '• Coeficientes representam mudanças em <strong>log-chances</strong>, não em probabilidades<br>' +
+        '• <strong>Razões de Chances</strong> (OR = e<sup>b</sup>) são a principal ferramenta interpretativa<br>' +
+        '• EMV é usada em vez de MQO \x96 maximizamos a verossimilhança dos dados observados<br>' +
+        '• Ajuste do modelo usa deviance, pseudo-R² (Nagelkerke), AIC e Hosmer-Lemeshow<br>' +
+        '• Classificação usa um ponto de corte (padrão 0,50) para criar a matriz de confusão<br>' +
+        '• Pressupostos-chave: VD binária, independência, sem multicolinearidade, linearidade do logit, EPV ≥ 10') +
+
+      dialogue('corvo', '🪶 Huginn provoca:', '<strong>Desafios para reflexão:</strong><br>' +
+        '• Por que não podemos interpretar coeficientes logísticos da mesma forma que coeficientes do MQO?<br>' +
+        '• Quando OR ≈ Risco Relativo, e quando essa aproximação falha?<br>' +
+        '• Como você escolheria um ponto de corte se falsos negativos custam 5× mais que falsos positivos?<br>' +
+        '• O que acontece com o modelo se você adicionar um preditor que separa perfeitamente os grupos?<br>' +
+        '• Por que acurácia é enganosa com classes desbalanceadas?') +
+    '</div>' +
+
+    '<div class="apa-box">' +
+      '<div class="apa-label">📋 Reportando no Formato APA</div>' +
+      '<p>Uma regressão logística foi conduzida para prever a sobrevivência dos guerreiros a partir do treino, qualidade da armadura, uso de escudo e experiência em batalha. O modelo foi estatisticamente significativo, χ²(4) = ' + rf(nullDeviance - deviance, 2) + ', p < ,001, R² de Nagelkerke = ' + rf(nagelkerkeR2, 2) + '. O modelo classificou corretamente ' + rf(acuracia * 100, 1) + '% dos casos. A experiência em batalha foi um preditor significativo (OR = ' + rf(OR4, 2) + ', IC 95% [inferior, superior], p < ,05).</p>' +
+    '</div>' +
+
+    '<div class="trap-grid">' +
+      '<div class="trap-card">' +
+        '<h4>⚠️ Armadilha 1: Interpretar b como Probabilidade</h4>' +
+        '<p>Coeficientes estão em unidades de <strong>log-chances</strong>. Para obter efeitos na probabilidade, é preciso calcular efeitos marginais em valores específicos dos preditores.</p>' +
+      '</div>' +
+      '<div class="trap-card">' +
+        '<h4>⚠️ Armadilha 2: Amostras Pequenas</h4>' +
+        '<p>Com EPV < 10, as estimativas dos coeficientes são <strong>enviesadas</strong> e os intervalos de confiança são pouco confiáveis. Use correção de Firth ou reduza preditores.</p>' +
+      '</div>' +
+      '<div class="trap-card">' +
+        '<h4>⚠️ Armadilha 3: Classes Desbalanceadas</h4>' +
+        '<p>Se 95% dos casos são Y=1, o modelo aprende a prever "1" sempre. Considere oversampling, undersampling ou ajustar o ponto de corte.</p>' +
+      '</div>' +
+      '<div class="trap-card">' +
+        '<h4>⚠️ Armadilha 4: Sobreajuste</h4>' +
+        '<p>Preditores demais relativo ao tamanho amostral inflam a acurácia aparente. Use <strong>validação cruzada</strong> ou o teste de Hosmer-Lemeshow para verificar.</p>' +
+      '</div>' +
+    '</div>' +
+
+    dialogue('odin', '🛡️ Odin Dinho', 'Agora você possui a chave logística dos portões de Valhalla. Lembre-se: o modelo fala em chances, não em probabilidades. Traduza com sabedoria, e as Valquírias guiarão os dignos para casa.') +
+
+    '<p style="text-align:center; margin-top:30px; font-family:Permanent Marker; color:var(--gold); font-size:1.2rem">⚔️ Os Portões de Valhalla foram julgados. Adiante para o próximo reino! ⚔️</p>';
+}
+
+
+// ===== REGISTRO DOS PASSOS =====
+var stepFunctions = [step0, step1, step2, step3, step4, step5, step6, step7, step8, step9, step10, step11];
+
+var stepNames = [
+  'Introdução',
+  'Por Que Não Linear?',
+  'A Função Logística',
+  'Os Dados',
+  'Chances e Log-Chances',
+  'O Modelo Logístico',
+  'Razões de Chances',
+  'Máxima Verossimilhança',
+  'Avaliação do Modelo',
+  'Classificação',
+  'Pressupostos',
+  'Lição dos Corvos'
+];
+
+var totalSteps = 12;
+var currentStep = 0;
+
+// ===== NAVEGAÇÃO =====
+function renderStep() {
+  var content = document.getElementById('stepContent');
+  content.innerHTML = stepFunctions[currentStep]();
+  content.style.animation = 'none';
+  content.offsetHeight;
+  content.style.animation = 'fadeIn 0.4s ease';
+
+  document.getElementById('progressLabel').textContent = 'Passo ' + currentStep + ' de ' + (totalSteps - 1) + ' \x96 ' + stepNames[currentStep];
+  document.getElementById('progressFill').style.width = (currentStep / (totalSteps - 1) * 100) + '%';
+
+  document.getElementById('btnBack').disabled = currentStep === 0;
+  document.getElementById('btnNext').textContent = currentStep === totalSteps - 1 ? 'Reiniciar ↻' : 'Próximo ▶';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext() {
+  if (currentStep >= totalSteps - 1) {
+    currentStep = 0;
+  } else {
+    currentStep++;
+  }
+  renderStep();
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderStep();
+  }
+}
+
+// Navegação por teclado
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
+});
+
+// Inicializar
+renderStep();
+</script>
+</body>
+</html>
